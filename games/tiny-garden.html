@@ -1,1 +1,68 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A Tiny Garden · Sunset Arcade</title><link rel="icon" href="../favicon.png"><link rel="stylesheet" href="../arcade.css"></head><body><main class="game-page"><a class="back-link" href="../index.html">← BACK TO THE ARCADE</a><div class="pixel-sun">✿</div><h1>A Tiny Garden</h1><p class="game-description">A little plant is looking thirsty. Give it a drink!</p><div class="garden-scene"><div class="plant" id="plant">♧</div><div class="garden-ground"></div></div><button class="water-button" id="water-button" type="button">💧 Water the plant</button><p id="garden-message" aria-live="polite">The little plant is ready for a drink.</p></main><script>const plant=document.querySelector("#plant"),button=document.querySelector("#water-button"),message=document.querySelector("#garden-message");const stages=["♧","♣","♣","♣","✿"],notes=["A tiny sip! It perks up a little.","Another splash! A new leaf appeared!","Look at those leaves! Keep going!","One more drink...","All grown up! You made it bloom! 🌼"];let drinks=0;button.addEventListener("click",()=>{if(drinks>=stages.length){drinks=0;button.textContent="💧 Water the plant";message.textContent="A new little seed is ready to grow.";plant.textContent="♧";plant.classList.remove("growing");return}plant.textContent=stages[drinks];plant.classList.add("growing");message.textContent=notes[drinks];drinks++;if(drinks===stages.length)button.textContent="🌱 Grow another?";window.setTimeout(()=>plant.classList.remove("growing"),300)});</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A Tiny Garden · Sunset Arcade</title>
+  <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+  <link rel="stylesheet" href="../arcade.css">
+</head>
+<body>
+  <main class="game-page">
+    <a class="back-link" href="../index.html">← BACK TO THE ARCADE</a>
+    <div class="pixel-sun" aria-hidden="true">✿</div>
+    <h1>A Tiny Garden</h1>
+    <p class="game-description">A little seed is ready to grow. Give it five drinks to help it bloom!</p>
+    <div class="garden-scene" aria-label="A pixel art sunflower growing in a terracotta pot at sunset">
+      <svg class="plant-sprite" id="plant" data-stage="0" viewBox="0 0 160 180" role="img" aria-labelledby="plant-title" shape-rendering="crispEdges">
+        <title id="plant-title">A tiny seedling in a pixel art pot</title>
+        <g class="growth growth-0"><rect x="77" y="104" width="8" height="14" fill="#79a55e"/><rect x="68" y="100" width="10" height="6" fill="#9bc878"/><rect x="72" y="94" width="8" height="7" fill="#b7da82"/><rect x="86" y="97" width="9" height="6" fill="#9bc878"/></g>
+        <g class="growth growth-1"><rect x="77" y="84" width="8" height="36" fill="#6c9954"/><rect x="66" y="96" width="14" height="8" fill="#9bc878"/><rect x="59" y="89" width="12" height="8" fill="#b7da82"/><rect x="85" y="88" width="14" height="8" fill="#9bc878"/><rect x="96" y="81" width="10" height="8" fill="#b7da82"/></g>
+        <g class="growth growth-2"><rect x="77" y="67" width="8" height="53" fill="#6c9954"/><rect x="63" y="91" width="17" height="8" fill="#9bc878"/><rect x="54" y="83" width="14" height="9" fill="#b7da82"/><rect x="85" y="81" width="18" height="8" fill="#9bc878"/><rect x="99" y="73" width="13" height="8" fill="#b7da82"/><rect x="67" y="70" width="12" height="8" fill="#9bc878"/><rect x="60" y="63" width="10" height="8" fill="#b7da82"/></g>
+        <g class="growth growth-3"><rect x="77" y="53" width="8" height="67" fill="#6c9954"/><rect x="62" y="86" width="18" height="8" fill="#9bc878"/><rect x="52" y="78" width="15" height="9" fill="#b7da82"/><rect x="85" y="76" width="19" height="8" fill="#9bc878"/><rect x="101" y="68" width="13" height="8" fill="#b7da82"/><rect x="67" y="63" width="12" height="8" fill="#9bc878"/><rect x="60" y="56" width="10" height="8" fill="#b7da82"/><rect x="73" y="38" width="16" height="17" fill="#608d51"/><rect x="70" y="31" width="22" height="12" fill="#7aa85c"/></g>
+        <g class="growth growth-4"><rect x="77" y="44" width="8" height="76" fill="#648f4e"/><rect x="62" y="85" width="18" height="8" fill="#9bc878"/><rect x="52" y="77" width="15" height="9" fill="#b7da82"/><rect x="85" y="75" width="19" height="8" fill="#9bc878"/><rect x="101" y="67" width="13" height="8" fill="#b7da82"/><rect x="69" y="60" width="10" height="8" fill="#9bc878"/><rect x="62" y="53" width="10" height="8" fill="#b7da82"/><rect x="70" y="27" width="22" height="20" fill="#688f51"/><rect x="74" y="20" width="14" height="9" fill="#7ba75b"/></g>
+        <g class="growth growth-5">
+          <rect x="77" y="42" width="8" height="78" fill="#648f4e"/><rect x="60" y="85" width="20" height="8" fill="#9bc878"/><rect x="50" y="77" width="15" height="9" fill="#b7da82"/><rect x="85" y="75" width="19" height="8" fill="#9bc878"/><rect x="101" y="67" width="13" height="8" fill="#b7da82"/><rect x="73" y="57" width="8" height="8" fill="#9bc878"/><rect x="64" y="50" width="11" height="8" fill="#b7da82"/>
+          <rect x="73" y="1" width="16" height="12" fill="#ffd34f"/><rect x="57" y="9" width="16" height="12" fill="#ffb82e"/><rect x="89" y="9" width="16" height="12" fill="#ffb82e"/><rect x="49" y="21" width="12" height="16" fill="#ffd34f"/><rect x="101" y="21" width="12" height="16" fill="#ffd34f"/><rect x="57" y="45" width="16" height="12" fill="#ffb82e"/><rect x="89" y="45" width="16" height="12" fill="#ffb82e"/><rect x="73" y="53" width="16" height="10" fill="#ffd34f"/>
+          <rect x="65" y="17" width="32" height="32" fill="#a7553c"/><rect x="69" y="13" width="24" height="40" fill="#8e493b"/><rect x="61" y="21" width="40" height="24" fill="#8e493b"/><rect x="69" y="21" width="24" height="24" fill="#704039"/><rect x="73" y="25" width="8" height="8" fill="#9f6042"/><rect x="85" y="33" width="6" height="7" fill="#b87648"/>
+        </g>
+        <rect x="43" y="116" width="74" height="13" fill="#713e50"/><rect x="47" y="119" width="66" height="8" fill="#f8b16b"/><rect x="51" y="124" width="58" height="5" fill="#503641"/><rect x="49" y="129" width="62" height="9" fill="#ca644f"/><rect x="53" y="138" width="54" height="9" fill="#b9574b"/><rect x="57" y="147" width="46" height="9" fill="#a64d49"/><rect x="61" y="156" width="38" height="9" fill="#8c4548"/><rect x="61" y="132" width="8" height="4" fill="#ed8961"/><rect x="65" y="142" width="7" height="4" fill="#d97958"/>
+      </svg>
+      <div class="garden-ground" aria-hidden="true"></div>
+    </div>
+    <button class="water-button" id="water-button" type="button">💧 Water the plant</button>
+    <p id="garden-message" aria-live="polite">A tiny seedling is waiting for a drink.</p>
+  </main>
+  <script>
+    const plant = document.querySelector("#plant");
+    const waterButton = document.querySelector("#water-button");
+    const message = document.querySelector("#garden-message");
+    const plantTitle = document.querySelector("#plant-title");
+    const stages = [
+      { message: "A little sip! The seedling stretches up.", title: "A small pixel seedling in a pot" },
+      { message: "New leaves! It's getting taller.", title: "A leafy pixel plant growing in a pot" },
+      { message: "A tiny bud is starting to show!", title: "A pixel plant with a little bud" },
+      { message: "Almost there... the bud is turning golden!", title: "A pixel sunflower bud about to open" },
+      { message: "It bloomed! You grew a sunny pixel sunflower! 🌻", title: "A fully grown pixel sunflower in a terracotta pot" }
+    ];
+    let drinks = 0;
+    waterButton.addEventListener("click", () => {
+      if (drinks === stages.length) {
+        drinks = 0;
+        plant.dataset.stage = "0";
+        plantTitle.textContent = "A tiny seedling in a pixel art pot";
+        waterButton.textContent = "💧 Water the plant";
+        message.textContent = "A tiny seedling is waiting for a drink.";
+        return;
+      }
+      drinks += 1;
+      plant.dataset.stage = String(drinks);
+      plantTitle.textContent = stages[drinks - 1].title;
+      message.textContent = stages[drinks - 1].message;
+      plant.classList.add("growing");
+      if (drinks === stages.length) waterButton.textContent = "🌱 Grow another?";
+      window.setTimeout(() => plant.classList.remove("growing"), 300);
+    });
+  </script>
+</body>
+</html>
