@@ -11,6 +11,6 @@ Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
 
 Open the index.html file in a browser. The pages work without a build step or JavaScript packages. The pixel font loads from Google Fonts when online; Courier New is used as a fallback.
 
-## Add your favicon
+## Favicon
 
-Save your pixel art favicon as favicon.png in the project folder. The pages are already set up to use it.
+The pages use the uploaded pixel star image, `Pixel Star Gamer Icon.png`, as their favicon.
