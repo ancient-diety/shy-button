@@ -1,1 +1,95 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Catch the Shy Button · Sunset Arcade</title><link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png"><link rel="stylesheet" href="../arcade.css"></head><body><main class="game-page"><a class="back-link" href="../index.html">← BACK TO THE ARCADE</a><div class="pixel-sun" aria-hidden="true">✦</div><h1>The Shy Button</h1><p class="game-description">It wants to say hi... but gets a little nervous. Catch it after five hops!</p><div id="play-area"><button id="shy-button" type="button">Say hi!</button></div><p id="message" aria-live="polite">Can you catch it?</p></main><script>const button=document.querySelector("#shy-button"),area=document.querySelector("#play-area"),message=document.querySelector("#message");let escapes=0;function scootAway(){if(escapes>=5)return;const maxX=area.clientWidth-button.offsetWidth,maxY=area.clientHeight-button.offsetHeight;button.style.left=(Math.random()*maxX+button.offsetWidth/2)+"px";button.style.top=(Math.random()*maxY+button.offsetHeight/2)+"px";escapes++;message.textContent=escapes===5?"Okay, okay... you can catch me now!":"Eep! Almost!"}button.addEventListener("pointerenter",event=>{if(event.pointerType==="mouse")scootAway()});button.addEventListener("pointerdown",event=>{if(event.pointerType!=="mouse"&&escapes<5){event.preventDefault();scootAway()}});button.addEventListener("click",()=>{message.textContent="Hi, friend! Thanks for finding me ✨";button.textContent="Hi, friend!"});</script></body></html>
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Catch the Shy Button · Sunset Arcade</title>
+
+    <link
+        rel="icon"
+        href="../Pixel%20Star%20Gamer%20Icon.png"
+        type="image/png"
+    >
+
+    <link rel="stylesheet" href="../arcade.css">
+</head>
+
+<body>
+
+    <main class="game-page">
+
+        <a class="back-link" href="../index.html">
+            ← BACK TO THE ARCADE
+        </a>
+
+        <div class="pixel-sun" aria-hidden="true">✦</div>
+
+        <h1>The Shy Button</h1>
+
+        <p class="game-description">
+            It wants to say hi... but gets a little nervous. Catch it after five hops!
+        </p>
+
+        <div id="play-area">
+            <button id="shy-button" type="button">
+                Say hi!
+            </button>
+        </div>
+
+        <p id="message" aria-live="polite">
+            Can you catch it?
+        </p>
+
+    </main>
+
+    <script>
+        const button = document.querySelector("#shy-button");
+        const area = document.querySelector("#play-area");
+        const message = document.querySelector("#message");
+
+        let escapes = 0;
+
+        function scootAway() {
+            if (escapes >= 5) return;
+
+            const maxX = area.clientWidth - button.offsetWidth;
+            const maxY = area.clientHeight - button.offsetHeight;
+
+            button.style.left =
+                (Math.random() * maxX + button.offsetWidth / 2) + "px";
+
+            button.style.top =
+                (Math.random() * maxY + button.offsetHeight / 2) + "px";
+
+            escapes++;
+
+            message.textContent = escapes === 5
+                ? "Okay, okay... you can catch me now!"
+                : "Eep! Almost!";
+        }
+
+        button.addEventListener("pointerenter", event => {
+            if (event.pointerType === "mouse") {
+                scootAway();
+            }
+        });
+
+        button.addEventListener("pointerdown", event => {
+            if (event.pointerType !== "mouse" && escapes < 5) {
+                event.preventDefault();
+                scootAway();
+            }
+        });
+
+        button.addEventListener("click", () => {
+            message.textContent = "Hi, friend! Thanks for finding me ✨";
+            button.textContent = "Hi, friend!";
+        });
+    </script>
+
+</body>
+
+</html>
