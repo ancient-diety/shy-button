@@ -32,15 +32,9 @@
     .space-control:active, .space-control.held { transform: translateY(3px); box-shadow: 1px 1px #332044; background: #956080; }
     .space-control.fire-control:active, .space-control.fire-control.held { background: #ffab59; }
     .space-help { margin: .8rem auto 0; color: #ffe2ca; font-size: .9rem; line-height: 1.5; }
-    .ship-bob { animation: ship-bob .65s steps(2,end) infinite alternate; }
-    .engine-pixel { animation: engine .22s steps(2,end) infinite alternate; transform-origin: center top; }
-    .alien-bob { animation: alien-bob .45s steps(2,end) infinite alternate; }
-    .boss-bob { animation: boss-bob .55s steps(2,end) infinite alternate; }
+    .engine-pixel { animation: engine .22s steps(2,end) infinite alternate; }
     .pixel-shot { animation: shot-glow .12s steps(2,end) infinite alternate; }
-    @keyframes ship-bob { to { opacity: .82; } }
-    @keyframes alien-bob { to { opacity: .82; } }
-    @keyframes boss-bob { to { opacity: .9; } }
-    @keyframes engine { to { opacity: .55; transform: scaleY(.65); } }
+    @keyframes engine { to { opacity: .55; } }
     @keyframes shot-glow { to { opacity: .68; } }
     @media(max-width:560px){
       .space-game { padding-left: .65rem; padding-right: .65rem; }
@@ -55,7 +49,7 @@
       .overlay-card h2 { font-size: .78rem; }
       .overlay-card p { font-size: .9rem; }
     }
-    @media(prefers-reduced-motion:reduce){.ship-bob,.engine-pixel,.alien-bob,.boss-bob,.pixel-shot{animation:none}}
+    @media(prefers-reduced-motion:reduce){.engine-pixel,.pixel-shot{animation:none}}
   </style>
 </head>
 <body>
@@ -64,7 +58,7 @@
     <div class="pixel-sun" aria-hidden="true">✦</div>
     <p class="eyebrow">A LITTLE TROUBLE IN THE GALAXY</p>
     <h1>Alien Attack</h1>
-    <p class="game-description">Pilot your pixel ship, dodge the incoming fire, and blast through three waves to reach the boss!</p>
+    <p class="game-description">Fly along the bottom while alien fleets follow from above. Dodge their aimed fire and blast through three waves to reach the boss!</p>
 
     <div class="space-hud" aria-label="Game status">
       <div class="hud-health">SHIP HULL <span id="health-readout">25 / 25</span><div class="health-track" role="meter" aria-label="Ship health" aria-valuemin="0" aria-valuemax="25" aria-valuenow="25"><div class="health-fill" id="health-fill"></div></div></div>
@@ -92,8 +86,8 @@
         <rect width="480" height="320" fill="#201c42"/>
         <path d="M35 45h4v4h-4zm92 20h3v3h-3zm237-28h4v4h-4zM435 96h3v3h-3zM55 137h4v4h-4zm89 62h3v3h-3zm267-7h4v4h-4zM34 256h3v3h-3zm112-46h4v4h-4zm214 87h3v3h-3zM402 263h4v4h-4zM206 31h3v3h-3zm131 119h3v3h-3zM82 282h4v4h-4z" fill="#fff0c2" opacity=".8"/>
         <g id="enemy-layer"></g><g id="projectile-layer"></g><g id="effect-layer"></g>
-        <g id="boss" transform="translate(208 34)" style="display:none"><g class="boss-bob"><use href="#boss-art" x="0" y="0"/></g></g>
-        <g id="player" transform="translate(224 276)"><g class="ship-bob"><g class="engine-pixel"><rect x="8" y="24" width="6" height="8" fill="#ffcf73"/><rect x="18" y="24" width="6" height="8" fill="#ff806c"/></g><use href="#ship-art" x="0" y="0"/></g></g>
+        <g id="boss" transform="translate(208 34)" style="display:none"><use href="#boss-art" x="0" y="0"/></g>
+        <g id="player" transform="translate(224 276)"><g class="engine-pixel"><rect x="8" y="24" width="6" height="8" fill="#ffcf73"/><rect x="18" y="24" width="6" height="8" fill="#ff806c"/></g><use href="#ship-art" x="0" y="0"/></g>
       </svg>
       <div class="space-overlay" id="space-overlay">
         <div class="overlay-card"><h2 id="overlay-title">READY, PILOT?</h2><p id="overlay-copy">You have 25 hull points. Blast through three alien formations, dodge their shots, and take down the mothership!</p><button class="space-start" id="start-game" type="button">🚀 Start the mission</button></div>
@@ -135,7 +129,7 @@
       let x = W / 2, hp = MAX_HP, score = 0, best = 0, wave = 1;
       let enemies = [], shots = [], enemyShots = [], bossHp = BOSS_HP;
       let bossMode = false, running = false, lastTime = 0, playerFireAt = 0, enemyFireAt = 0;
-      let animation = 0, transitionTimer = 0, invulnerableUntil = 0, formationDirection = 1;
+      let animation = 0, transitionTimer = 0, invulnerableUntil = 0, bossX = W / 2 - 32;
 
       try { best = Number(localStorage.getItem("alienAttackBest")) || 0; } catch (_) { /* storage may be disabled */ }
       bestReadout.textContent = String(best);
@@ -163,12 +157,10 @@
         const enemyX = startX + col * 62;
         const enemyY = 45 + row * 42;
         const group = svgEl("g", { transform: `translate(${enemyX} ${enemyY})`, "data-id": index });
-        const bob = svgEl("g", { class: "alien-bob" });
         const sprite = svgEl("use", { href: row === 0 ? "#alien-art" : "#alien-blue-art", x: 0, y: 0 });
-        bob.append(sprite);
-        group.append(bob);
+        group.append(sprite);
         enemyLayer.append(group);
-        return { x: enemyX, y: enemyY, node: group, alive: true, shotOffset: Math.random() * 1000 };
+        return { x: enemyX, y: enemyY, node: group };
       }
       function makeWave() {
         enemies = [];
@@ -182,7 +174,6 @@
         const startX = (W - formationWidth) / 2;
         let id = 0;
         for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) enemies.push(makeEnemy(id++, r, c, startX));
-        formationDirection = 1;
         enemyFireAt = performance.now() + 700;
         updateHud();
       }
@@ -191,16 +182,17 @@
         enemyLayer.replaceChildren();
         bossMode = true;
         bossHp = BOSS_HP;
-        boss.setAttribute("transform", "translate(208 34)");
+        bossX = W / 2 - 32;
+        boss.setAttribute("transform", `translate(${bossX} 34)`);
         boss.style.display = "block";
         bossHud.classList.add("show");
         enemyFireAt = performance.now() + 900;
         updateHud();
       }
-      function addShot(xPos, yPos, fromEnemy = false, color = "#9fe0dc", width = 4, height = 12) {
+      function addShot(xPos, yPos, fromEnemy = false, color = "#9fe0dc", width = 4, height = 12, velocityX = 0) {
         const node = svgEl("rect", { x: xPos - width / 2, y: yPos, width, height, fill: color, class: "pixel-shot" });
         shotLayer.append(node);
-        (fromEnemy ? enemyShots : shots).push({ x: xPos, y: yPos, node, speed: fromEnemy ? 155 : 280, width, height });
+        (fromEnemy ? enemyShots : shots).push({ x: xPos, y: yPos, node, speed: fromEnemy ? 155 : 280, width, height, velocityX });
       }
       function addBurst(xPos, yPos, color = "#ffd477") {
         const g = svgEl("g", { transform: `translate(${xPos} ${yPos})` });
@@ -289,13 +281,18 @@
       function enemyFire(now) {
         if (now < enemyFireAt) return;
         if (bossMode) {
-          const bx = 208 + Math.sin(now / 670) * 145;
-          for (const offset of [-24, 0, 24]) addShot(bx + offset, 101, true, "#ff729d", 7, 15);
+          for (const offset of [-24, 0, 24]) {
+            const shotX = bossX + 32 + offset;
+            const aim = Math.max(-90, Math.min(90, (x - shotX) * .32));
+            addShot(shotX, 101, true, "#ff729d", 7, 15, aim);
+          }
           enemyFireAt = now + Math.max(520, 1000 - (BOSS_HP - bossHp) * 8);
         } else if (enemies.length) {
           const shooter = enemies[Math.floor(Math.random() * enemies.length)];
-          addShot(shooter.x + 12, shooter.y + 20, true, "#ff9c88", 5, 10);
-          if (wave >= 3 && Math.random() > .45) addShot(shooter.x + 12, shooter.y + 20, true, "#ffd477", 4, 9);
+          const shotX = shooter.x + 12;
+          const aim = Math.max(-90, Math.min(90, (x - shotX) * .32));
+          addShot(shotX, shooter.y + 20, true, "#ff9c88", 5, 10, aim);
+          if (wave >= 3 && Math.random() > .45) addShot(shotX, shooter.y + 20, true, "#ffd477", 4, 9, aim * .65);
           enemyFireAt = now + Math.max(450, 1400 - wave * 220 - score * 2);
         }
       }
@@ -323,8 +320,10 @@
         if (firing) firePlayer(now);
 
         if (bossMode) {
-          const bx = 208 + Math.sin(now / 670) * 145;
-          boss.setAttribute("transform", `translate(${bx} ${34 + Math.sin(now / 250) * 3})`);
+          const targetBossX = Math.max(12, Math.min(W - 76, x - 32));
+          const bossStep = 140 * dt;
+          bossX += Math.max(-bossStep, Math.min(bossStep, targetBossX - bossX));
+          boss.setAttribute("transform", `translate(${bossX} 34)`);
           if (bossHp <= 0) {
             score += 1000;
             updateHud();
@@ -332,22 +331,21 @@
             return;
           }
         } else {
-          const formationSpeed = 34 + wave * 12;
-          let minX = Infinity, maxX = -Infinity;
-          for (const enemy of enemies) {
-            minX = Math.min(minX, enemy.x);
-            maxX = Math.max(maxX, enemy.x + 24);
+          if (enemies.length) {
+            let minX = Infinity, maxX = -Infinity;
+            for (const enemy of enemies) {
+              minX = Math.min(minX, enemy.x);
+              maxX = Math.max(maxX, enemy.x + 24);
+            }
+            const formationWidth = maxX - minX;
+            const targetLeft = Math.max(15, Math.min(W - 15 - formationWidth, x - formationWidth / 2));
+            const followStep = (150 + wave * 10) * dt;
+            const formationShift = Math.max(-followStep, Math.min(followStep, targetLeft - minX));
+            for (const enemy of enemies) {
+              enemy.x += formationShift;
+              enemy.node.setAttribute("transform", `translate(${enemy.x} ${enemy.y})`);
+            }
           }
-          const nextEdge = formationDirection > 0 ? maxX + formationSpeed * dt : minX - formationSpeed * dt;
-          if ((formationDirection > 0 && nextEdge >= W - 15) || (formationDirection < 0 && nextEdge <= 15)) {
-            formationDirection *= -1;
-            for (const enemy of enemies) enemy.y += 9;
-          }
-          for (const enemy of enemies) {
-            enemy.x += formationDirection * formationSpeed * dt;
-            enemy.node.setAttribute("transform", `translate(${enemy.x} ${enemy.y})`);
-          }
-          if (enemies.some(enemy => enemy.y >= 244)) { damagePlayer(5, now); enemies.forEach(e => e.y = Math.min(e.y, 230)); }
           enemyFire(now);
           if (!enemies.length) { nextWave(); }
         }
@@ -357,8 +355,7 @@
           shot.node.setAttribute("y", shot.y);
           if (shot.y < -20) { shot.node.remove(); shot.dead = true; continue; }
           if (bossMode) {
-            const bx = 208 + Math.sin(now / 670) * 145;
-            if (shot.x >= bx && shot.x <= bx + 64 && shot.y < 96 && shot.y > 34) {
+            if (shot.x >= bossX && shot.x <= bossX + 64 && shot.y < 96 && shot.y > 34) {
               shot.node.remove(); shot.dead = true; bossHp--; score += 10; addBurst(shot.x, Math.max(35, shot.y), "#ffd477"); updateHud();
             }
           } else {
@@ -371,8 +368,10 @@
         shots = shots.filter(s => !s.dead);
         for (const shot of enemyShots) {
           shot.y += shot.speed * dt;
+          shot.x += shot.velocityX * dt;
+          shot.node.setAttribute("x", shot.x - shot.width / 2);
           shot.node.setAttribute("y", shot.y);
-          if (shot.y > H) { shot.node.remove(); shot.dead = true; continue; }
+          if (shot.y > H || shot.x < -20 || shot.x > W + 20) { shot.node.remove(); shot.dead = true; continue; }
           if (shot.y > 268 && shot.y < 305 && Math.abs(shot.x - x) < 21) {
             shot.node.remove(); shot.dead = true; damagePlayer(1, now);
           }
