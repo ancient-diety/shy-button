@@ -173,13 +173,13 @@
       const carNames = { red: "Rally", green: "Clover", blue: "Comet" };
       let selectedCar = "red", running = false;
       let playerDistance = 0, laneOffset = 0, speed = 145, elapsed = 0, lastTime = 0, animation = 0;
+      let cameraAngle = 0, steeringWheelAngle = 0;
       let npcs = [], path = [], totalLength = 0, bestTime = Infinity;
       const trackPoints = [
-        [240,68],[300,68],[350,82],[388,111],[402,151],[389,180],[354,197],[323,220],
-        [315,251],[331,274],[373,288],[403,315],[400,349],[379,375],[343,390],[315,419],
-        [296,456],[260,479],[216,477],[184,459],[166,429],[143,410],[111,418],[84,397],
-        [70,364],[76,334],[101,311],[128,293],[139,268],[127,239],[100,218],[76,194],
-        [70,164],[82,135],[107,111],[145,92],[184,77]
+        [240,68],[340,70],[405,98],[420,150],[404,202],[365,230],[331,247],[322,277],
+        [356,305],[402,338],[407,380],[378,421],[328,450],[268,470],[212,464],[168,438],
+        [132,408],[88,409],[64,376],[62,330],[82,286],[119,257],[135,226],[111,197],
+        [77,177],[63,137],[82,103],[128,78]
       ];
 
       try { bestTime = Number(localStorage.getItem("sunsetSpeedwayBest")) || Infinity; } catch (_) { /* storage can be disabled */ }
@@ -217,21 +217,24 @@
         document.querySelector("#map-start").setAttribute("d", `M${(50+(first.x+nx-CX)*.21).toFixed(1)} ${(60+(first.y+ny-CY)*.21).toFixed(1)} L${(50+(first.x-nx-CX)*.21).toFixed(1)} ${(60+(first.y-ny-CY)*.21).toFixed(1)}`);
       }
       function pointAt(distance, lane = 0) {
-        let d = ((distance % totalLength) + totalLength) % totalLength;
-        let low = 0, high = path.length - 1;
-        while (low + 1 < high) {
-          const mid = (low + high) >> 1;
-          if (path[mid].distance < d) low = mid; else high = mid;
+        function centerAt(atDistance) {
+          const d = ((atDistance % totalLength) + totalLength) % totalLength;
+          let low = 0, high = path.length - 1;
+          while (low + 1 < high) {
+            const mid = (low + high) >> 1;
+            if (path[mid].distance < d) low = mid; else high = mid;
+          }
+          const a = path[low], b = path[high];
+          const t = Math.max(0, Math.min(1, (d-a.distance) / (b.distance-a.distance || 1)));
+          return { x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t };
         }
-        const a = path[low], b = path[high];
-        const span = b.distance - a.distance || 1;
-        const t = Math.max(0, Math.min(1, (d - a.distance) / span));
-        const x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
-        const tangentX = b.x - a.x, tangentY = b.y - a.y;
+        const center = centerAt(distance);
+        const before = centerAt(distance-7), after = centerAt(distance+7);
+        const tangentX = after.x-before.x, tangentY = after.y-before.y;
         const length = Math.hypot(tangentX, tangentY) || 1;
         const nx = -tangentY / length, ny = tangentX / length;
         const angle = Math.atan2(tangentY, tangentX) * 180 / Math.PI + 90;
-        return { x: x + nx * lane, y: y + ny * lane, angle };
+        return { x: center.x + nx * lane, y: center.y + ny * lane, angle };
       }
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
@@ -253,7 +256,7 @@
       function relativeSide(point, origin, basis) {
         return (point.x - origin.x) * basis.nx + (point.y - origin.y) * basis.ny;
       }
-      function snapPixel(value, size = 3) {
+      function snapPixel(value, size = 4) {
         return Math.round(value / size) * size;
       }
       function mainProjection(side, depth) {
@@ -355,11 +358,11 @@
         const x=50+(playerPoint.x-CX)*.21, y=60+(playerPoint.y-CY)*.21;
         mapPlayer.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${playerPoint.angle.toFixed(1)})`);
       }
-      function drawScene(playerPoint) {
-        renderRoad(playerPoint);
-        renderTraffic(playerPoint);
-        renderMirrors(playerPoint);
-        updateMap(playerPoint);
+      function drawScene(cameraPoint, mapPoint = cameraPoint) {
+        renderRoad(cameraPoint);
+        renderTraffic(cameraPoint);
+        renderMirrors(cameraPoint);
+        updateMap(mapPoint);
       }
       function clearNpcs() {
         npcs = [];
@@ -384,13 +387,18 @@
         laneOffset = 0;
         speed = 145;
         elapsed = 0;
+        cameraAngle = pointAt(0).angle;
+        steeringWheelAngle = 0;
+        steeringWheel.setAttribute("transform","rotate(0 240 494)");
+        dice.style.transform="rotate(0deg)";
         lastTime = performance.now();
         held.left = held.right = held.accelerate = held.brake = false;
         keyState.clear();
         const accents={red:"#e84b5f",green:"#42a96a",blue:"#4778d1"};
         carAccent.setAttribute("fill",accents[selectedCar]);
         makeNpcs();
-        drawScene(pointAt(playerDistance,laneOffset));
+        const startPoint=pointAt(playerDistance,laneOffset);
+        drawScene({...startPoint,angle:cameraAngle},startPoint);
         lapReadout.textContent = `1 / ${LAPS_TO_WIN}`;
         timeReadout.textContent = formatTime(0);
         speedReadout.textContent = `${Math.round(speed)} km/h`;
@@ -431,29 +439,33 @@
         const right = held.right || keyState.has("ArrowRight") || keyState.has("d") || keyState.has("D");
         const accelerating = held.accelerate || keyState.has("ArrowUp") || keyState.has("w") || keyState.has("W");
         const braking = held.brake || keyState.has("ArrowDown") || keyState.has("s") || keyState.has("S");
-        if (left) laneOffset -= 78 * dt;
-        if (right) laneOffset += 78 * dt;
-        laneOffset = Math.max(-30, Math.min(30, laneOffset));
+        const steerInput=(right?1:0)-(left?1:0);
+        laneOffset += steerInput * 30 * dt;
+        laneOffset = Math.max(-18, Math.min(18, laneOffset));
         speed += accelerating ? 92 * dt : -28 * dt;
         if (braking) speed -= 115 * dt;
         speed = Math.max(86, Math.min(MAX_SPEED, speed));
         playerDistance += speed * dt;
         elapsed += dt;
         const playerPoint = pointAt(playerDistance, laneOffset);
+        const angleDelta=((playerPoint.angle-cameraAngle+540)%360)-180;
+        cameraAngle += angleDelta * Math.min(1,dt*3.5);
+        const cameraPoint={...playerPoint,angle:cameraAngle};
         for (const npc of npcs) {
           npc.distance += npc.speed * dt;
           const point = pointAt(npc.distance, npc.lane);
           if (Math.hypot(point.x - playerPoint.x, point.y - playerPoint.y) < 24) {
             updateHud();
-            drawScene(playerPoint);
+            drawScene(cameraPoint,playerPoint);
             endRace(false);
             return;
           }
         }
-        const steering=left ? -18 : right ? 18 : 0;
-        steeringWheel.setAttribute("transform",`rotate(${steering} 240 494)`);
-        dice.style.transform=`rotate(${steering*.22}deg)`;
-        drawScene(playerPoint);
+        const wheelTarget=steerInput*16;
+        steeringWheelAngle += (wheelTarget-steeringWheelAngle)*Math.min(1,dt*7);
+        steeringWheel.setAttribute("transform",`rotate(${steeringWheelAngle.toFixed(1)} 240 494)`);
+        dice.style.transform=`rotate(${(steeringWheelAngle*.26).toFixed(1)}deg)`;
+        drawScene(cameraPoint,playerPoint);
         updateHud();
         if (playerDistance >= totalLength * LAPS_TO_WIN) {
           endRace(true);
@@ -495,7 +507,8 @@
       startButton.addEventListener("click", startRace);
       buildPath();
       const startingPoint = pointAt(0, 0);
-      drawScene(startingPoint);
+      cameraAngle=startingPoint.angle;
+      drawScene({...startingPoint,angle:cameraAngle},startingPoint);
       updateHud();
     })();
   </script>
