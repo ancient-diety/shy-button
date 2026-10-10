@@ -53,7 +53,7 @@
     <div class="pixel-sun" aria-hidden="true">✷</div>
     <p class="eyebrow">START YOUR ENGINES</p>
     <h1>Sunset Speedway</h1>
-    <p class="game-description">Pick a car, race three laps around the sunset circuit, and weave through the other drivers. One crash ends the race!</p>
+    <p class="game-description">Pick a car and race three laps on a winding, vertically scrolling sunset track. Dodge rival drivers and potholes; one crash ends the race!</p>
 
     <div class="race-hud" aria-label="Race status">
       <div>LAP<span id="lap-readout">1 / 3</span></div>
@@ -61,8 +61,8 @@
       <div>SPEED<span id="speed-readout">0 km/h</span></div>
     </div>
 
-    <div class="race-screen" id="race-screen" aria-label="Scrolling top-down view of the pixel race track">
-      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Top-down pixel cars racing along a winding track" shape-rendering="crispEdges">
+    <div class="race-screen" id="race-screen" aria-label="Fixed upright top-down view of the pixel race track">
+      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Portrait top-down pixel cars racing on a vertically scrolling track" shape-rendering="crispEdges">
         <defs>
           <pattern id="grass-pixels" width="24" height="24" patternUnits="userSpaceOnUse">
             <rect width="24" height="24" fill="#52784e"/><rect x="3" y="5" width="3" height="3" fill="#668956"/><rect x="15" y="15" width="4" height="3" fill="#426747"/><rect x="20" y="3" width="2" height="2" fill="#78915a"/>
@@ -85,7 +85,7 @@
           </g>
         </defs>
         <g id="world">
-          <rect x="-3000" y="-3000" width="6000" height="6000" fill="url(#grass-pixels)"/>
+          <rect x="-10000" y="-12000" width="20000" height="24000" fill="url(#grass-pixels)"/>
           <g opacity=".9" aria-hidden="true" shape-rendering="crispEdges">
             <rect x="-1800" y="-1600" width="8" height="7" fill="#769557"/><rect x="1050" y="-900" width="10" height="8" fill="#3f6948"/>
             <rect x="-650" y="1250" width="9" height="8" fill="#78975b"/><rect x="1350" y="850" width="8" height="7" fill="#3f6948"/>
@@ -100,8 +100,8 @@
           <g id="props-layer" aria-hidden="true"></g>
           <g id="hazards-layer"></g>
           <g id="traffic-layer"></g>
-          <g id="player-car"><use href="#car-red-art"/></g>
         </g>
+        <g id="player-car"><use href="#car-red-art"/></g>
       </svg>
       <div class="track-map" aria-label="Minimap showing your position on the full track">
         <p class="track-map-label">TRACK MAP</p>
@@ -134,13 +134,16 @@
   </main>
   <script>
     (() => {
-      const CX = 240, CY = 280;
-      const LAPS_TO_WIN = 3, MAX_SPEED = 225;
+      const CX = 240, PLAYER_Y = 430;
+      const LAP_LENGTH = 1800, LAPS_TO_WIN = 3, RACE_LENGTH = LAP_LENGTH * LAPS_TO_WIN;
+      const MAX_SPEED = 225, ROAD_HALF_WIDTH = 45;
+      const curveOffsets = [0, 0, 8, 22, 42, 58, 70, 76, 70, 54, 32, 4, -24, -50, -68, -76, -68, -44, -16, 0];
       const world = document.querySelector("#world");
       const playerCar = document.querySelector("#player-car");
       const trafficLayer = document.querySelector("#traffic-layer");
       const hazardsLayer = document.querySelector("#hazards-layer");
       const propsLayer = document.querySelector("#props-layer");
+      const startLineLayer = document.querySelector("#start-line");
       const mapPlayer = document.querySelector("#map-player");
       const overlay = document.querySelector("#race-overlay");
       const title = document.querySelector("#overlay-title");
@@ -155,14 +158,7 @@
       const carNames = { red: "Rally", green: "Clover", blue: "Comet" };
       let selectedCar = "red", running = false;
       let playerDistance = 0, laneOffset = 0, speed = 145, elapsed = 0, lastTime = 0, animation = 0;
-      let npcs = [], path = [], totalLength = 0, bestTime = Infinity;
-      let potholes = [];
-      const trackPoints = [
-        [240,68],[340,70],[405,98],[420,150],[404,202],[365,230],[331,247],[322,277],
-        [356,305],[402,338],[407,380],[378,421],[328,450],[268,470],[212,464],[168,438],
-        [132,408],[88,409],[64,376],[62,330],[82,286],[119,257],[135,226],[111,197],
-        [77,177],[63,137],[82,103],[128,78]
-      ];
+      let npcs = [], potholes = [], bestTime = Infinity;
 
       try { bestTime = Number(localStorage.getItem("sunsetSpeedwayBest")) || Infinity; } catch (_) { /* storage can be disabled */ }
 
@@ -171,108 +167,117 @@
         for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
         return node;
       }
-      function buildPath() {
-        path = [];
-        totalLength = 0;
-        const subdivisions = 18, segments = trackPoints.length;
-        const steps = subdivisions * segments;
-        for (let i = 0; i <= steps; i++) {
-          const segment = Math.min(segments - 1, Math.floor(i / subdivisions));
-          const t = (i - segment * subdivisions) / subdivisions;
-          const p0 = trackPoints[(segment - 1 + segments) % segments];
-          const p1 = trackPoints[segment];
-          const p2 = trackPoints[(segment + 1) % segments];
-          const p3 = trackPoints[(segment + 2) % segments];
-          const t2 = t * t, t3 = t2 * t;
-          const sample = axis => .5 * ((2 * p1[axis]) + (-p0[axis] + p2[axis]) * t + (2*p0[axis] - 5*p1[axis] + 4*p2[axis] - p3[axis]) * t2 + (-p0[axis] + 3*p1[axis] - 3*p2[axis] + p3[axis]) * t3);
-          const point = { x: sample(0), y: sample(1) };
-          if (i) totalLength += Math.hypot(point.x - path[i - 1].x, point.y - path[i - 1].y);
-          point.distance = totalLength;
-          path.push(point);
+      function snapPixel(value, size = 4) { return Math.round(value / size) * size; }
+      function roadOffset(distance) {
+        const wrapped = ((distance % LAP_LENGTH) + LAP_LENGTH) % LAP_LENGTH;
+        const scaled = wrapped / LAP_LENGTH * curveOffsets.length;
+        const segment = Math.floor(scaled), t = scaled - segment;
+        const count = curveOffsets.length;
+        const p0 = curveOffsets[(segment - 1 + count) % count];
+        const p1 = curveOffsets[segment % count];
+        const p2 = curveOffsets[(segment + 1) % count];
+        const p3 = curveOffsets[(segment + 2) % count];
+        const t2 = t * t, t3 = t2 * t;
+        return .5 * ((2 * p1) + (-p0 + p2) * t + (2*p0 - 5*p1 + 4*p2 - p3) * t2 + (-p0 + 3*p1 - 3*p2 + p3) * t3);
+      }
+      function roadCenter(distance) { return CX + roadOffset(distance); }
+      function setWorldPosition(node, distance, lane = 0) {
+        const x = snapPixel(roadCenter(distance) + lane);
+        const y = snapPixel(PLAYER_Y - distance);
+        node.setAttribute("transform", "translate(" + x + " " + y + ")");
+      }
+      function buildRoad() {
+        const start = -560, end = RACE_LENGTH + 650, step = 8;
+        let roadD = "";
+        for (let distance = start, i = 0; distance <= end; distance += step, i++) {
+          roadD += (i ? "L" : "M") + snapPixel(roadCenter(distance)) + " " + snapPixel(PLAYER_Y - distance) + " ";
         }
-        const mapSamples = path.filter((_, i) => i % 9 === 0);
-        const mapD = mapSamples.map((p, i) => ` ${i ? "L" : "M"}${Math.round((50 + (p.x - CX) * .21) / 1.5) * 1.5} ${Math.round((60 + (p.y - CY) * .21) / 1.5) * 1.5}`).join("") + "Z";
+        for (const id of ["#track-grass-edge", "#track-outline", "#track-curb-red", "#track-curb-cream", "#track-surface", "#track-centerline"]) {
+          document.querySelector(id).setAttribute("d", roadD);
+        }
+
+        const mapSamples = [];
+        for (let i = 0; i <= 90; i++) {
+          const distance = LAP_LENGTH * i / 90;
+          const x = 50 + roadOffset(distance) * .29;
+          const y = 5 + i * 1.2;
+          mapSamples.push((i ? "L" : "M") + snapPixel(x, 1.5) + " " + snapPixel(y, 1.5));
+        }
+        const mapD = mapSamples.join(" ");
         for (const id of ["#map-track-border", "#map-track", "#map-track-dashes"]) document.querySelector(id).setAttribute("d", mapD);
-        const roadSamples = path.filter((_, i) => i % 3 === 0);
-        const roadD = roadSamples.map((p, i) => `${i ? "L" : "M"}${snapPixel(p.x, 4)} ${snapPixel(p.y, 4)}`).join("") + "Z";
-        for (const id of ["#track-grass-edge", "#track-outline", "#track-curb-red", "#track-curb-cream", "#track-surface", "#track-centerline"]) document.querySelector(id).setAttribute("d", roadD);
-        const first = path[0], next = path[5];
-        const dx = next.x-first.x, dy = next.y-first.y, length = Math.hypot(dx,dy) || 1;
-        const nx = -dy/length*5, ny = dx/length*5;
-        document.querySelector("#map-start").setAttribute("d", `M${(50+(first.x+nx-CX)*.21).toFixed(1)} ${(60+(first.y+ny-CY)*.21).toFixed(1)} L${(50+(first.x-nx-CX)*.21).toFixed(1)} ${(60+(first.y-ny-CY)*.21).toFixed(1)}`);
-        const start = pointAt(0);
-        document.querySelector("#start-line").setAttribute("transform",`translate(${start.x} ${start.y}) rotate(${start.angle})`);
+        document.querySelector("#map-start").setAttribute("d", "M36 5 L64 5");
+
+        startLineLayer.replaceChildren();
+        for (let lap = 0; lap <= LAPS_TO_WIN; lap++) {
+          const distance = lap * LAP_LENGTH;
+          const line = svgEl("g", { transform: "translate(" + snapPixel(roadCenter(distance)) + " " + snapPixel(PLAYER_Y - distance) + ")", "aria-hidden": "true" });
+          line.append(svgEl("rect", { x:-51, y:-6, width:102, height:12, fill:"url(#start-checker)", stroke:"#29263e", "stroke-width":2 }));
+          startLineLayer.append(line);
+        }
         buildPotholes();
         buildTrackProps();
-      }
-      function pointAt(distance, lane = 0) {
-        function centerAt(atDistance) {
-          const d = ((atDistance % totalLength) + totalLength) % totalLength;
-          let low = 0, high = path.length - 1;
-          while (low + 1 < high) {
-            const mid = (low + high) >> 1;
-            if (path[mid].distance < d) low = mid; else high = mid;
-          }
-          const a = path[low], b = path[high];
-          const t = Math.max(0, Math.min(1, (d-a.distance) / (b.distance-a.distance || 1)));
-          return { x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t };
-        }
-        const center = centerAt(distance);
-        const before = centerAt(distance-7), after = centerAt(distance+7);
-        const tangentX = after.x-before.x, tangentY = after.y-before.y;
-        const length = Math.hypot(tangentX, tangentY) || 1;
-        const nx = -tangentY / length, ny = tangentX / length;
-        const angle = Math.atan2(tangentY, tangentX) * 180 / Math.PI + 90;
-        return { x: center.x + nx * lane, y: center.y + ny * lane, angle };
       }
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const whole = Math.floor(seconds % 60);
         const centiseconds = Math.floor((seconds % 1) * 100);
-        return `${String(minutes).padStart(2,"0")}:${String(whole).padStart(2,"0")}.${String(centiseconds).padStart(2,"0")}`;
+        return String(minutes).padStart(2,"0") + ":" + String(whole).padStart(2,"0") + "." + String(centiseconds).padStart(2,"0");
       }
       function updateHud() {
-        const completed = Math.floor(playerDistance / totalLength);
-        lapReadout.textContent = `${Math.min(LAPS_TO_WIN, completed + 1)} / ${LAPS_TO_WIN}`;
+        const completed = Math.floor(playerDistance / LAP_LENGTH);
+        lapReadout.textContent = Math.min(LAPS_TO_WIN, completed + 1) + " / " + LAPS_TO_WIN;
         timeReadout.textContent = formatTime(elapsed);
-        speedReadout.textContent = `${Math.round(speed)} km/h`;
-      }
-      function snapPixel(value, size = 4) { return Math.round(value / size) * size; }
-      function setCarPosition(node, point) {
-        node.setAttribute("transform", `translate(${snapPixel(point.x)} ${snapPixel(point.y)}) rotate(${Math.round(point.angle)})`);
+        speedReadout.textContent = Math.round(speed) + " km/h";
       }
       function buildPotholes() {
         potholes = [];
         hazardsLayer.replaceChildren();
         const positions = [[.13,-25],[.36,20],[.61,-10],[.84,25]];
-        positions.forEach(([fraction,lane],index) => {
-          const hole = svgEl("g", { "aria-label": "Pothole" });
-          hole.append(svgEl("path", { d:"M-20 -6h8v-5h24v5h7v13h-9v5h-21v-5h-9z", fill:"#29263e" }));
-          hole.append(svgEl("path", { d:"M-14 -5h8v-3h17v4h5v8h-8v3h-17v-4h-5z", fill:"#17182b" }));
-          hole.append(svgEl("path", { d:index%2 ? "M-7 -4v5h-4v4m14-8v4h5" : "M-9 -4h5v4h5v5m7-12v4h-4", fill:"none", stroke:"#7e7283", "stroke-width":3 }));
-          hazardsLayer.append(hole);
-          potholes.push({ distance: totalLength*fraction, lane, node: hole });
-        });
+        for (let lap = 0; lap < LAPS_TO_WIN; lap++) {
+          positions.forEach(([fraction,lane],index) => {
+            const distance = lap * LAP_LENGTH + fraction * LAP_LENGTH;
+            const hole = svgEl("g", { "aria-label": "Pothole" });
+            hole.append(svgEl("path", { d:"M-20 -6h8v-5h24v5h7v13h-9v5h-21v-5h-9z", fill:"#29263e" }));
+            hole.append(svgEl("path", { d:"M-14 -5h8v-3h17v4h5v8h-8v3h-17v-4h-5z", fill:"#17182b" }));
+            hole.append(svgEl("path", { d:index%2 ? "M-7 -4v5h-4v4m14-8v4h5" : "M-9 -4h5v4h5v5m7-12v4h-4", fill:"none", stroke:"#7e7283", "stroke-width":3 }));
+            hazardsLayer.append(hole);
+            potholes.push({ distance, lane, node: hole });
+          });
+        }
       }
       function buildTrackProps() {
         propsLayer.replaceChildren();
-        for (let i=0; i<16; i++) {
-          const point=pointAt(totalLength*(i/16+.025),i%2?-78:78);
-          const tree=svgEl("g",{transform:`translate(${snapPixel(point.x)} ${snapPixel(point.y)})`});
-          tree.append(svgEl("rect",{x:-5,y:2,width:10,height:17,fill:"#5d3b42"}),svgEl("path",{d:"M-16 3h6v-7h5v-7h10v5h6v7h5v7h-32z",fill:i%3===0?"#397354":"#3f7950",stroke:"#294c45","stroke-width":3}),svgEl("rect",{x:-8,y:-11,width:5,height:4,fill:"#7eaa62"}),svgEl("rect",{x:4,y:-5,width:5,height:4,fill:"#6e9a5b"}));
-          propsLayer.append(tree);
+        let index = 0;
+        for (let distance = -420; distance <= RACE_LENGTH + 560; distance += 105) {
+          for (const side of [-1, 1]) {
+            const lane = side * (82 + (index % 3) * 8);
+            const pointX = snapPixel(roadCenter(distance) + lane);
+            const pointY = snapPixel(PLAYER_Y - distance);
+            const tree = svgEl("g", { transform:"translate(" + pointX + " " + pointY + ")", "aria-hidden":"true" });
+            tree.append(
+              svgEl("rect", { x:-5, y:2, width:10, height:17, fill:"#5d3b42" }),
+              svgEl("path", { d:"M-16 3h6v-7h5v-7h10v5h6v7h5v7h-32z", fill:index%3===0?"#397354":"#3f7950", stroke:"#294c45", "stroke-width":3 }),
+              svgEl("rect", { x:-8, y:-11, width:5, height:4, fill:"#7eaa62" }),
+              svgEl("rect", { x:4, y:-5, width:5, height:4, fill:"#6e9a5b" })
+            );
+            propsLayer.append(tree);
+            index++;
+          }
         }
       }
-      function updateMap(playerPoint) {
-        const x=50+(playerPoint.x-CX)*.21, y=60+(playerPoint.y-CY)*.21;
-        mapPlayer.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${playerPoint.angle.toFixed(1)})`);
+      function updateMap() {
+        const wrapped = ((playerDistance % LAP_LENGTH) + LAP_LENGTH) % LAP_LENGTH;
+        const x = 50 + roadOffset(wrapped) * .29;
+        const y = 5 + wrapped / LAP_LENGTH * 108;
+        mapPlayer.setAttribute("transform", "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ")");
       }
-      function updateScene(playerPoint) {
-        setCarPosition(playerCar, playerPoint);
-        for (const npc of npcs) setCarPosition(npc.node, pointAt(npc.distance, npc.lane));
-        for (const hole of potholes) setCarPosition(hole.node, pointAt(hole.distance, hole.lane));
-        world.setAttribute("transform", `translate(240 390) scale(1.5) translate(${-playerPoint.x.toFixed(1)} ${-playerPoint.y.toFixed(1)})`);
-        updateMap(playerPoint);
+      function updateScene() {
+        const playerX = snapPixel(roadCenter(playerDistance) + laneOffset);
+        playerCar.setAttribute("transform", "translate(" + playerX + " " + PLAYER_Y + ")");
+        for (const npc of npcs) setWorldPosition(npc.node, npc.distance, npc.lane);
+        for (const hole of potholes) setWorldPosition(hole.node, hole.distance, hole.lane);
+        world.setAttribute("transform", "translate(0 " + snapPixel(playerDistance) + ")");
+        updateMap();
       }
       function clearNpcs() {
         npcs = [];
@@ -280,18 +285,18 @@
       }
       function makeNpcs() {
         clearNpcs();
-        const starts = [.105, .255, .465, .715];
+        const starts = [.12, .31, .56, .78];
         const lanes = [-22, 20, 0, 23];
         const speeds = [158, 174, 148, 183];
-        const colors = ["#4778d1", "#42a96a", "#e84b5f", "#4778d1"];
+        const cars = ["blue", "green", "red", "blue"];
         for (let i = 0; i < starts.length; i++) {
-          const node=svgEl("g",{"aria-hidden":"true"});
-          node.append(svgEl("use",{href:`#car-${["blue","green","red","blue"][i]}-art`}));
-          const number=svgEl("text",{x:0,y:2,"text-anchor":"middle",fill:"#fff0c2","font-size":7,"font-weight":"bold","font-family":"Courier New,monospace"});
-          number.textContent=String(i+2);
+          const node = svgEl("g", { "aria-hidden":"true" });
+          node.append(svgEl("use", { href:"#car-" + cars[i] + "-art" }));
+          const number = svgEl("text", { x:0, y:2, "text-anchor":"middle", fill:"#fff0c2", "font-size":7, "font-weight":"bold", "font-family":"Courier New,monospace" });
+          number.textContent = String(i + 2);
           node.append(number);
           trafficLayer.append(node);
-          npcs.push({ node, distance: totalLength * starts[i], lane: lanes[i], speed: speeds[i], color: colors[i], number: i + 2 });
+          npcs.push({ node, distance:LAP_LENGTH * starts[i], lane:lanes[i], speed:speeds[i] });
         }
       }
       function startRace() {
@@ -304,16 +309,15 @@
         lastTime = performance.now();
         held.left = held.right = held.accelerate = held.brake = false;
         keyState.clear();
-        playerCar.querySelector("use").setAttribute("href",`#car-${selectedCar}-art`);
+        playerCar.querySelector("use").setAttribute("href", "#car-" + selectedCar + "-art");
         makeNpcs();
-        const startPoint=pointAt(playerDistance,laneOffset);
-        updateScene(startPoint);
-        lapReadout.textContent = `1 / ${LAPS_TO_WIN}`;
+        updateScene();
+        lapReadout.textContent = "1 / " + LAPS_TO_WIN;
         timeReadout.textContent = formatTime(0);
-        speedReadout.textContent = `${Math.round(speed)} km/h`;
+        speedReadout.textContent = Math.round(speed) + " km/h";
         pickerPanel.hidden = true;
         title.textContent = "GO! GO! GO!";
-        copy.textContent = `You're driving the ${carNames[selectedCar]}. Dodge the traffic and finish all three laps!`;
+        copy.textContent = "You're driving the " + carNames[selectedCar] + ". Dodge the traffic and finish all three laps!";
         startButton.textContent = "🏁 RACE AGAIN";
         overlay.hidden = true;
         animation = requestAnimationFrame(frame);
@@ -334,9 +338,9 @@
             bestTime = elapsed;
             try { localStorage.setItem("sunsetSpeedwayBest", String(bestTime)); } catch (_) { /* storage can be disabled */ }
           }
-          copy.textContent = `Three laps in ${formatTime(elapsed)}! ${record ? "NEW BEST TIME! 🏆" : `Best time: ${formatTime(bestTime)}.`}`;
+          copy.textContent = "Three laps in " + formatTime(elapsed) + "! " + (record ? "NEW BEST TIME! 🏆" : "Best time: " + formatTime(bestTime) + ".");
         } else {
-          copy.textContent = `${reason} You reached lap ${Math.min(LAPS_TO_WIN, Math.floor(playerDistance / totalLength) + 1)}. Want another go?`;
+          copy.textContent = reason + " You reached lap " + Math.min(LAPS_TO_WIN, Math.floor(playerDistance / LAP_LENGTH) + 1) + ". Want another go?";
         }
         startButton.textContent = "🏁 RACE AGAIN";
       }
@@ -348,38 +352,43 @@
         const right = held.right || keyState.has("ArrowRight") || keyState.has("d") || keyState.has("D");
         const accelerating = held.accelerate || keyState.has("ArrowUp") || keyState.has("w") || keyState.has("W");
         const braking = held.brake || keyState.has("ArrowDown") || keyState.has("s") || keyState.has("S");
-        const steerInput=(right?1:0)-(left?1:0);
-        laneOffset += steerInput * 30 * dt;
-        laneOffset = Math.max(-18, Math.min(18, laneOffset));
+        const steerInput = (right ? 1 : 0) - (left ? 1 : 0);
+        laneOffset += steerInput * 62 * dt;
+        laneOffset = Math.max(-42, Math.min(42, laneOffset));
         speed += accelerating ? 92 * dt : -28 * dt;
         if (braking) speed -= 115 * dt;
         speed = Math.max(86, Math.min(MAX_SPEED, speed));
         playerDistance += speed * dt;
         elapsed += dt;
-        const playerPoint = pointAt(playerDistance, laneOffset);
+
+        const playerX = roadCenter(playerDistance) + laneOffset;
         for (const npc of npcs) {
           npc.distance += npc.speed * dt;
-          const point = pointAt(npc.distance, npc.lane);
-          if (Math.hypot(point.x - playerPoint.x, point.y - playerPoint.y) < 24) {
+          if (Math.abs(npc.distance - playerDistance) < 20 && Math.abs(roadCenter(npc.distance) + npc.lane - playerX) < 20) {
+            updateScene();
             updateHud();
-            updateScene(playerPoint);
-            endRace(false,"You bumped into another car.");
+            endRace(false, "You bumped into another car.");
             return;
           }
         }
         for (const hole of potholes) {
-          let distanceToHole=playerDistance-hole.distance;
-          distanceToHole=((distanceToHole+totalLength/2)%totalLength+totalLength)%totalLength-totalLength/2;
-          if (Math.abs(distanceToHole)<15 && Math.abs(laneOffset-hole.lane)<19) {
+          const horizontalGap = Math.abs(roadCenter(playerDistance) + laneOffset - roadCenter(hole.distance) - hole.lane);
+          if (Math.abs(playerDistance - hole.distance) < 16 && horizontalGap < 19) {
+            updateScene();
             updateHud();
-            updateScene(playerPoint);
-            endRace(false,"You hit a pothole.");
+            endRace(false, "You hit a pothole.");
             return;
           }
         }
-        updateScene(playerPoint);
+        if (Math.abs(laneOffset) > ROAD_HALF_WIDTH - 7) {
+          updateScene();
+          updateHud();
+          endRace(false, "You went off the road.");
+          return;
+        }
+        updateScene();
         updateHud();
-        if (playerDistance >= totalLength * LAPS_TO_WIN) {
+        if (playerDistance >= RACE_LENGTH) {
           endRace(true);
           return;
         }
@@ -416,9 +425,8 @@
       window.addEventListener("keyup", event => keyState.delete(event.key));
       window.addEventListener("blur", () => { keyState.clear(); held.left = held.right = held.accelerate = held.brake = false; });
       startButton.addEventListener("click", startRace);
-      buildPath();
-      const startingPoint = pointAt(0, 0);
-      updateScene(startingPoint);
+      buildRoad();
+      updateScene();
       updateHud();
     })();
   </script>
