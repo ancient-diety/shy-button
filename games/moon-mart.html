@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b3d">
+  <title>Moon Mart Night Shift · Sunset Arcade</title>
+  <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+  <link rel="stylesheet" href="../arcade.css">
+  <style>
+    .mart-game { width: min(100%, 790px); }
+    .mart-hud { width: min(100%, 620px); margin: 1rem auto .65rem; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .45rem; text-align: left; font-weight: bold; }
+    .mart-hud > div { min-width: 0; padding: .48rem .58rem; border: 2px solid #9de7dd; background: #1d3155; box-shadow: 3px 3px #101329; }
+    .mart-hud span { display: block; margin-top: .25rem; color: #ffe483; font-size: 1.03rem; }
+    .mart-best { margin: 0 auto .65rem; color: #d8f6ed; font-size: .78rem; letter-spacing: .1em; }
+    .mart-best span { color: #ffe483; font-weight: bold; }
+    .mart-scene { position: relative; width: min(100%,640px); aspect-ratio: 15 / 13; margin: .6rem auto .8rem; overflow: hidden; border: 4px solid #f8ebd4; background: #111a38; box-shadow: 7px 7px #101329; isolation: isolate; }
+    .mart-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .mart-overlay { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: .8rem; background: #0c122be0; }
+    .mart-overlay[hidden] { display: none; }
+    .mart-card { width: min(100%,455px); padding: clamp(.85rem,4vw,1.3rem); border: 3px solid #c9f56a; background: #1b294af5; box-shadow: 6px 6px #090e24; }
+    .mart-card h2 { margin: .2rem 0 .7rem; color: #ffe483; font: .82rem/1.8 "Press Start 2P","Courier New",monospace; }
+    .mart-card p { margin: .45rem 0 .8rem; color: #f8ebd4; line-height: 1.5; }
+    .mart-start { min-height: 48px; max-width: 100%; padding: .7rem 1rem; border: 3px solid #f8ebd4; color: #15223e; background: #c9f56a; box-shadow: 4px 4px #090e24; font: bold .95rem "Courier New",monospace; touch-action: manipulation; }
+    .mart-message { min-height: 2.8em; margin: .45rem auto .7rem; color: #f8ebd4; font-weight: bold; line-height: 1.45; }
+    .crate-buttons { width: min(100%,640px); margin: .6rem auto 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem; }
+    .crate-button { min-width: 0; min-height: 72px; display: flex; align-items: center; justify-content: center; gap: .45rem; padding: .45rem .28rem; border: 3px solid #f8ebd4; color: #fff9ed; background: #1d3155; box-shadow: 3px 3px #101329; font: bold .78rem/1.3 "Courier New",monospace; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .crate-button .crate-chip { width: 18px; height: 18px; flex: 0 0 auto; background: var(--crate-color); box-shadow: 4px 4px var(--crate-shadow); image-rendering: pixelated; }
+    .crate-button small { display: block; color: #c6d5ee; font-size: .67rem; }
+    .crate-button[data-category="chill"] { --crate-color:#65e9e3; --crate-shadow:#217eaa; }
+    .crate-button[data-category="crunch"] { --crate-color:#ffac59; --crate-shadow:#b7464c; }
+    .crate-button[data-category="wiggle"] { --crate-color:#c9f56a; --crate-shadow:#548049; }
+    .crate-button.ready { border-color: #fff; background: #334b72; box-shadow: 0 0 0 3px var(--crate-color), 4px 4px #101329; }
+    .crate-button:active { transform: translateY(2px); box-shadow: 1px 1px #101329; }
+    .mart-help { margin: .75rem auto 0; color: #d8f6ed; font-size: .86rem; line-height: 1.5; }
+    .mart-scene.shake { animation: scanner-shake .26s steps(2,end); }
+    @keyframes belt-blink { 50% { opacity: .5; } }
+    @keyframes alien-hop { 50% { transform: translateY(-4px); } }
+    @keyframes star-jiggle { 50% { transform: translateY(-3px); } }
+    @keyframes scanner-shake { 25% { transform: translate(4px,0); } 75% { transform: translate(-4px,0); } }
+    .scanner-light { animation: belt-blink .36s steps(2,end) infinite; }
+    .shop-alien { animation: alien-hop .8s steps(2,end) infinite; }
+    .shop-star { animation: star-jiggle .6s steps(2,end) infinite; }
+    @media(max-width:520px) {
+      .mart-game { padding-left: .65rem; padding-right: .65rem; }
+      .mart-hud { gap: .3rem; font-size: .72rem; }
+      .mart-hud > div { padding: .4rem .38rem; }
+      .mart-hud span { font-size: .94rem; }
+      .mart-card h2 { font-size: .68rem; }
+      .mart-card p { font-size: .88rem; }
+      .crate-button { min-height: 66px; gap: .32rem; font-size: .7rem; }
+      .crate-button .crate-chip { width: 14px; height: 14px; box-shadow: 3px 3px var(--crate-shadow); }
+    }
+    @media(prefers-reduced-motion:reduce) { .mart-scene * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="game-page mart-game">
+    <a class="back-link" href="../index.html">← BACK TO THE ARCADE</a>
+    <div class="pixel-sun" aria-hidden="true">✦</div>
+    <p class="eyebrow">OPEN ALL NIGHT ON THE MOON</p>
+    <h1>Moon Mart Night Shift</h1>
+    <p class="game-description">The customers are aliens. The groceries are also aliens. Nobody knows what the pickles are doing.</p>
+
+    <div class="mart-hud" aria-label="Moon Mart shift score">
+      <div>SPACEBUCKS<span id="score-readout">0</span></div>
+      <div>ALIENS HELPED<span id="served-readout">0</span></div>
+      <div>NEAT SORTS<span id="combo-readout">0</span></div>
+      <div>COMPLAINTS<span id="mistake-readout">0 / 3</span></div>
+    </div>
+    <p class="mart-best">BEST SHIFT <span id="best-readout">0</span> SPACEBUCKS</p>
+
+    <div class="mart-scene" id="mart-scene">
+      <svg class="mart-svg" viewBox="0 0 600 520" role="img" aria-label="A pixel-art alien grocery store with a conveyor belt, alien customer, scanner, and three sorting crates">
+        <defs>
+          <pattern id="mart-wall" width="32" height="32" patternUnits="userSpaceOnUse" shape-rendering="crispEdges">
+            <rect width="32" height="32" fill="#172444"/>
+            <rect x="3" y="4" width="4" height="4" fill="#1d3155"/>
+            <rect x="23" y="17" width="5" height="4" fill="#13203d"/>
+            <rect x="11" y="26" width="3" height="3" fill="#253252"/>
+          </pattern>
+          <pattern id="belt-check" width="32" height="34" patternUnits="userSpaceOnUse" shape-rendering="crispEdges">
+            <rect width="32" height="34" fill="#303b58"/>
+            <rect x="0" y="0" width="6" height="34" fill="#44506b"/>
+            <rect x="16" y="0" width="3" height="34" fill="#26344f"/>
+          </pattern>
+          <g id="sprite-moon-milk" shape-rendering="crispEdges">
+            <rect x="-16" y="-30" width="32" height="9" fill="#b5fff1"/>
+            <rect x="-21" y="-21" width="42" height="45" fill="#55d9df"/>
+            <rect x="-16" y="-16" width="32" height="33" fill="#287daa"/>
+            <rect x="-8" y="-39" width="16" height="9" fill="#f6f7c7"/>
+            <rect x="-10" y="-11" width="20" height="13" fill="#f6f7c7"/>
+            <rect x="-6" y="-8" width="4" height="4" fill="#11203e"/>
+            <rect x="3" y="-8" width="4" height="4" fill="#11203e"/>
+            <rect x="-2" y="-2" width="5" height="3" fill="#ff88a7"/>
+            <rect x="-25" y="23" width="50" height="7" fill="#15203b"/>
+            <rect x="13" y="-18" width="5" height="5" fill="#e5ffff"/>
+          </g>
+          <g id="sprite-comet-cheese" shape-rendering="crispEdges">
+            <rect x="-25" y="-14" width="39" height="7" fill="#fff1a8"/>
+            <rect x="-25" y="-7" width="47" height="24" fill="#ffd45c"/>
+            <rect x="-18" y="17" width="35" height="8" fill="#e58b45"/>
+            <rect x="14" y="-6" width="12" height="8" fill="#ffed9a"/>
+            <rect x="-13" y="-1" width="7" height="7" fill="#d78045"/>
+            <rect x="4" y="8" width="7" height="6" fill="#d78045"/>
+            <rect x="-17" y="-23" width="9" height="8" fill="#c9f56a"/>
+            <rect x="-5" y="-2" width="4" height="4" fill="#151d38"/>
+            <rect x="8" y="-2" width="4" height="4" fill="#151d38"/>
+            <rect x="-1" y="4" width="6" height="4" fill="#cf5573"/>
+          </g>
+          <g id="sprite-meteor-nuggets" shape-rendering="crispEdges">
+            <rect x="-24" y="-11" width="19" height="19" fill="#ffad50"/>
+            <rect x="-20" y="-18" width="13" height="7" fill="#ffdb71"/>
+            <rect x="-17" y="-4" width="4" height="4" fill="#18203a"/>
+            <rect x="-7" y="-4" width="4" height="4" fill="#18203a"/>
+            <rect x="-13" y="2" width="7" height="4" fill="#d85870"/>
+            <rect x="5" y="-20" width="20" height="20" fill="#ed7e50"/>
+            <rect x="10" y="-25" width="10" height="5" fill="#ffbb60"/>
+            <rect x="10" y="-14" width="4" height="4" fill="#18203a"/>
+            <rect x="18" y="-14" width="4" height="4" fill="#18203a"/>
+            <rect x="13" y="-7" width="7" height="4" fill="#a83263"/>
+            <rect x="-2" y="8" width="25" height="19" fill="#dc6c45"/>
+            <rect x="3" y="3" width="13" height="5" fill="#ffad50"/>
+            <rect x="5" y="14" width="4" height="4" fill="#18203a"/>
+            <rect x="15" y="14" width="4" height="4" fill="#18203a"/>
+          </g>
+          <g id="sprite-star-crackers" shape-rendering="crispEdges">
+            <path d="M0-28h7v9h9v8h-6v8h-9v-7h-8v-9h7z" fill="#f4ce65"/>
+            <rect x="-17" y="-8" width="31" height="26" fill="#72d2c2"/>
+            <rect x="-22" y="-2" width="9" height="14" fill="#53aaae"/>
+            <rect x="14" y="-1" width="8" height="14" fill="#53aaae"/>
+            <rect x="-11" y="-1" width="5" height="5" fill="#17213d"/>
+            <rect x="3" y="-1" width="5" height="5" fill="#17213d"/>
+            <rect x="-5" y="7" width="8" height="4" fill="#ba536d"/>
+            <rect x="-13" y="18" width="26" height="7" fill="#f4ce65"/>
+            <rect x="-2" y="-23" width="4" height="4" fill="#fff6cb"/>
+          </g>
+          <g id="sprite-screaming-pickle" shape-rendering="crispEdges">
+            <rect x="-10" y="-32" width="20" height="8" fill="#9be04e"/>
+            <rect x="-17" y="-24" width="34" height="43" fill="#65bb58"/>
+            <rect x="-13" y="-19" width="26" height="32" fill="#9dde55"/>
+            <rect x="-20" y="-11" width="6" height="13" fill="#4b984e"/>
+            <rect x="14" y="-5" width="6" height="15" fill="#4b984e"/>
+            <rect x="-9" y="-12" width="6" height="7" fill="#15213b"/>
+            <rect x="4" y="-12" width="6" height="7" fill="#15213b"/>
+            <rect x="-6" y="0" width="13" height="11" fill="#fff1d3"/>
+            <rect x="-3" y="3" width="6" height="7" fill="#e55d73"/>
+            <rect x="-10" y="-22" width="4" height="4" fill="#eaff95"/>
+            <rect x="7" y="14" width="5" height="5" fill="#eaff95"/>
+            <rect x="-22" y="19" width="44" height="7" fill="#3a714e"/>
+          </g>
+          <g id="sprite-worm-eggs" shape-rendering="crispEdges">
+            <rect x="-23" y="-16" width="21" height="27" fill="#d593ef"/>
+            <rect x="-18" y="-22" width="11" height="6" fill="#f4c5ff"/>
+            <rect x="3" y="-23" width="21" height="28" fill="#a783ef"/>
+            <rect x="8" y="-29" width="11" height="6" fill="#ddc7ff"/>
+            <rect x="-14" y="-6" width="4" height="4" fill="#17213d"/>
+            <rect x="-5" y="-6" width="4" height="4" fill="#17213d"/>
+            <rect x="-11" y="1" width="7" height="3" fill="#fff1d3"/>
+            <rect x="11" y="-12" width="4" height="4" fill="#17213d"/>
+            <rect x="18" y="-12" width="4" height="4" fill="#17213d"/>
+            <rect x="13" y="-4" width="7" height="3" fill="#fff1d3"/>
+            <rect x="-5" y="13" width="9" height="8" fill="#c9f56a"/>
+            <rect x="5" y="20" width="8" height="7" fill="#65e9e3"/>
+            <rect x="-8" y="25" width="8" height="6" fill="#ffac59"/>
+          </g>
+        </defs>
+
+        <rect width="600" height="520" fill="url(#mart-wall)"/>
+        <rect x="0" y="0" width="600" height="14" fill="#253757"/>
+        <g shape-rendering="crispEdges" aria-hidden="true">
+          <rect x="18" y="22" width="564" height="50" fill="#09142f"/>
+          <rect x="24" y="28" width="552" height="38" fill="#27446a"/>
+          <rect x="31" y="35" width="5" height="5" fill="#f8ebd4"/>
+          <rect x="547" y="40" width="5" height="5" fill="#c9f56a"/>
+          <rect x="102" y="26" width="8" height="8" fill="#ffac59"/>
+          <rect x="492" y="30" width="5" height="5" fill="#65e9e3"/>
+          <rect x="39" y="74" width="522" height="7" fill="#64d4c6"/>
+          <rect x="46" y="81" width="508" height="4" fill="#151e3c"/>
+
+          <rect x="38" y="92" width="188" height="137" fill="#07132d"/>
+          <rect x="44" y="98" width="176" height="125" fill="#233c68"/>
+          <rect x="54" y="118" width="16" height="4" fill="#f8ebd4"/>
+          <rect x="84" y="148" width="5" height="5" fill="#65e9e3"/>
+          <rect x="125" y="109" width="4" height="4" fill="#ffe483"/>
+          <rect x="175" y="182" width="6" height="6" fill="#c9f56a"/>
+          <rect x="98" y="185" width="9" height="4" fill="#f8ebd4"/>
+          <rect x="162" y="119" width="6" height="6" fill="#ffac59"/>
+          <rect x="169" y="126" width="7" height="3" fill="#ffac59"/>
+          <rect x="176" y="131" width="5" height="5" fill="#ffac59"/>
+          <rect x="62" y="206" width="56" height="12" fill="#dfa35f"/>
+          <rect x="69" y="198" width="10" height="8" fill="#65e9e3"/>
+          <rect x="89" y="194" width="11" height="12" fill="#c9f56a"/>
+          <rect x="108" y="200" width="6" height="6" fill="#ffac59"/>
+
+          <rect x="250" y="27" width="100" height="33" fill="#ffac59"/>
+          <rect x="258" y="34" width="84" height="19" fill="#1c2946"/>
+          <text x="300" y="48" text-anchor="middle" fill="#c9f56a" font-size="12" font-weight="bold" font-family="Courier New,monospace" letter-spacing="1">MOON MART</text>
+
+          <rect x="239" y="82" width="345" height="129" fill="#0c1935"/>
+          <rect x="245" y="88" width="333" height="117" fill="#285170"/>
+          <rect x="259" y="102" width="5" height="5" fill="#fff0c2"/>
+          <rect x="303" y="156" width="4" height="4" fill="#c9f56a"/>
+          <rect x="366" y="116" width="6" height="6" fill="#ffac59"/>
+          <rect x="395" y="182" width="6" height="5" fill="#65e9e3"/>
+          <rect x="275" y="178" width="14" height="5" fill="#b3dcf4"/>
+          <rect x="282" y="173" width="7" height="5" fill="#b3dcf4"/>
+          <rect x="286" y="168" width="3" height="5" fill="#b3dcf4"/>
+          <rect x="318" y="174" width="17" height="5" fill="#b3dcf4"/>
+          <rect x="327" y="169" width="8" height="5" fill="#b3dcf4"/>
+          <rect x="332" y="164" width="3" height="5" fill="#b3dcf4"/>
+          <g class="shop-alien">
+          <rect x="519" y="163" width="29" height="33" fill="#b58bea"/>
+          <rect x="512" y="131" width="42" height="39" fill="#dca8f2"/>
+          <rect x="507" y="137" width="5" height="15" fill="#dca8f2"/>
+          <rect x="554" y="139" width="5" height="15" fill="#dca8f2"/>
+          <rect x="516" y="120" width="6" height="12" fill="#c9f56a"/>
+          <rect x="540" y="119" width="6" height="12" fill="#ffac59"/>
+          <rect x="518" y="145" width="7" height="7" fill="#111b38"/>
+          <rect x="538" y="145" width="7" height="7" fill="#111b38"/>
+          <rect x="527" y="160" width="9" height="5" fill="#ff7693"/>
+          <rect x="516" y="176" width="5" height="6" fill="#ffefb0"/>
+          <rect x="540" y="176" width="5" height="6" fill="#ffefb0"/>
+          <rect x="505" y="196" width="60" height="10" fill="#15223e"/>
+          </g>
+
+          <path d="M0 233h600v8H0z" fill="#667e80"/>
+          <path d="M0 241h600v5H0z" fill="#b0c47c"/>
+          <rect x="0" y="246" width="600" height="13" fill="#303f5c"/>
+          <rect x="0" y="258" width="600" height="5" fill="#718a85"/>
+          <text id="item-label" x="300" y="287" text-anchor="middle" fill="#fff0c2" font-size="13" font-weight="bold" font-family="Courier New,monospace">WAITING FOR A VERY NORMAL GROCERY...</text>
+
+          <rect x="0" y="302" width="600" height="13" fill="#09152e"/>
+          <rect x="0" y="315" width="600" height="66" fill="url(#belt-check)"/>
+          <rect x="0" y="381" width="600" height="8" fill="#09152e"/>
+          <rect x="13" y="304" width="574" height="5" fill="#88a6ae"/>
+          <rect x="13" y="386" width="574" height="5" fill="#b6c777"/>
+          <rect x="16" y="337" width="34" height="19" fill="#0e1934"/>
+          <rect x="20" y="341" width="25" height="11" fill="#253653"/>
+          <rect x="32" y="343" width="3" height="7" fill="#65e9e3"/>
+          <rect x="42" y="343" width="3" height="7" fill="#ffac59"/>
+          <rect x="489" y="315" width="41" height="66" fill="#16223e"/>
+          <rect x="495" y="321" width="29" height="54" fill="#263759"/>
+          <rect x="502" y="328" width="15" height="5" fill="#c9f56a" class="scanner-light"/>
+          <rect id="scanner-flash" x="475" y="311" width="5" height="74" fill="#ff7397" opacity="0"/>
+          <text x="509" y="369" text-anchor="middle" fill="#f8ebd4" font-size="7" font-weight="bold" font-family="Courier New,monospace">SCAN</text>
+          <text x="300" y="402" text-anchor="middle" fill="#b7c9dc" font-size="9" font-family="Courier New,monospace" letter-spacing="1">SORT IT BEFORE THE SCANNER BEEPS!</text>
+
+          <rect x="0" y="410" width="600" height="110" fill="#17223e"/>
+          <rect x="0" y="410" width="600" height="6" fill="#b0c47c"/>
+          <rect x="37" y="424" width="136" height="82" fill="#09152e"/>
+          <rect x="43" y="430" width="124" height="68" fill="#28566d"/>
+          <rect x="43" y="430" width="124" height="10" fill="#65e9e3"/>
+          <rect x="52" y="449" width="105" height="5" fill="#397b85"/>
+          <rect x="52" y="470" width="105" height="5" fill="#397b85"/>
+          <text x="105" y="492" text-anchor="middle" fill="#e3ffff" font-size="10" font-weight="bold" font-family="Courier New,monospace">CHILL</text>
+          <rect x="232" y="424" width="136" height="82" fill="#09152e"/>
+          <rect x="238" y="430" width="124" height="68" fill="#744653"/>
+          <rect x="238" y="430" width="124" height="10" fill="#ffac59"/>
+          <rect x="247" y="449" width="105" height="5" fill="#a36051"/>
+          <rect x="247" y="470" width="105" height="5" fill="#a36051"/>
+          <text x="300" y="492" text-anchor="middle" fill="#fff0c2" font-size="10" font-weight="bold" font-family="Courier New,monospace">CRUNCH</text>
+          <rect x="427" y="424" width="136" height="82" fill="#09152e"/>
+          <rect x="433" y="430" width="124" height="68" fill="#496647"/>
+          <rect x="433" y="430" width="124" height="10" fill="#c9f56a"/>
+          <rect x="442" y="449" width="105" height="5" fill="#6a8d58"/>
+          <rect x="442" y="470" width="105" height="5" fill="#6a8d58"/>
+          <text x="495" y="492" text-anchor="middle" fill="#f1ffd6" font-size="10" font-weight="bold" font-family="Courier New,monospace">WIGGLE</text>
+          <rect x="21" y="512" width="558" height="5" fill="#263a58"/>
+        </g>
+
+        <g aria-hidden="true" shape-rendering="crispEdges">
+          <path d="M464 120h8v7h8v7h-8v8h-8v-7h-7v-8h7z" fill="#ffe483" class="shop-star"/>
+          <rect x="307" y="92" width="191" height="52" fill="#09152e"/>
+          <rect x="312" y="97" width="181" height="42" fill="#f8ebd4"/>
+          <path d="M474 139h14v7h-9z" fill="#f8ebd4"/>
+          <text id="customer-line-one" x="402" y="114" text-anchor="middle" fill="#1d3155" font-size="10" font-weight="bold" font-family="Courier New,monospace">I NEED 40 PICKLES.</text>
+          <text id="customer-line-two" x="402" y="129" text-anchor="middle" fill="#1d3155" font-size="9" font-family="Courier New,monospace">ONE IS MY BOSS.</text>
+        </g>
+
+        <g id="product-layer" shape-rendering="crispEdges"></g>
+        <g id="effect-layer" shape-rendering="crispEdges"></g>
+      </svg>
+      <div class="mart-overlay" id="mart-overlay">
+        <section class="mart-card" aria-live="polite">
+          <h2 id="overlay-title">WELCOME TO MOON MART</h2>
+          <p id="overlay-copy">The conveyor is bringing groceries to the scanner. Sort each one into the right crate before it gets checked out! Moon milk and comet cheese go in <strong>CHILL</strong>, meteor nuggets and star crackers go in <strong>CRUNCH</strong>, and screaming pickles or worm eggs go in <strong>WIGGLE</strong>. Three grumpy complaints end your shift.</p>
+          <button class="mart-start" id="start-game" type="button">✦ CLOCK IN ✦</button>
+        </section>
+      </div>
+    </div>
+
+    <p class="mart-message" id="mart-message" aria-live="polite">Pick the crate that makes the most sense. The groceries are not great at explaining themselves.</p>
+    <div class="crate-buttons" role="group" aria-label="Sort grocery into a crate">
+      <button class="crate-button" type="button" data-category="chill" aria-label="Sort into Chill crate, key 1"><span class="crate-chip" aria-hidden="true"></span><span>CHILL<small>KEY 1</small></span></button>
+      <button class="crate-button" type="button" data-category="crunch" aria-label="Sort into Crunch crate, key 2"><span class="crate-chip" aria-hidden="true"></span><span>CRUNCH<small>KEY 2</small></span></button>
+      <button class="crate-button" type="button" data-category="wiggle" aria-label="Sort into Wiggle crate, key 3"><span class="crate-chip" aria-hidden="true"></span><span>WIGGLE<small>KEY 3</small></span></button>
+    </div>
+    <p class="mart-help">Tap a crate button or press 1 / 2 / 3. Wrong crate? That's a complaint. Let it reach the scanner? Also a complaint.</p>
+  </main>
+
+  <script>
+    (() => {
+      const START_X = 90, SCAN_X = 475, BELT_Y = 348, SORT_Y = 461;
+      const CATEGORIES = {
+        chill: { name:"CHILL", color:"#65e9e3", targetX:105, count:"chill" },
+        crunch: { name:"CRUNCH", color:"#ffac59", targetX:300, count:"crunch" },
+        wiggle: { name:"WIGGLE", color:"#c9f56a", targetX:495, count:"wiggle" }
+      };
+      const GROCERIES = [
+        { name:"MOON MILK (IT MOOS BACK)", category:"chill", sprite:"sprite-moon-milk", blurb:"A carton of milk that keeps asking if you believe in cows." },
+        { name:"COMET CHEESE (STILL ICY)", category:"chill", sprite:"sprite-comet-cheese", blurb:"A cheese wedge with a tiny, chilly tail." },
+        { name:"METEOR NUGGETS (OW)", category:"crunch", sprite:"sprite-meteor-nuggets", blurb:"Three little space rocks. Two of them are making eye contact." },
+        { name:"STAR CRACKERS (SINGING)", category:"crunch", sprite:"sprite-star-crackers", blurb:"They hum the entire elevator song when shaken." },
+        { name:"SCREAMING PICKLE (LOUD)", category:"wiggle", sprite:"sprite-screaming-pickle", blurb:"It is yelling " + String.fromCharCode(34) + "PUT ME IN A SANDWICH!" + String.fromCharCode(34) + " at the ceiling." },
+        { name:"WORM EGGS (ALREADY HATCHED?)", category:"wiggle", sprite:"sprite-worm-eggs", blurb:"The carton is wiggling. The carton says you are wiggling." }
+      ];
+      const CUSTOMER_LINES = [
+        ["I NEED 40 PICKLES.", "ONE IS MY BOSS."],
+        ["DO YOU SELL", "EMERGENCY NACHOS?"],
+        ["THIS MILK MOOED.", "I RESPECT THAT."],
+        ["I AM BUYING A", "SNACK FOR MY PLANET."],
+        ["THE CHEESE IS", "COLD AND WISE."],
+        ["I HAVE 8 MOUTHS.", "NO SAMPLES, PLEASE."]
+      ];
+      const PRAISE_LINES = [
+        "EXCELLENT. THE PICKLE IS PLEASED.",
+        "A PERFECT SORT! THE MILK SALUTES YOU.",
+        "CRUNCHY GOODS SECURED. VERY TACTICAL.",
+        "THE WORMS HAVE SIGNED YOUR PETITION.",
+        "YOU ARE NOW AN HONORARY SPACE AISLE.",
+        "NICE! THE NUGGETS FORMED A UNION.",
+        "THIS CUSTOMER HAS ADOPTED THE CHEESE."
+      ];
+      const productLayer = document.querySelector("#product-layer");
+      const effectLayer = document.querySelector("#effect-layer");
+      const scene = document.querySelector("#mart-scene");
+      const overlay = document.querySelector("#mart-overlay");
+      const overlayTitle = document.querySelector("#overlay-title");
+      const overlayCopy = document.querySelector("#overlay-copy");
+      const startButton = document.querySelector("#start-game");
+      const itemLabel = document.querySelector("#item-label");
+      const customerLines = [document.querySelector("#customer-line-one"), document.querySelector("#customer-line-two")];
+      const message = document.querySelector("#mart-message");
+      const scannerFlash = document.querySelector("#scanner-flash");
+      const scoreReadout = document.querySelector("#score-readout");
+      const servedReadout = document.querySelector("#served-readout");
+      const comboReadout = document.querySelector("#combo-readout");
+      const mistakeReadout = document.querySelector("#mistake-readout");
+      const bestReadout = document.querySelector("#best-readout");
+      const crateButtons = Array.from(document.querySelectorAll(".crate-button"));
+      let running = false, animation = 0, current = null, spawnDelay = 0;
+      let score = 0, served = 0, combo = 0, mistakes = 0, bestScore = 0, lastFrame = 0, lastProduct = -1;
+      let particles = [], shakeTimer = 0;
+
+      try { bestScore = Number(localStorage.getItem("moonMartBest")) || 0; } catch (_) { /* storage may be disabled */ }
+
+      function svgEl(tag, attrs = {}) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+        return node;
+      }
+      function updateHud() {
+        scoreReadout.textContent = String(score);
+        servedReadout.textContent = String(served);
+        comboReadout.textContent = String(combo);
+        mistakeReadout.textContent = mistakes + " / 3";
+        bestReadout.textContent = String(bestScore);
+      }
+      function setCustomerLine(lines) {
+        customerLines[0].textContent = lines[0];
+        customerLines[1].textContent = lines[1];
+      }
+      function setMessage(text) { message.textContent = text; }
+      function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]; }
+      function makeBurst(x, y, color, count, spread = 140) {
+        for (let i = 0; i < count; i++) {
+          const size = 3 + Math.floor(Math.random() * 5);
+          const node = svgEl("rect", { x:-size/2, y:-size/2, width:size, height:size, fill:Math.random() < .25 ? "#fff0c2" : color, transform:"translate(" + x + " " + y + ")" });
+          effectLayer.append(node);
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 28 + Math.random() * spread;
+          particles.push({ node, x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed-32, age:0, life:.3+Math.random()*.48 });
+        }
+      }
+      function flashScanner(color) {
+        scannerFlash.setAttribute("fill", color);
+        scannerFlash.setAttribute("opacity", "1");
+        window.setTimeout(() => scannerFlash.setAttribute("opacity", "0"), 160);
+      }
+      function updateBest() {
+        if (score <= bestScore) return;
+        bestScore = score;
+        try { localStorage.setItem("moonMartBest", String(bestScore)); } catch (_) { /* storage may be disabled */ }
+      }
+      function clearCurrent() {
+        if (current && current.node.parentNode) current.node.remove();
+        current = null;
+        spawnDelay = .38;
+        crateButtons.forEach(button => button.classList.remove("ready"));
+      }
+      function selectGrocery() {
+        let index = Math.floor(Math.random() * GROCERIES.length);
+        if (GROCERIES.length > 1 && index === lastProduct) index = (index + 1 + Math.floor(Math.random() * (GROCERIES.length - 1))) % GROCERIES.length;
+        lastProduct = index;
+        const grocery = GROCERIES[index];
+        const node = svgEl("g", { "aria-label":grocery.name });
+        node.append(svgEl("rect", { x:-35, y:-40, width:70, height:80, fill:CATEGORIES[grocery.category].color, opacity:".12" }));
+        node.append(svgEl("rect", { x:-40, y:-34, width:5, height:5, fill:CATEGORIES[grocery.category].color }));
+        node.append(svgEl("rect", { x:35, y:30, width:5, height:5, fill:CATEGORIES[grocery.category].color }));
+        node.append(svgEl("use", { href:"#" + grocery.sprite }));
+        productLayer.append(node);
+        current = { grocery, node, x:START_X, y:BELT_Y, age:0, speed:Math.min(250, 142 + score*.16), state:"moving" };
+        node.setAttribute("transform", "translate(" + START_X + " " + BELT_Y + ")");
+        itemLabel.textContent = grocery.name;
+        setMessage(grocery.blurb);
+        for (const button of crateButtons) button.classList.add("ready");
+        setCustomerLine(pickRandom(CUSTOMER_LINES));
+      }
+      function registerMistake(reason) {
+        if (!current || current.state === "missed") return;
+        const x = current ? current.x : SCAN_X;
+        if (current) {
+          current.state = "missed";
+          makeBurst(x, BELT_Y, "#ff7397", 18, 160);
+          current.node.remove();
+        }
+        current = null;
+        mistakes++;
+        combo = 0;
+        crateButtons.forEach(button => button.classList.remove("ready"));
+        flashScanner("#ff557e");
+        scene.classList.remove("shake");
+        void scene.offsetWidth;
+        scene.classList.add("shake");
+        window.clearTimeout(shakeTimer);
+        shakeTimer = window.setTimeout(() => scene.classList.remove("shake"), 300);
+        updateHud();
+        setCustomerLine(["THE SCANNER BEEPED.", "THIS IS A TRAGEDY."]);
+        if (mistakes >= 3) {
+          endGame();
+          return;
+        }
+        setMessage(reason + " One complaint! The customers are making a face.");
+        spawnDelay = .62;
+      }
+      function sortGrocery(category) {
+        if (!running || !current || current.state !== "moving") return;
+        if (current.grocery.category !== category) {
+          registerMistake("Wrong crate! " + current.grocery.name + " does not belong in " + CATEGORIES[category].name + ".");
+          return;
+        }
+        const crate = CATEGORIES[category];
+        const grocery = current.grocery;
+        current.state = "sorted";
+        current.age = 0;
+        current.startX = current.x;
+        current.startY = current.y;
+        current.targetX = crate.targetX;
+        score += 12 + Math.min(combo, 8) * 2;
+        combo++;
+        makeBurst(current.x, current.y, crate.color, 15, 135);
+        flashScanner(crate.color);
+        let status = "Sorted! " + grocery.name + " is safely in " + crate.name + ".";
+        if (combo % 5 === 0) {
+          served++;
+          score += 40;
+          status = "CUSTOMER SERVED! +40 SPACEBUCKS. " + pickRandom(PRAISE_LINES);
+          setCustomerLine(["YOU HAVE SAVED", "THE NIGHT SHIFT."]);
+          makeBurst(530, 182, "#ffe483", 19, 150);
+        } else {
+          setCustomerLine(pickRandom(CUSTOMER_LINES));
+        }
+        updateBest();
+        updateHud();
+        setMessage(status);
+        crateButtons.forEach(button => button.classList.remove("ready"));
+      }
+      function endGame() {
+        running = false;
+        crateButtons.forEach(button => button.classList.remove("ready"));
+        overlay.hidden = false;
+        overlayTitle.textContent = "SHIFT OVER. SPACE NAP.";
+        overlayCopy.textContent = "You helped " + served + " alien" + (served === 1 ? "" : "s") + ", earned " + score + " Spacebucks, and filed " + mistakes + " complaints. Best shift: " + bestScore + ". The screaming pickle says you did great.";
+        startButton.textContent = "✦ CLOCK IN AGAIN ✦";
+      }
+      function startGame() {
+        cancelAnimationFrame(animation);
+        running = true;
+        current = null;
+        spawnDelay = .48;
+        score = 0;
+        served = 0;
+        combo = 0;
+        mistakes = 0;
+        particles = [];
+        lastProduct = -1;
+        productLayer.replaceChildren();
+        effectLayer.replaceChildren();
+        scannerFlash.setAttribute("opacity", "0");
+        updateHud();
+        overlay.hidden = true;
+        overlayTitle.textContent = "WELCOME TO MOON MART";
+        startButton.textContent = "✦ CLOCK IN ✦";
+        setCustomerLine(["I NEED 40 PICKLES.", "ONE IS MY BOSS."]);
+        itemLabel.textContent = "WAITING FOR A VERY NORMAL GROCERY...";
+        setMessage("Clocked in! Keep the groceries out of the wrong dimension.");
+        lastFrame = performance.now();
+        animation = requestAnimationFrame(frame);
+      }
+      function updateParticles(dt) {
+        particles = particles.filter(particle => {
+          particle.age += dt;
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+          particle.vy += 115 * dt;
+          const opacity = Math.max(0, 1 - particle.age / particle.life);
+          particle.node.setAttribute("transform", "translate(" + particle.x.toFixed(1) + " " + particle.y.toFixed(1) + ") scale(" + (opacity < .45 ? .65 : 1) + ")");
+          particle.node.setAttribute("opacity", opacity.toFixed(2));
+          if (particle.age >= particle.life) {
+            particle.node.remove();
+            return false;
+          }
+          return true;
+        });
+      }
+      function frame(now) {
+        if (!running && !particles.length) return;
+        const dt = Math.min(.04, Math.max(0, (now - lastFrame) / 1000));
+        lastFrame = now;
+        if (running && current && current.state === "moving") {
+          current.age += dt;
+          current.x += current.speed * dt;
+          const bob = Math.floor(Math.sin(current.age * 10) * 2);
+          const tilt = Math.floor(Math.sin(current.age * 5) * 2);
+          current.node.setAttribute("transform", "translate(" + current.x.toFixed(1) + " " + (current.y + bob) + ") rotate(" + tilt + ")");
+          if (current.x >= SCAN_X) registerMistake("Too slow! The scanner has purchased it for itself.");
+        } else if (running && current && current.state === "sorted") {
+          current.age += dt;
+          const t = Math.min(1, current.age / .48);
+          const inverse = 1 - t;
+          const controlX = (current.startX + current.targetX) / 2;
+          const controlY = Math.min(current.startY, SORT_Y) - 105;
+          const x = inverse*inverse*current.startX + 2*inverse*t*controlX + t*t*current.targetX;
+          const y = inverse*inverse*current.startY + 2*inverse*t*controlY + t*t*SORT_Y;
+          current.node.setAttribute("transform", "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ") scale(" + (1 - t*.52).toFixed(2) + ")");
+          if (t >= 1) clearCurrent();
+        }
+        updateParticles(dt);
+        if (running && !current) {
+          spawnDelay -= dt;
+          if (spawnDelay <= 0) selectGrocery();
+        }
+        if (running || particles.length) animation = requestAnimationFrame(frame);
+      }
+      crateButtons.forEach(button => button.addEventListener("click", () => sortGrocery(button.dataset.category)));
+      window.addEventListener("keydown", event => {
+        if (!running || event.repeat) return;
+        const category = event.key === "1" ? "chill" : event.key === "2" ? "crunch" : event.key === "3" ? "wiggle" : null;
+        if (category) {
+          event.preventDefault();
+          sortGrocery(category);
+        }
+      });
+      startButton.addEventListener("click", startGame);
+      updateHud();
+    })();
+  </script>
+</body>
+</html>

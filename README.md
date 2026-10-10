@@ -8,6 +8,7 @@ A tiny retro game corner with sunset colors and pixel-inspired details. Pick a g
 - **Alien Attack** — fly a pixel ship, clear alien waves, and take on the boss.
 - **Sunset Speedway** — choose a pixel car, race three laps, and avoid the other drivers.
 - **Potion Panic** — catch falling ingredients in their matching bottles and brew potions.
+- **Moon Mart Night Shift** — sort strange alien groceries into the right crate before checkout.
 
 Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
 
