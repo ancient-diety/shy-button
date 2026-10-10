@@ -145,18 +145,19 @@
     body.arcade-home .screen-housing:before { left:4px; }
     body.arcade-home .screen-housing:after { right:4px; }
     body.arcade-home .screen-window { border:8px solid #0a1022; border-radius:18px 18px 10px 10px; background:#10152b; box-shadow:inset 0 0 0 2px #73809a,inset 0 0 24px #070b17,0 0 0 2px #070b17; }
-    body.arcade-home .screen-topline { padding-inline:clamp(10px,2vw,24px); color:#ffe483; }
+    body.arcade-home .screen-topline { min-height:21px; padding-inline:clamp(9px,1.6vw,18px); color:#ffe483; font-size:clamp(.45rem,.78vw,.58rem); letter-spacing:.09em; }
     body.arcade-home .game-slide { position:relative; display:block; padding:0; background:linear-gradient(145deg,var(--slide-bg-a),var(--slide-bg-b)); }
     body.arcade-home .game-preview { position:absolute; inset:0; width:100%; height:100%; max-height:none; aspect-ratio:auto; border:0; box-shadow:none; background:linear-gradient(145deg,var(--slide-bg-a),var(--slide-bg-b)); }
     body.arcade-home .preview-art { width:100%; height:100%; }
-    body.arcade-home .preview-tag { top:16px; left:18px; padding:7px 10px; border-width:3px; box-shadow:4px 4px #0d1024; }
-    body.arcade-home .game-preview:after { opacity:.2; background:repeating-linear-gradient(to bottom,transparent 0 3px,#090c19 3px 4px),linear-gradient(180deg,#05081922 0%,transparent 30%,transparent 62%,#05081933 100%); }
-    body.arcade-home .slide-info { position:absolute; z-index:2; left:50%; bottom:clamp(18px,4.5vh,48px); width:min(78%,700px); padding:clamp(15px,2.2vw,26px) clamp(18px,3vw,36px); transform:translateX(-50%); border:4px solid #fff0c2; outline:3px solid #151329a8; color:#fff0c2; text-align:center; background:#17182cf0; box-shadow:8px 8px #080d1dd9,inset 0 0 0 3px #5c4661; }
-    body.arcade-home .game-number { margin-bottom:.45rem; }
-    body.arcade-home .slide-info h2 { margin:.15rem 0 .5rem; font-size:clamp(1.1rem,2.5vw,1.9rem); }
-    body.arcade-home .slide-info p.description { margin:0 auto .8rem; }
-    body.arcade-home .slide-hint { margin:.55rem 0 0!important; }
-    body.arcade-home .screen-arrow { width:clamp(46px,5vw,62px); height:clamp(62px,7vw,82px); border:4px solid #fff0c2; color:#271c39; background:linear-gradient(135deg,#ffe483,#ffb46c); box-shadow:5px 5px #111329,0 0 0 3px #271c39; }
+    body.arcade-home .preview-tag { top:10px; left:10px; padding:4px 6px; border-width:2px; font-size:clamp(.42rem,.7vw,.55rem); box-shadow:3px 3px #0d1024; }
+    body.arcade-home .game-preview:after { opacity:.12; background:repeating-linear-gradient(to bottom,transparent 0 3px,#090c19 3px 4px),linear-gradient(180deg,#05081922 0%,transparent 30%,transparent 62%,#05081922 100%); }
+    body.arcade-home .slide-info { position:absolute; z-index:2; left:50%; bottom:clamp(9px,1.8vh,18px); width:min(52%,480px); padding:7px 11px; transform:translateX(-50%); border:3px solid #fff0c2; outline:2px solid #151329a8; color:#fff0c2; text-align:center; background:#17182cd9; box-shadow:3px 3px #080d1dd9,inset 0 0 0 2px #5c4661; }
+    body.arcade-home .game-number { margin-bottom:.1rem; font-size:clamp(.46rem,.68vw,.56rem); }
+    body.arcade-home .slide-info h2 { margin:.05rem 0 .2rem; font-size:clamp(.82rem,1.55vw,1.15rem); line-height:1.3; }
+    body.arcade-home .slide-info p.description { margin:0 auto .3rem; font-size:clamp(.68rem,.85vw,.82rem); line-height:1.25; }
+    body.arcade-home .slide-hint { display:none!important; }
+    body.arcade-home .start-link { min-width:132px; min-height:40px; gap:7px; padding:.35rem .6rem; border-width:3px; font-size:.8rem; }
+    body.arcade-home .screen-arrow { width:clamp(38px,4vw,48px); height:clamp(50px,6vw,62px); border:3px solid #fff0c2; color:#271c39; background:linear-gradient(135deg,#ffe483,#ffb46c); box-shadow:4px 4px #111329,0 0 0 2px #271c39; }
     body.arcade-home .screen-arrow.previous { left:clamp(7px,1.2vw,16px); }
     body.arcade-home .screen-arrow.next { right:clamp(7px,1.2vw,16px); }
     body.arcade-home .screen-arrow:hover { background:#c9f56a; }
@@ -185,15 +186,16 @@
       body.arcade-home .screen-housing { margin:0 2px; padding:5px; border-width:6px; border-radius:14px; }
       body.arcade-home .screen-housing:before,body.arcade-home .screen-housing:after { top:58px; bottom:58px; width:4px; }
       body.arcade-home .screen-window { border-width:4px; border-radius:11px; }
+      body.arcade-home .screen-topline { min-height:18px; padding-inline:7px; font-size:.43rem; }
       body.arcade-home .game-slide { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; align-content:stretch; justify-items:center; align-items:center; gap:7px; padding:8px 34px 10px; }
-      body.arcade-home .game-preview { position:relative; inset:auto; width:100%; height:auto; max-height:34svh; aspect-ratio:5/3; border:4px solid #f8ebd4; box-shadow:5px 5px #0d1024,0 0 0 3px #ffffff20; }
+      body.arcade-home .game-preview { position:relative; inset:auto; width:100%; height:auto; max-height:37svh; aspect-ratio:5/3; border:4px solid #f8ebd4; box-shadow:5px 5px #0d1024,0 0 0 3px #ffffff20; }
       body.arcade-home .preview-tag { top:5px; left:5px; padding:4px 6px; border-width:2px; font-size:.48rem; }
       body.arcade-home .game-preview:after { opacity:.13; }
-      body.arcade-home .slide-info { position:relative; left:auto; bottom:auto; width:100%; max-width:540px; margin:0; padding:10px 12px; transform:none; border-width:3px; outline:0; box-shadow:4px 4px #080d1dd9,inset 0 0 0 2px #5c4661; }
-      body.arcade-home .game-number { margin-bottom:.25rem; font-size:.52rem; }
-      body.arcade-home .slide-info h2 { margin:.1rem 0 .25rem; font-size:clamp(.8rem,4vw,1.12rem); line-height:1.55; }
-      body.arcade-home .slide-info p.description { margin:0 auto .45rem; font-size:clamp(.75rem,2.65vw,.9rem); line-height:1.35; }
-      body.arcade-home .start-link { min-width:150px; min-height:42px; padding:.45rem .7rem; border-width:3px; font-size:.82rem; }
+      body.arcade-home .slide-info { position:relative; left:auto; bottom:auto; width:100%; max-width:540px; margin:0; padding:6px 9px; transform:none; border-width:2px; outline:0; box-shadow:3px 3px #080d1dd9,inset 0 0 0 1px #5c4661; }
+      body.arcade-home .game-number { margin-bottom:.12rem; font-size:.46rem; }
+      body.arcade-home .slide-info h2 { margin:.05rem 0 .15rem; font-size:clamp(.76rem,3.6vw,1rem); line-height:1.25; }
+      body.arcade-home .slide-info p.description { margin:0 auto .25rem; font-size:clamp(.68rem,2.4vw,.82rem); line-height:1.2; }
+      body.arcade-home .start-link { min-width:135px; min-height:40px; padding:.32rem .6rem; border-width:2px; font-size:.78rem; }
       body.arcade-home .slide-hint { display:none; }
       body.arcade-home .screen-arrow { top:36%; width:34px; height:45px; border-width:2px; font-size:.8rem; box-shadow:3px 3px #111329,0 0 0 2px #271c39; }
       body.arcade-home .screen-arrow.previous { left:3px; }
@@ -217,7 +219,7 @@
       body.arcade-home .machine-marquee { grid-template-columns:.75fr auto .75fr; }
       body.arcade-home .marquee-side { font-size:.39rem; }
       body.arcade-home .game-slide { padding-right:30px; padding-left:30px; }
-      body.arcade-home .game-preview { max-height:31svh; }
+      body.arcade-home .game-preview { max-height:34svh; }
       body.arcade-home .control-deck { grid-template-columns:58px minmax(0,1fr) 66px; padding-right:10px; padding-left:10px; }
       body.arcade-home .joystick-wrap,body.arcade-home .action-wrap { font-size:.37rem; }
       body.arcade-home .decor-button { width:19px; height:19px; }
@@ -225,9 +227,9 @@
     @media(max-height:650px) and (max-width:700px) {
       body.arcade-home .machine-marquee { min-height:42px; }
       body.arcade-home .control-deck { min-height:68px; }
-      body.arcade-home .game-preview { max-height:27svh; }
-      body.arcade-home .slide-info { padding:7px 10px; }
-      body.arcade-home .slide-info p.description { font-size:.72rem; }
+      body.arcade-home .game-preview { max-height:30svh; }
+      body.arcade-home .slide-info { padding:5px 8px; }
+      body.arcade-home .slide-info p.description { font-size:.66rem; }
       body.arcade-home .start-link { min-height:36px; }
     }
   </style>
