@@ -295,7 +295,7 @@
         animation = requestAnimationFrame(frame);
       }
       function firePlayer(now) {
-        if (now < playerFireAt) return;
+        if (!running || now < playerFireAt) return;
         addShot(x, 265, false, "#9fe0dc", 5, 14);
         playerFireAt = now + 200;
       }
@@ -427,7 +427,13 @@
       }
 
       function bindHold(button, prop) {
-        button.addEventListener("pointerdown", event => { event.preventDefault(); held[prop] = true; button.classList.add("held"); button.setPointerCapture?.(event.pointerId); });
+        button.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          held[prop] = true;
+          button.classList.add("held");
+          if (prop === "fire") firePlayer(performance.now());
+          button.setPointerCapture?.(event.pointerId);
+        });
         const release = () => { held[prop] = false; button.classList.remove("held"); };
         button.addEventListener("pointerup", release);
         button.addEventListener("pointercancel", release);
@@ -439,6 +445,7 @@
       bindHold(document.querySelector("#fire-button"), "fire");
       window.addEventListener("keydown", event => {
         if (["ArrowLeft", "ArrowRight", " "].includes(event.key)) event.preventDefault();
+        if ((event.key === " " || event.key === "Space") && !keyState.has(event.key)) firePlayer(performance.now());
         keyState.add(event.key);
       });
       window.addEventListener("keyup", event => keyState.delete(event.key));
