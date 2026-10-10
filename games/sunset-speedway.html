@@ -14,7 +14,13 @@
     .race-hud span { display: block; margin-top: .3rem; color: #ffd477; font-size: 1.05rem; }
     .race-screen { position: relative; width: min(100%,480px); aspect-ratio: 6 / 7; margin: 0 auto; overflow: hidden; border: 4px solid #fff0c2; background: #456b4b; box-shadow: 7px 7px #332044; touch-action: none; }
     .race-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-    .track-map { position: absolute; z-index: 2; top: .65rem; left: .65rem; width: 108px; padding: .35rem; border: 2px solid #fff0c2; background: #332044eF; box-shadow: 3px 3px #17142d; pointer-events: none; }
+    .cockpit { background: #231d35; }
+    .rear-mirror { position: absolute; z-index: 2; top: 2.2rem; left: 50%; width: 30%; max-width: 142px; transform: translateX(-50%); pointer-events: none; }
+    .side-mirror { position: absolute; z-index: 2; top: 27%; right: .35rem; width: 18%; max-width: 86px; pointer-events: none; }
+    .mirror svg { display: block; width: 100%; height: auto; filter: drop-shadow(2px 3px #17142d); }
+    .dice { position: absolute; z-index: 2; top: 5.7rem; left: 52%; width: 40px; height: 55px; pointer-events: none; }
+    .dice svg { width: 100%; height: 100%; overflow: visible; transform-origin: 20px 0; transition: transform .12s ease-out; }
+    .track-map { position: absolute; z-index: 2; top: .65rem; left: .65rem; width: 96px; padding: .35rem; border: 2px solid #fff0c2; background: #332044eF; box-shadow: 3px 3px #17142d; pointer-events: none; }
     .track-map svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
     .track-map-label { margin: 0 0 .25rem; color: #ffd477; text-align: center; font: bold .58rem "Courier New",monospace; letter-spacing: .06em; }
     .race-overlay { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: .8rem; background: #241a46d9; }
@@ -42,9 +48,12 @@
       .race-control { min-height: 52px; padding: .2rem; font-size: .78rem; }
       .race-card h2 { font-size: .75rem; }
       .race-card p { font-size: .9rem; }
-      .track-map { top: .5rem; left: .5rem; width: 88px; }
+      .track-map { top: .5rem; left: .5rem; width: 82px; }
+      .rear-mirror { top: 1.9rem; }
+      .side-mirror { right: .15rem; }
+      .dice { top: 5rem; width: 32px; height: 46px; }
     }
-    @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important}}
+    @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important;transition:none!important}}
   </style>
 </head>
 <body>
@@ -61,12 +70,13 @@
       <div>SPEED<span id="speed-readout">0 km/h</span></div>
     </div>
 
-    <div class="race-screen" id="race-screen" aria-label="Race view from behind your car">
-      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Pixel cars racing along a sunset circuit, viewed from behind the player's car" shape-rendering="crispEdges">
+    <div class="race-screen cockpit" id="race-screen" aria-label="First-person view from inside a pixel-art race car">
+      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Pixel-art racing circuit seen through a car windscreen" shape-rendering="crispEdges">
         <defs>
           <pattern id="grass-pixels" width="24" height="24" patternUnits="userSpaceOnUse">
             <rect width="24" height="24" fill="#52784e"/><rect x="3" y="5" width="3" height="3" fill="#668956"/><rect x="15" y="15" width="4" height="3" fill="#426747"/><rect x="20" y="3" width="2" height="2" fill="#78915a"/>
           </pattern>
+          <linearGradient id="sunset-sky" x2="0" y2="1"><stop stop-color="#44366a"/><stop offset=".55" stop-color="#dc6c79"/><stop offset="1" stop-color="#ffc576"/></linearGradient>
           <pattern id="start-checker" width="16" height="8" patternUnits="userSpaceOnUse">
             <rect width="16" height="8" fill="#fff0c2"/><rect width="8" height="4" fill="#332044"/><rect x="8" y="4" width="8" height="4" fill="#332044"/>
           </pattern>
@@ -83,33 +93,33 @@
             <rect x="-7" y="-16" width="14" height="31" fill="#334279"/><rect x="-6" y="-14" width="12" height="28" fill="#4778d1"/><rect x="-4" y="-16" width="8" height="6" fill="#80d9ed"/><rect x="-5" y="-7" width="10" height="11" fill="#343a62"/><rect x="-4" y="-6" width="8" height="8" fill="#a6e3e5"/><rect x="-6" y="6" width="12" height="4" fill="#365ab0"/><rect x="-2" y="-14" width="4" height="17" fill="#ffcf73"/><rect x="-7" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="4" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="-7" y="12" width="4" height="2" fill="#ffcf73"/><rect x="3" y="12" width="4" height="2" fill="#ffcf73"/>
           </g>
         </defs>
-        <g id="world">
-        <rect x="-1200" y="-1200" width="2400" height="2400" fill="url(#grass-pixels)"/>
-        <path d="M60 280V256h8v-40h8v-36h10v-32h14v-28h18V96h24V72h38V58h120v14h38v24h24v24h18v28h14v32h10v36h8v40h8v48h-8v40h-8v36h-10v32h-14v28h-18v24h-24v24h-38v14H180v-14h-38v-24h-24v-24h-18v-28H86v-32H76v-36h-8v-40h-8z" fill="#29263e"/>
-        <ellipse cx="240" cy="280" rx="184" ry="224" fill="#504b52" stroke="#f3be72" stroke-width="8"/>
-        <ellipse cx="240" cy="280" rx="112" ry="152" fill="url(#grass-pixels)" stroke="#e76673" stroke-width="8"/>
-        <ellipse cx="240" cy="280" rx="148" ry="188" fill="none" stroke="#e9d6a0" stroke-width="3" stroke-dasharray="8 12"/>
-        <path d="M96 165h18v-12h12v-18h14v-12h18v-12h25v-10h28v-8h58v8h28v10h25v12h18v12h14v18h12v12h18" fill="none" stroke="#5f5a60" stroke-width="5" opacity=".7"/>
-        <rect x="156" y="86" width="168" height="8" fill="url(#start-checker)"/>
-        <g aria-hidden="true">
-          <rect x="178" y="252" width="124" height="4" fill="#6a8256"/><rect x="188" y="256" width="104" height="4" fill="#405c48"/>
-          <text x="240" y="244" text-anchor="middle" fill="#fff0c2" font-size="12" font-weight="bold" font-family="Courier New,monospace">SUNSET</text>
-          <text x="240" y="275" text-anchor="middle" fill="#ffd477" font-size="17" font-weight="bold" font-family="Courier New,monospace">SPEEDWAY</text>
-          <text x="240" y="298" text-anchor="middle" fill="#ffe2ca" font-size="9" font-family="Courier New,monospace">★  TURBO CUP  ★</text>
-          <rect x="217" y="309" width="46" height="3" fill="#e76673"/><rect x="225" y="313" width="30" height="3" fill="#f3be72"/>
-        </g>
-        <g id="racer-layer"></g>
-        <g id="player-car"><use href="#car-red-art"/></g>
+        <rect width="480" height="560" fill="url(#sunset-sky)"/>
+        <rect x="42" y="63" width="28" height="4" fill="#ffb882"/><rect x="58" y="58" width="20" height="5" fill="#ffb882"/>
+        <rect x="344" y="82" width="36" height="4" fill="#f49a86"/><rect x="362" y="77" width="24" height="5" fill="#f49a86"/>
+        <rect x="205" y="78" width="70" height="4" fill="#ffda91"/><rect x="218" y="68" width="44" height="10" fill="#ffda91"/><rect x="226" y="61" width="28" height="7" fill="#ffda91"/>
+        <rect y="132" width="480" height="10" fill="#39435a"/><path d="M0 143h46v-20h12v20h47v-12h22v12h77v-25h18v25h65v-16h14v16h73v-22h24v22h42v-18h18v18h18v26H0Z" fill="#38434b"/>
+        <path id="road-render"/>
+        <g id="traffic-render"></g>
+        <g aria-hidden="true" shape-rendering="crispEdges">
+          <path d="M0 0h480v25h-30l-15 17H45L30 25H0Z" fill="#2e213b"/><path d="M0 0h38l52 424-34 8L0 42Zm480 0h-38l-52 424 34 8 56-390Z" fill="#392542" stroke="#8c5470" stroke-width="5"/>
+          <path d="M0 426 116 392h248l116 34v134H0Z" fill="#35243d" stroke="#19192d" stroke-width="8"/>
+          <path d="M0 426 116 392h248l116 34" fill="none" stroke="#e9a078" stroke-width="5"/>
+          <path d="M42 462h82v5H42zm16 9h60v4H58zm278-9h82v5h-82zm16 9h60v4h-60z" fill="#694465"/>
+          <g id="steering-wheel" transform="rotate(0 240 494)">
+            <path d="M186 480h7v-10h8v-7h10v-5h58v5h10v7h8v10h7v21h-7v10h-8v7h-10v5h-58v-5h-10v-7h-8v-10h-7Z" fill="#211d31" stroke="#b87578" stroke-width="5"/>
+            <path d="M204 481h8v-9h8v-5h40v5h8v9h8v15h-8v9h-8v6h-40v-6h-8v-9h-8Z" fill="#47334b" stroke="#19192d" stroke-width="4"/>
+            <path d="M236 490h8v20h-8zm-21-4h15v7h-15zm35 0h15v7h-15z" fill="#d4a17e"/>
+            <rect id="car-accent" x="233" y="489" width="14" height="10" fill="#e84b5f"/>
+          </g>
+          <rect x="123" y="417" width="234" height="6" fill="#201d32"/><rect x="143" y="430" width="194" height="3" fill="#745067"/>
         </g>
       </svg>
+      <div class="rear-mirror mirror" aria-hidden="true"><svg viewBox="0 0 150 64" shape-rendering="crispEdges"><defs><clipPath id="rear-clip"><path d="M12 10h126l-5 44H17Z"/></clipPath></defs><g clip-path="url(#rear-clip)"><rect x="10" y="8" width="130" height="48" fill="#f7a477"/><path d="M10 26h130v30H10Z" fill="#57754b"/><path id="rear-mirror-road" d="M67 10h16l45 45H22Z" fill="#484957"/><path d="M74 10h2l9 45h-3Z" fill="#fff0c2" opacity=".7"/><g id="rear-mirror-cars"></g></g><path d="M7 7h136l-5 50H12Z" fill="none" stroke="#29223a" stroke-width="7"/><path d="M13 12h124" stroke="#bc8d90" stroke-width="2"/></svg></div>
+      <div class="side-mirror mirror" aria-hidden="true"><svg viewBox="0 0 100 75" shape-rendering="crispEdges"><defs><clipPath id="side-clip"><path d="M7 12h84l-7 52H14Z"/></clipPath></defs><g clip-path="url(#side-clip)"><rect x="5" y="8" width="90" height="58" fill="#e88982"/><rect x="5" y="34" width="90" height="34" fill="#55754a"/><path id="side-mirror-road" d="M62 8h8l38 60H40Z" fill="#454653"/><path d="M67 10h2l8 58h-2Z" fill="#fff0c2" opacity=".7"/><g id="side-mirror-cars"></g></g><path d="M4 8h92l-7 60H11Z" fill="none" stroke="#29223a" stroke-width="7"/><path d="M13 14h75" stroke="#bc8d90" stroke-width="2"/></svg></div>
+      <div class="dice" aria-hidden="true"><svg viewBox="0 0 40 55" shape-rendering="crispEdges"><path d="M14 0v13" stroke="#211d31" stroke-width="2"/><path d="M27 0v18" stroke="#211d31" stroke-width="2"/><g transform="rotate(-8 12 24)"><rect x="4" y="16" width="17" height="17" fill="#fff0c2" stroke="#463451" stroke-width="2"/><rect x="7" y="19" width="3" height="3" fill="#e35b62"/><rect x="14" y="26" width="3" height="3" fill="#e35b62"/><rect x="7" y="27" width="3" height="3" fill="#e35b62"/></g><g transform="rotate(8 29 31)"><rect x="21" y="22" width="17" height="17" fill="#f3be72" stroke="#463451" stroke-width="2"/><rect x="24" y="25" width="3" height="3" fill="#e35b62"/><rect x="31" y="25" width="3" height="3" fill="#e35b62"/><rect x="24" y="32" width="3" height="3" fill="#e35b62"/><rect x="31" y="32" width="3" height="3" fill="#e35b62"/></g></svg></div>
       <div class="track-map" aria-label="Minimap showing your position on the full track">
         <p class="track-map-label">TRACK MAP</p>
-        <svg viewBox="0 0 100 120" role="img" aria-label="Oval track with your current position marked in yellow">
-          <ellipse cx="50" cy="60" rx="35" ry="44.5" fill="none" stroke="#17142d" stroke-width="17"/>
-          <ellipse cx="50" cy="60" rx="35" ry="44.5" fill="none" stroke="#e9d6a0" stroke-width="1.5" stroke-dasharray="3 3"/>
-          <path d="M42 15h16v3H42z" fill="#e76673"/>
-          <path id="map-player" d="M0 -5 L3.5 4 L0 2 L-3.5 4Z" transform="translate(50 7)" fill="#ffd477" stroke="#332044" stroke-width=".8"/>
-        </svg>
+        <svg viewBox="0 0 100 120" role="img" aria-label="Winding race track with your current position marked in yellow"><path id="map-track-border" fill="none" stroke="#17142d" stroke-width="13"/><path id="map-track" fill="none" stroke="#76727b" stroke-width="9"/><path id="map-track-dashes" fill="none" stroke="#e9d6a0" stroke-width="1" stroke-dasharray="2 2"/><path id="map-start" fill="none" stroke="#e76673" stroke-width="3"/><path id="map-player" d="M0 -4 L3 3 L0 1 L-3 3Z" transform="translate(50 10)" fill="#ffd477" stroke="#332044" stroke-width=".8"/></svg>
       </div>
       <div class="race-overlay" id="race-overlay">
         <section class="race-card" aria-live="polite">
@@ -139,11 +149,17 @@
   <script>
     (() => {
       const CX = 240, CY = 280;
-      const RX = 148, RY = 188, LAPS_TO_WIN = 3, MAX_SPEED = 225;
-      const racerLayer = document.querySelector("#racer-layer");
-      const world = document.querySelector("#world");
-      const playerCar = document.querySelector("#player-car");
+      const LAPS_TO_WIN = 3, MAX_SPEED = 225;
+      const roadRender = document.querySelector("#road-render");
+      const trafficRender = document.querySelector("#traffic-render");
       const mapPlayer = document.querySelector("#map-player");
+      const rearRoad = document.querySelector("#rear-mirror-road");
+      const sideRoad = document.querySelector("#side-mirror-road");
+      const rearCars = document.querySelector("#rear-mirror-cars");
+      const sideCars = document.querySelector("#side-mirror-cars");
+      const steeringWheel = document.querySelector("#steering-wheel");
+      const dice = document.querySelector(".dice svg");
+      const carAccent = document.querySelector("#car-accent");
       const overlay = document.querySelector("#race-overlay");
       const title = document.querySelector("#overlay-title");
       const copy = document.querySelector("#overlay-copy");
@@ -158,6 +174,13 @@
       let selectedCar = "red", running = false;
       let playerDistance = 0, laneOffset = 0, speed = 145, elapsed = 0, lastTime = 0, animation = 0;
       let npcs = [], path = [], totalLength = 0, bestTime = Infinity;
+      const trackPoints = [
+        [240,68],[300,68],[350,82],[388,111],[402,151],[389,180],[354,197],[323,220],
+        [315,251],[331,274],[373,288],[403,315],[400,349],[379,375],[343,390],[315,419],
+        [296,456],[260,479],[216,477],[184,459],[166,429],[143,410],[111,418],[84,397],
+        [70,364],[76,334],[101,311],[128,293],[139,268],[127,239],[100,218],[76,194],
+        [70,164],[82,135],[107,111],[145,92],[184,77]
+      ];
 
       try { bestTime = Number(localStorage.getItem("sunsetSpeedwayBest")) || Infinity; } catch (_) { /* storage can be disabled */ }
 
@@ -169,14 +192,28 @@
       function buildPath() {
         path = [];
         totalLength = 0;
-        const steps = 720;
+        const subdivisions = 18, segments = trackPoints.length;
+        const steps = subdivisions * segments;
         for (let i = 0; i <= steps; i++) {
-          const angle = -Math.PI / 2 + i / steps * Math.PI * 2;
-          const point = { x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) };
+          const segment = Math.min(segments - 1, Math.floor(i / subdivisions));
+          const t = (i - segment * subdivisions) / subdivisions;
+          const p0 = trackPoints[(segment - 1 + segments) % segments];
+          const p1 = trackPoints[segment];
+          const p2 = trackPoints[(segment + 1) % segments];
+          const p3 = trackPoints[(segment + 2) % segments];
+          const t2 = t * t, t3 = t2 * t;
+          const sample = axis => .5 * ((2 * p1[axis]) + (-p0[axis] + p2[axis]) * t + (2*p0[axis] - 5*p1[axis] + 4*p2[axis] - p3[axis]) * t2 + (-p0[axis] + 3*p1[axis] - 3*p2[axis] + p3[axis]) * t3);
+          const point = { x: sample(0), y: sample(1) };
           if (i) totalLength += Math.hypot(point.x - path[i - 1].x, point.y - path[i - 1].y);
           point.distance = totalLength;
           path.push(point);
         }
+        const d = path.slice(0, -1).map((p, i) => `${i ? "L" : "M"}${(50 + (p.x - CX) * .21).toFixed(1)} ${(60 + (p.y - CY) * .21).toFixed(1)}`).join(" ") + "Z";
+        for (const id of ["#map-track-border", "#map-track", "#map-track-dashes"]) document.querySelector(id).setAttribute("d", d);
+        const first = path[0], next = path[5];
+        const dx = next.x-first.x, dy = next.y-first.y, length = Math.hypot(dx,dy) || 1;
+        const nx = -dy/length*5, ny = dx/length*5;
+        document.querySelector("#map-start").setAttribute("d", `M${(50+(first.x+nx-CX)*.21).toFixed(1)} ${(60+(first.y+ny-CY)*.21).toFixed(1)} L${(50+(first.x-nx-CX)*.21).toFixed(1)} ${(60+(first.y-ny-CY)*.21).toFixed(1)}`);
       }
       function pointAt(distance, lane = 0) {
         let d = ((distance % totalLength) + totalLength) % totalLength;
@@ -195,16 +232,6 @@
         const angle = Math.atan2(tangentY, tangentX) * 180 / Math.PI + 90;
         return { x: x + nx * lane, y: y + ny * lane, angle };
       }
-      function setCarPosition(node, point) {
-        node.setAttribute("transform", `translate(${point.x.toFixed(2)} ${point.y.toFixed(2)}) rotate(${point.angle.toFixed(1)})`);
-      }
-      function updateCamera(point) {
-        const cameraY = 395;
-        world.setAttribute("transform", `translate(240 ${cameraY}) rotate(${-point.angle.toFixed(1)}) translate(${-point.x.toFixed(2)} ${-point.y.toFixed(2)})`);
-        const mapX = 50 + (point.x - CX) / RX * 35;
-        const mapY = 60 + (point.y - CY) / RY * 44.5;
-        mapPlayer.setAttribute("transform", `translate(${mapX.toFixed(1)} ${mapY.toFixed(1)}) rotate(${point.angle.toFixed(1)})`);
-      }
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const whole = Math.floor(seconds % 60);
@@ -217,24 +244,133 @@
         timeReadout.textContent = formatTime(elapsed);
         speedReadout.textContent = `${Math.round(speed)} km/h`;
       }
+      function cameraBasis(point) {
+        const heading = (point.angle - 90) * Math.PI / 180;
+        const fx = Math.cos(heading), fy = Math.sin(heading);
+        return { nx: -fy, ny: fx };
+      }
+      function relativeSide(point, origin, basis) {
+        return (point.x - origin.x) * basis.nx + (point.y - origin.y) * basis.ny;
+      }
+      function mainProjection(side, depth) {
+        const scale = 280 / (depth + 60);
+        return { x: 240 + side * scale, y: 130 + 60 * scale, scale };
+      }
+      function polygon(points, fill) {
+        return `<polygon points="${points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" fill="${fill}"/>`;
+      }
+      function renderRoad(playerPoint) {
+        const basis = cameraBasis(playerPoint);
+        const depths = [0,5,10,15,21,28,37,49,64,84,110,145,190,250,330,440,580,760];
+        const parts = [];
+        for (let i=0; i<depths.length-1; i++) {
+          const d1=depths[i], d2=depths[i+1];
+          const p1=pointAt(playerDistance+d1), p2=pointAt(playerDistance+d2);
+          const s1=relativeSide(p1,playerPoint,basis), s2=relativeSide(p2,playerPoint,basis);
+          const leftNear=mainProjection(s1-35,d1), rightNear=mainProjection(s1+35,d1);
+          const leftFar=mainProjection(s2-35,d2), rightFar=mainProjection(s2+35,d2);
+          const vergeNearL=mainProjection(s1-53,d1), vergeNearR=mainProjection(s1+53,d1);
+          const vergeFarL=mainProjection(s2-53,d2), vergeFarR=mainProjection(s2+53,d2);
+          parts.push(polygon([vergeFarL,vergeFarR,vergeNearR,vergeNearL], i%2 ? "#466b45" : "#52784e"));
+          parts.push(polygon([leftFar,rightFar,rightNear,leftNear], i%2 ? "#484854" : "#4e4d58"));
+          const curbColor=i%2 ? "#f1d49c" : "#df6270";
+          parts.push(polygon([leftFar,mainProjection(s2-29,d2),mainProjection(s1-29,d1),leftNear],curbColor));
+          parts.push(polygon([mainProjection(s2+29,d2),rightFar,rightNear,mainProjection(s1+29,d1)],curbColor));
+          if (i%2===0 && d2<400) {
+            const m1=mainProjection(s1,d1),m2=mainProjection(s2,d2);
+            parts.push(polygon([{x:m2.x-1.2,y:m2.y},{x:m2.x+1.2,y:m2.y},{x:m1.x+1.2,y:m1.y},{x:m1.x-1.2,y:m1.y}],"#e9d6a0"));
+          }
+        }
+        roadRender.innerHTML=parts.join("");
+      }
+      function carSprite(x,y,scale,color,number) {
+        const w=Math.min(52,14*scale), h=Math.min(62,21*scale), half=w/2;
+        const group=svgEl("g",{transform:`translate(${x.toFixed(1)} ${y.toFixed(1)})`});
+        group.append(svgEl("rect",{x:-half-2,y:-h*.25,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:half-2,y:-h*.25,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:-half-2,y:h*.2,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:half-2,y:h*.2,width:4,height:h*.3,fill:"#201d32"}));
+        group.append(svgEl("path",{d:`M${-half*.72} ${h*.45} L${-half} ${-h*.18} L${-half*.68} ${-h*.48} L${half*.68} ${-h*.48} L${half} ${-h*.18} L${half*.72} ${h*.45} Z`,fill:color,stroke:"#29263e","stroke-width":Math.max(1,scale)}));
+        group.append(svgEl("path",{d:`M${-half*.54} ${-h*.14} L${-half*.38} ${-h*.38} H${half*.38} L${half*.54} ${-h*.14} Z`,fill:"#96d7d7"}));
+        group.append(svgEl("rect",{x:-half*.68,y:h*.28,width:w*.18,height:Math.max(2,h*.08),fill:"#ffd477"}),svgEl("rect",{x:half*.5,y:h*.28,width:w*.18,height:Math.max(2,h*.08),fill:"#ffd477"}));
+        if(scale>1.15) { const label=svgEl("text",{x:0,y:h*.18,"text-anchor":"middle",fill:"#fff0c2","font-size":Math.max(4,3*scale),"font-weight":"bold","font-family":"Courier New,monospace"}); label.textContent=number; group.append(label); }
+        return group;
+      }
+      function renderTraffic(playerPoint) {
+        const basis=cameraBasis(playerPoint), visible=[];
+        for(const npc of npcs) {
+          let ahead=((npc.distance-playerDistance)%totalLength+totalLength)%totalLength;
+          if(ahead>totalLength/2 || ahead<1 || ahead>360) continue;
+          const point=pointAt(npc.distance,npc.lane);
+          const side=relativeSide(point,playerPoint,basis);
+          const projected=mainProjection(side,ahead);
+          visible.push({ahead,point:carSprite(projected.x,projected.y,projected.scale,npc.color,npc.number)});
+        }
+        visible.sort((a,b)=>b.ahead-a.ahead);
+        trafficRender.replaceChildren(...visible.map(v=>v.point));
+      }
+      function renderMirrors(playerPoint) {
+        const basis=cameraBasis(playerPoint);
+        const back=(dist,edge)=>{
+          const p=pointAt(playerDistance-dist);
+          const side=relativeSide(p,playerPoint,basis)+edge;
+          const scale=45/(dist+40), x=75-side*scale, y=9+45*40/(dist+40);
+          return {x,y};
+        };
+        const backNear=back(2,35), backFar=back(170,35);
+        const backNearL=back(2,-35), backFarL=back(170,-35);
+        rearRoad.setAttribute("d",`M${backFarL.x.toFixed(1)} ${backFarL.y.toFixed(1)} L${backFar.x.toFixed(1)} ${backFar.y.toFixed(1)} L${backNear.x.toFixed(1)} ${backNear.y.toFixed(1)} L${backNearL.x.toFixed(1)} ${backNearL.y.toFixed(1)}Z`);
+        const forward=(dist,edge)=>{
+          const p=pointAt(playerDistance+dist);
+          const side=relativeSide(p,playerPoint,basis);
+          const scale=42/(dist+45), x=52+(side+edge)*scale*.55, y=8+56*45/(dist+45);
+          return {x,y};
+        };
+        const sidePath=[forward(150,-35),forward(150,35),forward(2,35),forward(2,-35)];
+        sideRoad.setAttribute("d",`M${sidePath.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("L")}Z`);
+        const rearMarks=[],sideMarks=[];
+        for(const npc of npcs) {
+          const behind=((playerDistance-npc.distance)%totalLength+totalLength)%totalLength;
+          if(behind<180) {
+            const point=pointAt(npc.distance,npc.lane), side=relativeSide(point,playerPoint,basis), scale=45/(behind+40);
+            const x=75-side*scale,y=9+45*40/(behind+40),w=Math.max(3,10*scale),h=Math.max(3,8*scale);
+            const marker=svgEl("rect",{x:(x-w/2).toFixed(1),y:(y-h/2).toFixed(1),width:w.toFixed(1),height:h.toFixed(1),fill:npc.color,stroke:"#29263e","stroke-width":1});
+            rearMarks.push(marker);
+          }
+          let relative=npc.distance-playerDistance;
+          relative=((relative+totalLength/2)%totalLength+totalLength)%totalLength-totalLength/2;
+          if(Math.abs(relative)<130) {
+            const point=pointAt(npc.distance,npc.lane), side=relativeSide(point,playerPoint,basis);
+            if(side>2) {
+              const depth=Math.abs(relative),scale=42/(depth+45),x=53+(side-18)*scale*.45,y=8+56*45/(depth+45),w=Math.max(3,9*scale),h=Math.max(3,8*scale);
+              sideMarks.push(svgEl("rect",{x:(x-w/2).toFixed(1),y:(y-h/2).toFixed(1),width:w.toFixed(1),height:h.toFixed(1),fill:npc.color,stroke:"#29263e","stroke-width":1}));
+            }
+          }
+        }
+        rearCars.replaceChildren(...rearMarks);
+        sideCars.replaceChildren(...sideMarks);
+      }
+      function updateMap(playerPoint) {
+        const x=50+(playerPoint.x-CX)*.21, y=60+(playerPoint.y-CY)*.21;
+        mapPlayer.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${playerPoint.angle.toFixed(1)})`);
+      }
+      function drawScene(playerPoint) {
+        renderRoad(playerPoint);
+        renderTraffic(playerPoint);
+        renderMirrors(playerPoint);
+        updateMap(playerPoint);
+      }
       function clearNpcs() {
         npcs = [];
-        racerLayer.replaceChildren();
+        trafficRender.replaceChildren();
+        rearCars.replaceChildren();
+        sideCars.replaceChildren();
       }
       function makeNpcs() {
         clearNpcs();
         const starts = [.105, .255, .465, .715];
         const lanes = [-22, 20, 0, 23];
         const speeds = [158, 174, 148, 183];
-        const cars = ["blue", "green", "red", "blue"];
+        const colors = ["#4778d1", "#42a96a", "#e84b5f", "#4778d1"];
         for (let i = 0; i < starts.length; i++) {
-          const node = svgEl("g", { "aria-hidden": "true" });
-          node.append(svgEl("use", { href: `#car-${cars[i]}-art` }));
-          const number = svgEl("text", { x: 0, y: 2, "text-anchor": "middle", fill: "#fff0c2", "font-size": 7, "font-weight": "bold", "font-family": "Courier New,monospace" });
-          number.textContent = String(i + 2);
-          node.append(number);
-          racerLayer.append(node);
-          npcs.push({ node, distance: totalLength * starts[i], lane: lanes[i], speed: speeds[i] });
+          npcs.push({ distance: totalLength * starts[i], lane: lanes[i], speed: speeds[i], color: colors[i], number: i + 2 });
         }
       }
       function startRace() {
@@ -247,10 +383,10 @@
         lastTime = performance.now();
         held.left = held.right = held.accelerate = held.brake = false;
         keyState.clear();
-        playerCar.querySelector("use").setAttribute("href", `#car-${selectedCar}-art`);
-        setCarPosition(playerCar, pointAt(playerDistance, laneOffset));
-        updateCamera(pointAt(playerDistance, laneOffset));
+        const accents={red:"#e84b5f",green:"#42a96a",blue:"#4778d1"};
+        carAccent.setAttribute("fill",accents[selectedCar]);
         makeNpcs();
+        drawScene(pointAt(playerDistance,laneOffset));
         lapReadout.textContent = `1 / ${LAPS_TO_WIN}`;
         timeReadout.textContent = formatTime(0);
         speedReadout.textContent = `${Math.round(speed)} km/h`;
@@ -300,18 +436,20 @@
         playerDistance += speed * dt;
         elapsed += dt;
         const playerPoint = pointAt(playerDistance, laneOffset);
-        setCarPosition(playerCar, playerPoint);
-        updateCamera(playerPoint);
         for (const npc of npcs) {
           npc.distance += npc.speed * dt;
           const point = pointAt(npc.distance, npc.lane);
-          setCarPosition(npc.node, point);
           if (Math.hypot(point.x - playerPoint.x, point.y - playerPoint.y) < 24) {
             updateHud();
+            drawScene(playerPoint);
             endRace(false);
             return;
           }
         }
+        const steering=left ? -18 : right ? 18 : 0;
+        steeringWheel.setAttribute("transform",`rotate(${steering} 240 494)`);
+        dice.style.transform=`rotate(${steering*.22}deg)`;
+        drawScene(playerPoint);
         updateHud();
         if (playerDistance >= totalLength * LAPS_TO_WIN) {
           endRace(true);
@@ -336,6 +474,7 @@
       for (const button of document.querySelectorAll(".car-option")) {
         button.addEventListener("click", () => {
           selectedCar = button.getAttribute("data-car");
+          carAccent.setAttribute("fill",({red:"#e84b5f",green:"#42a96a",blue:"#4778d1"})[selectedCar]);
           for (const option of document.querySelectorAll(".car-option")) option.setAttribute("aria-pressed", String(option === button));
         });
       }
@@ -351,10 +490,8 @@
       window.addEventListener("blur", () => { keyState.clear(); held.left = held.right = held.accelerate = held.brake = false; });
       startButton.addEventListener("click", startRace);
       buildPath();
-      playerCar.querySelector("use").setAttribute("href", `#car-${selectedCar}-art`);
       const startingPoint = pointAt(0, 0);
-      setCarPosition(playerCar, startingPoint);
-      updateCamera(startingPoint);
+      drawScene(startingPoint);
       updateHud();
     })();
   </script>
