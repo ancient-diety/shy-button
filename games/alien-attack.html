@@ -32,10 +32,10 @@
     .space-control:active, .space-control.held { transform: translateY(3px); box-shadow: 1px 1px #332044; background: #956080; }
     .space-control.fire-control:active, .space-control.fire-control.held { background: #ffab59; }
     .space-help { margin: .8rem auto 0; color: #ffe2ca; font-size: .9rem; line-height: 1.5; }
-    .player-sprite { animation: ship-bob .65s steps(2,end) infinite alternate; }
+    .ship-bob { animation: ship-bob .65s steps(2,end) infinite alternate; }
     .engine-pixel { animation: engine .22s steps(2,end) infinite alternate; transform-origin: center top; }
-    .alien-sprite { animation: alien-bob .45s steps(2,end) infinite alternate; }
-    .boss-sprite { animation: boss-bob .55s steps(2,end) infinite alternate; }
+    .alien-bob { animation: alien-bob .45s steps(2,end) infinite alternate; }
+    .boss-bob { animation: boss-bob .55s steps(2,end) infinite alternate; }
     .pixel-shot { animation: shot-glow .12s steps(2,end) infinite alternate; }
     @keyframes ship-bob { to { transform: translateY(2px); } }
     @keyframes alien-bob { to { transform: translateY(3px); } }
@@ -55,7 +55,7 @@
       .overlay-card h2 { font-size: .78rem; }
       .overlay-card p { font-size: .9rem; }
     }
-    @media(prefers-reduced-motion:reduce){.player-sprite,.engine-pixel,.alien-sprite,.boss-sprite,.pixel-shot{animation:none}}
+    @media(prefers-reduced-motion:reduce){.ship-bob,.engine-pixel,.alien-bob,.boss-bob,.pixel-shot{animation:none}}
   </style>
 </head>
 <body>
@@ -92,8 +92,8 @@
         <rect width="480" height="320" fill="#201c42"/>
         <path d="M35 45h4v4h-4zm92 20h3v3h-3zm237-28h4v4h-4zM435 96h3v3h-3zM55 137h4v4h-4zm89 62h3v3h-3zm267-7h4v4h-4zM34 256h3v3h-3zm112-46h4v4h-4zm214 87h3v3h-3zM402 263h4v4h-4zM206 31h3v3h-3zm131 119h3v3h-3zM82 282h4v4h-4z" fill="#fff0c2" opacity=".8"/>
         <g id="enemy-layer"></g><g id="projectile-layer"></g><g id="effect-layer"></g>
-        <g id="boss" class="boss-sprite" style="display:none"><use href="#boss-art" x="0" y="0"/></g>
-        <g id="player" class="player-sprite" transform="translate(224 276)"><g class="engine-pixel"><rect x="8" y="24" width="6" height="8" fill="#ffcf73"/><rect x="18" y="24" width="6" height="8" fill="#ff806c"/></g><use href="#ship-art" x="0" y="0"/></g>
+        <g id="boss" transform="translate(208 34)" style="display:none"><g class="boss-bob"><use href="#boss-art" x="0" y="0"/></g></g>
+        <g id="player" transform="translate(224 276)"><g class="ship-bob"><g class="engine-pixel"><rect x="8" y="24" width="6" height="8" fill="#ffcf73"/><rect x="18" y="24" width="6" height="8" fill="#ff806c"/></g><use href="#ship-art" x="0" y="0"/></g></g>
       </svg>
       <div class="space-overlay" id="space-overlay">
         <div class="overlay-card"><h2 id="overlay-title">READY, PILOT?</h2><p id="overlay-copy">You have 25 hull points. Blast through three alien formations, dodge their shots, and take down the mothership!</p><button class="space-start" id="start-game" type="button">🚀 Start the mission</button></div>
@@ -160,9 +160,11 @@
         bossMeter.setAttribute("aria-valuenow", bossHp);
       }
       function makeEnemy(index, row, col) {
-        const group = svgEl("g", { class: "alien-sprite", transform: `translate(${75 + col * 62} ${45 + row * 42})`, "data-id": index });
+        const group = svgEl("g", { transform: `translate(${75 + col * 62} ${45 + row * 42})`, "data-id": index });
+        const bob = svgEl("g", { class: "alien-bob" });
         const sprite = svgEl("use", { href: row === 0 ? "#alien-art" : "#alien-blue-art", x: 0, y: 0 });
-        group.append(sprite);
+        bob.append(sprite);
+        group.append(bob);
         enemyLayer.append(group);
         return { x: 75 + col * 62, y: 45 + row * 42, node: group, alive: true, shotOffset: Math.random() * 1000 };
       }
