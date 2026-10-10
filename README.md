@@ -7,6 +7,7 @@ A tiny retro game corner with sunset colors and pixel-inspired details. Pick a g
 - **Homework Blaze** — click the falling math sheets to burn them before they hit the desk.
 
 Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
+- **Alien Attack** — fly a pixel ship, clear alien waves, and take on the boss.
 
 ## Play locally
 

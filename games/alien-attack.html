@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#241a46">
+  <title>Alien Attack · Sunset Arcade</title>
+  <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+  <link rel="stylesheet" href="../arcade.css">
+  <style>
+    .space-game { width: min(100%, 820px); }
+    .space-hud { width: min(100%, 700px); margin: 1.25rem auto .8rem; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: .75rem; text-align: left; font-weight: bold; }
+    .hud-score { text-align: center; }
+    .hud-wave { text-align: right; }
+    .health-track, .boss-track { height: 17px; margin-top: .35rem; border: 2px solid #fff0c2; background: #342347; box-shadow: 2px 2px #241a46; }
+    .health-fill { height: 100%; width: 100%; background: repeating-linear-gradient(90deg,#78e1b0 0 18px,#54bf9a 18px 22px); transition: width .2s steps(4,end); }
+    .boss-hud { display: none; width: min(100%,700px); margin: 0 auto .65rem; text-align: left; color: #ffd3e6; font-weight: bold; }
+    .boss-hud.show { display: block; }
+    .boss-fill { height: 100%; width: 100%; background: repeating-linear-gradient(90deg,#fb658d 0 18px,#d74479 18px 22px); transition: width .15s steps(3,end); }
+    .space-screen { position: relative; width: min(100%,700px); aspect-ratio: 7 / 5; margin: 0 auto; overflow: hidden; border: 4px solid #fff0c2; background: #201c42; box-shadow: 7px 7px #332044; touch-action: none; }
+    .space-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .space-overlay { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 1rem; background: #241a46df; }
+    .space-overlay[hidden] { display: none; }
+    .overlay-card { width: min(100%, 440px); padding: clamp(.8rem,4vw,1.5rem); border: 3px solid #ffd477; background: #482b5fee; box-shadow: 6px 6px #17142d; }
+    .overlay-card h2 { margin: .25rem 0 .75rem; color: #ffd477; font: 1rem/1.8 "Press Start 2P","Courier New",monospace; }
+    .overlay-card p { margin: .5rem 0 1rem; line-height: 1.5; }
+    .space-start { min-height: 48px; padding: .75rem 1rem; border: 3px solid #fff0c2; color: #351f4c; background: #9fe0dc; box-shadow: 4px 4px #241a46; font: bold 1rem "Courier New",monospace; cursor: pointer; touch-action: manipulation; }
+    .space-start:hover { transform: translateY(-2px); }
+    .space-controls { width: min(100%,700px); margin: 1rem auto 0; display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: .65rem; }
+    .space-control { min-height: 54px; border: 3px solid #fff0c2; color: #fff0c2; background: #69436d; box-shadow: 4px 4px #332044; font: bold 1.2rem "Courier New",monospace; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .space-control.fire-control { color: #391e49; background: #ffcf73; }
+    .space-control:active, .space-control.held { transform: translateY(3px); box-shadow: 1px 1px #332044; background: #956080; }
+    .space-control.fire-control:active, .space-control.fire-control.held { background: #ffab59; }
+    .space-help { margin: .8rem auto 0; color: #ffe2ca; font-size: .9rem; line-height: 1.5; }
+    .player-sprite { animation: ship-bob .65s steps(2,end) infinite alternate; }
+    .engine-pixel { animation: engine .22s steps(2,end) infinite alternate; transform-origin: center top; }
+    .alien-sprite { animation: alien-bob .45s steps(2,end) infinite alternate; }
+    .boss-sprite { animation: boss-bob .55s steps(2,end) infinite alternate; }
+    .pixel-shot { animation: shot-glow .12s steps(2,end) infinite alternate; }
+    @keyframes ship-bob { to { transform: translateY(2px); } }
+    @keyframes alien-bob { to { transform: translateY(3px); } }
+    @keyframes boss-bob { to { transform: translateY(3px) scale(1.015); } }
+    @keyframes engine { to { opacity: .55; transform: scaleY(.65); } }
+    @keyframes shot-glow { to { opacity: .68; } }
+    @media(max-width:560px){
+      .space-game { padding-left: .65rem; padding-right: .65rem; }
+      .space-hud { grid-template-columns: 1fr auto; font-size: .86rem; gap: .45rem .6rem; }
+      .hud-score { grid-column: 1; grid-row: 2; text-align: left; }
+      .hud-wave { grid-column: 2; grid-row: 2; }
+      .health-track, .boss-track { height: 14px; }
+      .space-screen { aspect-ratio: 5 / 4; }
+      .space-controls { gap: .5rem; margin-top: .85rem; }
+      .space-control { min-height: 58px; font-size: 1.25rem; }
+      .space-help { font-size: .82rem; }
+      .overlay-card h2 { font-size: .78rem; }
+      .overlay-card p { font-size: .9rem; }
+    }
+    @media(prefers-reduced-motion:reduce){.player-sprite,.engine-pixel,.alien-sprite,.boss-sprite,.pixel-shot{animation:none}}
+  </style>
+</head>
+<body>
+  <main class="game-page space-game">
+    <a class="back-link" href="../index.html">← BACK TO THE ARCADE</a>
+    <div class="pixel-sun" aria-hidden="true">✦</div>
+    <p class="eyebrow">A LITTLE TROUBLE IN THE GALAXY</p>
+    <h1>Alien Attack</h1>
+    <p class="game-description">Pilot your pixel ship, dodge the incoming fire, and blast through three waves to reach the boss!</p>
+
+    <div class="space-hud" aria-label="Game status">
+      <div class="hud-health">SHIP HULL <span id="health-readout">25 / 25</span><div class="health-track" role="meter" aria-label="Ship health" aria-valuemin="0" aria-valuemax="25" aria-valuenow="25"><div class="health-fill" id="health-fill"></div></div></div>
+      <div class="hud-score">SCORE<br><span id="score-readout">0</span><br><small>BEST <span id="best-readout">0</span></small></div>
+      <div class="hud-wave">WAVE<br><span id="wave-readout">1 / 4</span></div>
+    </div>
+    <div class="boss-hud" id="boss-hud">MOTHERSHIP HULL<div class="boss-track" role="meter" aria-label="Mothership health" aria-valuemin="0" aria-valuemax="40" aria-valuenow="40"><div class="boss-fill" id="boss-fill"></div></div></div>
+
+    <div class="space-screen" id="space-screen" aria-label="Pixel art space battle">
+      <svg class="space-svg" id="space-svg" viewBox="0 0 480 320" role="img" aria-label="A tiny pixel spaceship faces an alien fleet among the stars" shape-rendering="crispEdges">
+        <defs>
+          <g id="ship-art">
+            <rect x="12" y="0" width="8" height="4" fill="#fff0c2"/><rect x="8" y="4" width="16" height="4" fill="#9fe0dc"/><rect x="4" y="8" width="24" height="4" fill="#9fe0dc"/><rect x="0" y="12" width="32" height="8" fill="#65c9c0"/><rect x="4" y="20" width="8" height="4" fill="#5b73b9"/><rect x="20" y="20" width="8" height="4" fill="#5b73b9"/><rect x="12" y="8" width="8" height="8" fill="#fff0c2"/><rect x="0" y="16" width="4" height="8" fill="#ffcf73"/><rect x="28" y="16" width="4" height="8" fill="#ffcf73"/>
+          </g>
+          <g id="alien-art">
+            <rect x="8" y="0" width="8" height="4" fill="#cbff8c"/><rect x="4" y="4" width="16" height="4" fill="#9be26f"/><rect x="0" y="8" width="24" height="8" fill="#77d28a"/><rect x="4" y="16" width="4" height="4" fill="#77d28a"/><rect x="16" y="16" width="4" height="4" fill="#77d28a"/><rect x="4" y="8" width="4" height="4" fill="#30264f"/><rect x="16" y="8" width="4" height="4" fill="#30264f"/><rect x="0" y="4" width="4" height="4" fill="#ffd477"/><rect x="20" y="4" width="4" height="4" fill="#ffd477"/>
+          </g>
+          <g id="alien-blue-art">
+            <rect x="8" y="0" width="8" height="4" fill="#b8e6ff"/><rect x="4" y="4" width="16" height="4" fill="#7dc4f0"/><rect x="0" y="8" width="24" height="8" fill="#608ed2"/><rect x="4" y="16" width="4" height="4" fill="#608ed2"/><rect x="16" y="16" width="4" height="4" fill="#608ed2"/><rect x="4" y="8" width="4" height="4" fill="#30264f"/><rect x="16" y="8" width="4" height="4" fill="#30264f"/><rect x="0" y="4" width="4" height="4" fill="#ffe59b"/><rect x="20" y="4" width="4" height="4" fill="#ffe59b"/>
+          </g>
+          <g id="boss-art">
+            <rect x="24" y="0" width="16" height="8" fill="#ffd477"/><rect x="16" y="8" width="32" height="8" fill="#ff8eab"/><rect x="8" y="16" width="48" height="8" fill="#ec5d8e"/><rect x="0" y="24" width="64" height="24" fill="#d74783"/><rect x="8" y="48" width="48" height="8" fill="#d74783"/><rect x="16" y="56" width="8" height="8" fill="#f4779a"/><rect x="40" y="56" width="8" height="8" fill="#f4779a"/><rect x="8" y="28" width="8" height="8" fill="#fff0c2"/><rect x="48" y="28" width="8" height="8" fill="#fff0c2"/><rect x="0" y="8" width="8" height="16" fill="#ffd477"/><rect x="56" y="8" width="8" height="16" fill="#ffd477"/><rect x="24" y="32" width="16" height="8" fill="#632f72"/><rect x="24" y="40" width="16" height="4" fill="#fff0c2"/>
+          </g>
+        </defs>
+        <rect width="480" height="320" fill="#201c42"/>
+        <path d="M35 45h4v4h-4zm92 20h3v3h-3zm237-28h4v4h-4zM435 96h3v3h-3zM55 137h4v4h-4zm89 62h3v3h-3zm267-7h4v4h-4zM34 256h3v3h-3zm112-46h4v4h-4zm214 87h3v3h-3zM402 263h4v4h-4zM206 31h3v3h-3zm131 119h3v3h-3zM82 282h4v4h-4z" fill="#fff0c2" opacity=".8"/>
+        <g id="enemy-layer"></g><g id="projectile-layer"></g><g id="effect-layer"></g>
+        <g id="boss" class="boss-sprite" style="display:none"><use href="#boss-art" x="0" y="0"/></g>
+        <g id="player" class="player-sprite" transform="translate(224 276)"><g class="engine-pixel"><rect x="8" y="24" width="6" height="8" fill="#ffcf73"/><rect x="18" y="24" width="6" height="8" fill="#ff806c"/></g><use href="#ship-art" x="0" y="0"/></g>
+      </svg>
+      <div class="space-overlay" id="space-overlay">
+        <div class="overlay-card"><h2 id="overlay-title">READY, PILOT?</h2><p id="overlay-copy">You have 25 hull points. Blast through three alien formations, dodge their shots, and take down the mothership!</p><button class="space-start" id="start-game" type="button">🚀 Start the mission</button></div>
+      </div>
+    </div>
+
+    <div class="space-controls" aria-label="Spaceship controls">
+      <button class="space-control" id="move-left" type="button" aria-label="Move left">◀ LEFT</button>
+      <button class="space-control" id="move-right" type="button" aria-label="Move right">RIGHT ▶</button>
+      <button class="space-control fire-control" id="fire-button" type="button" aria-label="Fire laser">✦ FIRE ✦</button>
+    </div>
+    <p class="space-help">Keyboard: ← → or A / D to fly, SPACE to fire. On a phone, hold the buttons!</p>
+  </main>
+  <script>
+    (() => {
+      const svg = document.querySelector("#space-svg");
+      const screen = document.querySelector("#space-screen");
+      const player = document.querySelector("#player");
+      const enemyLayer = document.querySelector("#enemy-layer");
+      const shotLayer = document.querySelector("#projectile-layer");
+      const effectLayer = document.querySelector("#effect-layer");
+      const boss = document.querySelector("#boss");
+      const overlay = document.querySelector("#space-overlay");
+      const overlayTitle = document.querySelector("#overlay-title");
+      const overlayCopy = document.querySelector("#overlay-copy");
+      const startButton = document.querySelector("#start-game");
+      const healthReadout = document.querySelector("#health-readout");
+      const healthFill = document.querySelector("#health-fill");
+      const healthMeter = healthFill.parentElement;
+      const scoreReadout = document.querySelector("#score-readout");
+      const bestReadout = document.querySelector("#best-readout");
+      const waveReadout = document.querySelector("#wave-readout");
+      const bossHud = document.querySelector("#boss-hud");
+      const bossFill = document.querySelector("#boss-fill");
+      const bossMeter = bossFill.parentElement;
+      const held = { left: false, right: false, fire: false };
+      const keyState = new Set();
+      const W = 480, H = 320, MAX_HP = 25, BOSS_HP = 40;
+      let x = W / 2, hp = MAX_HP, score = 0, best = 0, wave = 1;
+      let enemies = [], shots = [], enemyShots = [], bossHp = BOSS_HP;
+      let bossMode = false, running = false, lastTime = 0, playerFireAt = 0, enemyFireAt = 0;
+      let animation = 0, transitionTimer = 0, invulnerableUntil = 0, formationDirection = 1;
+
+      try { best = Number(localStorage.getItem("alienAttackBest")) || 0; } catch (_) { /* storage may be disabled */ }
+      bestReadout.textContent = String(best);
+
+      function svgEl(tag, attrs = {}) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [name, value] of Object.entries(attrs)) node.setAttribute(name, value);
+        return node;
+      }
+      function updateHud() {
+        healthReadout.textContent = `${hp} / ${MAX_HP}`;
+        healthFill.style.width = `${hp / MAX_HP * 100}%`;
+        healthMeter.setAttribute("aria-valuenow", hp);
+        scoreReadout.textContent = String(score);
+        if (score > best) {
+          best = score;
+          bestReadout.textContent = String(best);
+          try { localStorage.setItem("alienAttackBest", String(best)); } catch (_) { /* storage may be disabled */ }
+        }
+        waveReadout.textContent = bossMode ? "BOSS!" : `${wave} / 4`;
+        bossFill.style.width = `${bossHp / BOSS_HP * 100}%`;
+        bossMeter.setAttribute("aria-valuenow", bossHp);
+      }
+      function makeEnemy(index, row, col) {
+        const group = svgEl("g", { class: "alien-sprite", transform: `translate(${75 + col * 62} ${45 + row * 42})`, "data-id": index });
+        const sprite = svgEl("use", { href: row === 0 ? "#alien-art" : "#alien-blue-art", x: 0, y: 0 });
+        group.append(sprite);
+        enemyLayer.append(group);
+        return { x: 75 + col * 62, y: 45 + row * 42, node: group, alive: true, shotOffset: Math.random() * 1000 };
+      }
+      function makeWave() {
+        enemies = [];
+        enemyLayer.replaceChildren();
+        bossMode = false;
+        boss.style.display = "none";
+        bossHud.classList.remove("show");
+        const rows = wave === 1 ? 2 : wave === 2 ? 3 : 4;
+        const cols = wave === 1 ? 5 : wave === 2 ? 6 : 7;
+        let id = 0;
+        for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) enemies.push(makeEnemy(id++, r, c));
+        formationDirection = 1;
+        enemyFireAt = performance.now() + 700;
+        updateHud();
+      }
+      function makeBoss() {
+        enemies = [];
+        enemyLayer.replaceChildren();
+        bossMode = true;
+        bossHp = BOSS_HP;
+        boss.setAttribute("transform", "translate(208 34)");
+        boss.style.display = "block";
+        bossHud.classList.add("show");
+        enemyFireAt = performance.now() + 900;
+        updateHud();
+      }
+      function addShot(xPos, yPos, fromEnemy = false, color = "#9fe0dc", width = 4, height = 12) {
+        const node = svgEl("rect", { x: xPos - width / 2, y: yPos, width, height, fill: color, class: "pixel-shot" });
+        shotLayer.append(node);
+        (fromEnemy ? enemyShots : shots).push({ x: xPos, y: yPos, node, speed: fromEnemy ? 155 : 280, width, height });
+      }
+      function addBurst(xPos, yPos, color = "#ffd477") {
+        const g = svgEl("g", { transform: `translate(${xPos} ${yPos})` });
+        for (const [dx, dy, size] of [[-8,0,4],[8,0,4],[0,-8,4],[0,8,4],[-5,-5,3],[5,5,3]]) g.append(svgEl("rect", { x: dx, y: dy, width: size, height: size, fill: color }));
+        effectLayer.append(g);
+        window.setTimeout(() => g.remove(), 170);
+      }
+      function damagePlayer(amount, now) {
+        if (now < invulnerableUntil || !running) return;
+        hp = Math.max(0, hp - amount);
+        invulnerableUntil = now + 500;
+        updateHud();
+        addBurst(x, 282, "#ff806c");
+        if (hp <= 0) endGame(false);
+      }
+      function clearShots() {
+        shots = [];
+        enemyShots = [];
+        shotLayer.replaceChildren();
+      }
+      function nextWave() {
+        if (wave < 3) {
+          wave++;
+          waveReadout.textContent = `${wave} / 4`;
+          transitionTimer = performance.now() + 800;
+          overlayTitle.textContent = `WAVE ${wave}`;
+          overlayCopy.textContent = ["The aliens are getting organized!", "A bigger formation is heading your way!"][wave - 2];
+          overlay.querySelector(".overlay-card").classList.add("between-waves");
+          overlay.style.background = "#241a4688";
+          overlay.hidden = false;
+          return;
+        }
+        wave = 4;
+        makeBoss();
+        overlayTitle.textContent = "MOTHERSHIP INCOMING!";
+        overlayCopy.textContent = "The alien commander is here. Keep firing and watch out for the triple-shot!";
+        overlay.querySelector(".overlay-card").classList.add("between-waves");
+        overlay.style.background = "#241a4688";
+        overlay.hidden = false;
+        transitionTimer = performance.now() + 1100;
+        updateHud();
+      }
+      function endGame(victory) {
+        running = false;
+        cancelAnimationFrame(animation);
+        window.clearTimeout(transitionTimer);
+        clearShots();
+        overlay.hidden = false;
+        overlay.style.background = "#241a46df";
+        overlay.querySelector(".overlay-card").classList.remove("between-waves");
+        overlayTitle.textContent = victory ? "GALAXY SAVED!" : "GAME OVER";
+        overlayCopy.textContent = victory
+          ? `You blasted the mothership! Final score: ${score}. Best score: ${best}. You are a star pilot!`
+          : `Your ship took ${MAX_HP - hp} hits. Final score: ${score}. ${score > 0 ? "One more mission?" : "The galaxy is counting on you!"}`;
+        startButton.textContent = victory ? "🚀 Play again" : "↻ Try again";
+      }
+      function startGame() {
+        cancelAnimationFrame(animation);
+        window.clearTimeout(transitionTimer);
+        transitionTimer = 0;
+        running = true;
+        x = W / 2;
+        hp = MAX_HP;
+        score = 0;
+        wave = 1;
+        bossHp = BOSS_HP;
+        bossMode = false;
+        lastTime = performance.now();
+        playerFireAt = 0;
+        invulnerableUntil = 0;
+        held.left = held.right = held.fire = false;
+        overlay.hidden = true;
+        overlay.querySelector(".overlay-card").classList.remove("between-waves");
+        overlay.style.background = "#241a46df";
+        startButton.textContent = "🚀 Start the mission";
+        clearShots();
+        makeWave();
+        updateHud();
+        animation = requestAnimationFrame(frame);
+      }
+      function firePlayer(now) {
+        if (now < playerFireAt) return;
+        addShot(x, 265, false, "#9fe0dc", 5, 14);
+        playerFireAt = now + 200;
+      }
+      function enemyFire(now) {
+        if (now < enemyFireAt) return;
+        if (bossMode) {
+          const bx = 208 + Math.sin(now / 670) * 145;
+          for (const offset of [-24, 0, 24]) addShot(bx + offset, 101, true, "#ff729d", 7, 15);
+          enemyFireAt = now + Math.max(520, 1000 - (BOSS_HP - bossHp) * 8);
+        } else if (enemies.length) {
+          const shooter = enemies[Math.floor(Math.random() * enemies.length)];
+          addShot(shooter.x + 12, shooter.y + 20, true, "#ff9c88", 5, 10);
+          if (wave >= 3 && Math.random() > .45) addShot(shooter.x + 12, shooter.y + 20, true, "#ffd477", 4, 9);
+          enemyFireAt = now + Math.max(450, 1400 - wave * 220 - score * 2);
+        }
+      }
+      function frame(now) {
+        if (!running) return;
+        const dt = Math.min((now - lastTime) / 1000, .04);
+        lastTime = now;
+        if (transitionTimer) {
+          if (now >= transitionTimer) {
+            transitionTimer = 0;
+            overlay.hidden = true;
+            if (bossMode) { /* boss already in place */ } else makeWave();
+          }
+          animation = requestAnimationFrame(frame);
+          return;
+        }
+        const left = held.left || keyState.has("ArrowLeft") || keyState.has("a") || keyState.has("A");
+        const right = held.right || keyState.has("ArrowRight") || keyState.has("d") || keyState.has("D");
+        const firing = held.fire || keyState.has(" ") || keyState.has("Space");
+        if (left) x -= 230 * dt;
+        if (right) x += 230 * dt;
+        x = Math.max(18, Math.min(W - 18, x));
+        player.setAttribute("transform", `translate(${x - 16} 276)`);
+        player.style.opacity = now < invulnerableUntil && Math.floor(now / 70) % 2 ? ".35" : "1";
+        if (firing) firePlayer(now);
+
+        if (bossMode) {
+          const bx = 208 + Math.sin(now / 670) * 145;
+          boss.setAttribute("transform", `translate(${bx} ${34 + Math.sin(now / 250) * 3})`);
+          if (bossHp <= 0) {
+            score += 1000;
+            updateHud();
+            endGame(true);
+            return;
+          }
+        } else {
+          const shift = formationDirection * (34 + wave * 12) * dt;
+          let minX = Infinity, maxX = -Infinity;
+          for (const enemy of enemies) {
+            enemy.x += shift;
+            enemy.node.setAttribute("transform", `translate(${enemy.x} ${enemy.y + Math.sin(now / 160 + enemy.shotOffset) * 2})`);
+            minX = Math.min(minX, enemy.x);
+            maxX = Math.max(maxX, enemy.x + 24);
+          }
+          if (maxX > 465 || minX < 15) {
+            formationDirection *= -1;
+            for (const enemy of enemies) enemy.y += 9;
+          }
+          if (enemies.some(enemy => enemy.y >= 244)) { damagePlayer(5, now); enemies.forEach(e => e.y = Math.min(e.y, 230)); }
+          enemyFire(now);
+          if (!enemies.length) { nextWave(); }
+        }
+
+        for (const shot of shots) {
+          shot.y -= shot.speed * dt;
+          shot.node.setAttribute("y", shot.y);
+          if (shot.y < -20) { shot.node.remove(); shot.dead = true; continue; }
+          if (bossMode) {
+            const bx = 208 + Math.sin(now / 670) * 145;
+            if (shot.x >= bx && shot.x <= bx + 64 && shot.y < 96 && shot.y > 34) {
+              shot.node.remove(); shot.dead = true; bossHp--; score += 10; addBurst(shot.x, Math.max(35, shot.y), "#ffd477"); updateHud();
+            }
+          } else {
+            const target = enemies.find(e => shot.x >= e.x - 3 && shot.x <= e.x + 27 && shot.y <= e.y + 22 && shot.y + 14 >= e.y);
+            if (target) {
+              shot.node.remove(); shot.dead = true; target.node.remove(); enemies = enemies.filter(e => e !== target); score += 100; addBurst(target.x + 12, target.y + 10, "#cbff8c"); updateHud();
+            }
+          }
+        }
+        shots = shots.filter(s => !s.dead);
+        for (const shot of enemyShots) {
+          shot.y += shot.speed * dt;
+          shot.node.setAttribute("y", shot.y);
+          if (shot.y > H) { shot.node.remove(); shot.dead = true; continue; }
+          if (shot.y > 268 && shot.y < 305 && Math.abs(shot.x - x) < 21) {
+            shot.node.remove(); shot.dead = true; damagePlayer(1, now);
+          }
+        }
+        enemyShots = enemyShots.filter(s => !s.dead);
+        animation = requestAnimationFrame(frame);
+      }
+
+      function bindHold(button, prop) {
+        button.addEventListener("pointerdown", event => { event.preventDefault(); held[prop] = true; button.classList.add("held"); button.setPointerCapture?.(event.pointerId); });
+        const release = () => { held[prop] = false; button.classList.remove("held"); };
+        button.addEventListener("pointerup", release);
+        button.addEventListener("pointercancel", release);
+        button.addEventListener("lostpointercapture", release);
+        button.addEventListener("contextmenu", event => event.preventDefault());
+      }
+      bindHold(document.querySelector("#move-left"), "left");
+      bindHold(document.querySelector("#move-right"), "right");
+      bindHold(document.querySelector("#fire-button"), "fire");
+      window.addEventListener("keydown", event => {
+        if (["ArrowLeft", "ArrowRight", " "].includes(event.key)) event.preventDefault();
+        keyState.add(event.key);
+      });
+      window.addEventListener("keyup", event => keyState.delete(event.key));
+      window.addEventListener("blur", () => { keyState.clear(); held.left = held.right = held.fire = false; });
+      startButton.addEventListener("click", startGame);
+      updateHud();
+    })();
+  </script>
+</body>
+</html>
