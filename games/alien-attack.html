@@ -349,6 +349,7 @@
           const bossStep = 140 * dt;
           bossX += Math.max(-bossStep, Math.min(bossStep, targetBossX - bossX));
           boss.setAttribute("transform", `translate(${bossX} 34)`);
+          enemyFire(now);
           for (const minion of minions) {
             const targetX = x - 12;
             const minionStep = 58 * dt;
