@@ -9,7 +9,7 @@ A tiny retro game corner with sunset colors and pixel-inspired details. Pick a g
 - **Sunset Speedway** — choose a pixel car, race three laps, and avoid the other drivers.
 - **Potion Panic** — catch falling ingredients in their matching bottles and brew potions.
 - **Moon Mart Night Shift** — sort strange alien groceries into the right crate before checkout.
-- **Haunted Hayride** — steer a tractor down a winding moonlit farm road, dodge spooky obstacles, and collect candy.
+- **Haunted Hayride** — steer a tractor down a straight moonlit farm road, dodge spooky obstacles, and collect candy.
 
 Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
 
