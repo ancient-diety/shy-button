@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17142d">
+  <title>Potion Panic · Sunset Arcade</title>
+  <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+  <link rel="stylesheet" href="../arcade.css">
+  <style>
+    .potion-game { width: min(100%, 760px); }
+    .potion-hud { width: min(100%, 520px); margin: 1rem auto .65rem; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .45rem; text-align: left; font-weight: bold; }
+    .potion-hud > div { min-width: 0; padding: .5rem .6rem; border: 2px solid #c5a6ff; background: #302550; box-shadow: 3px 3px #14132b; }
+    .potion-hud span { display: block; margin-top: .28rem; color: #ffe57e; font-size: 1.05rem; }
+    .potion-best { margin: 0 auto .65rem; color: #ddd2ff; font-size: .78rem; letter-spacing: .1em; }
+    .potion-best span { color: #ffe57e; font-weight: bold; }
+    .potion-scene { position: relative; width: min(100%,480px); aspect-ratio: 6 / 7; margin: .6rem auto .8rem; overflow: hidden; border: 4px solid #f8e8ff; background: #17142d; box-shadow: 7px 7px #14132b; isolation: isolate; }
+    .potion-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .potion-overlay { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: .8rem; background: #11102ddb; }
+    .potion-overlay[hidden] { display: none; }
+    .potion-card { width: min(100%,400px); padding: clamp(.85rem,4vw,1.35rem); border: 3px solid #ffe57e; background: #292047f5; box-shadow: 6px 6px #100f27; }
+    .potion-card h2 { margin: .2rem 0 .7rem; color: #ffe57e; font: .82rem/1.8 "Press Start 2P","Courier New",monospace; }
+    .potion-card p { margin: .45rem 0 .8rem; color: #f8e8ff; line-height: 1.5; }
+    .potion-start { min-height: 48px; max-width: 100%; padding: .7rem 1rem; border: 3px solid #f8e8ff; color: #241a3d; background: #8af7dd; box-shadow: 4px 4px #100f27; font: bold .95rem "Courier New",monospace; touch-action: manipulation; }
+    .potion-message { min-height: 2.6em; margin: .5rem auto .75rem; color: #f8e8ff; font-weight: bold; line-height: 1.5; }
+    .potion-buttons { width: min(100%,480px); margin: .65rem auto 0; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem; }
+    .potion-button { min-width: 0; min-height: 68px; display: flex; align-items: center; justify-content: center; gap: .5rem; padding: .45rem .25rem; border: 3px solid #f8e8ff; color: #f8e8ff; background: #302550; box-shadow: 3px 3px #14132b; font: bold .78rem/1.35 "Courier New",monospace; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .potion-button .button-gem { width: 20px; height: 20px; flex: 0 0 auto; background: var(--brew-color); box-shadow: 4px 4px var(--brew-shadow); image-rendering: pixelated; }
+    .potion-button small { display: block; color: #d9ceff; font-size: .68rem; }
+    .potion-button[data-type="moon"] { --brew-color: #53f1d2; --brew-shadow: #157e9a; }
+    .potion-button[data-type="mushroom"] { --brew-color: #ff62c5; --brew-shadow: #a83089; }
+    .potion-button[data-type="sun"] { --brew-color: #ffe05e; --brew-shadow: #d77a3d; }
+    .potion-button.ready { border-color: #fff; background: #514176; box-shadow: 0 0 0 3px var(--brew-color), 4px 4px #14132b; animation: button-ready .22s steps(2,end) infinite alternate; }
+    .potion-button:active { transform: translateY(2px); box-shadow: 1px 1px #14132b; }
+    .potion-help { margin: .8rem auto 0; color: #e9dcff; font-size: .86rem; line-height: 1.5; }
+    @keyframes button-ready { to { transform: translateY(-3px); } }
+    @keyframes portal-blink { 50% { opacity: .45; } }
+    @keyframes bubble-hop { 50% { transform: translateY(-5px); } }
+    .portal-light { animation: portal-blink .8s steps(2,end) infinite; }
+    .potion-bubble { animation: bubble-hop .6s steps(2,end) infinite; }
+    @media(max-width:520px) {
+      .potion-game { padding-left: .65rem; padding-right: .65rem; }
+      .potion-hud { gap: .32rem; font-size: .73rem; }
+      .potion-hud > div { padding: .42rem .4rem; }
+      .potion-hud span { font-size: .95rem; }
+      .potion-card h2 { font-size: .7rem; }
+      .potion-card p { font-size: .9rem; }
+      .potion-button { min-height: 62px; gap: .35rem; font-size: .7rem; }
+      .potion-button .button-gem { width: 14px; height: 14px; box-shadow: 3px 3px var(--brew-shadow); }
+    }
+    @media(prefers-reduced-motion:reduce) { .potion-scene * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main class="game-page potion-game">
+    <a class="back-link" href="../index.html">← BACK TO THE ARCADE</a>
+    <div class="pixel-sun" aria-hidden="true">✦</div>
+    <p class="eyebrow">THE MOONLIT MIXING ROOM</p>
+    <h1>Potion Panic</h1>
+    <p class="game-description">Catch the falling magic in its matching bottle! Three spills and the whole lab goes plop.</p>
+
+    <div class="potion-hud" aria-label="Potion game score">
+      <div>SCORE<span id="score-readout">0</span></div>
+      <div>BREWS<span id="brew-readout">0</span></div>
+      <div>STREAK<span id="streak-readout">0</span></div>
+      <div>SPILLS<span id="spill-readout">0 / 3</span></div>
+    </div>
+    <p class="potion-best">BEST SCORE <span id="best-readout">0</span></p>
+
+    <div class="potion-scene" id="potion-scene">
+      <svg class="potion-svg" viewBox="0 0 480 560" role="img" aria-label="Pixel art potion laboratory with three glowing bottles and a falling ingredient">
+        <defs>
+          <pattern id="lab-wall" width="32" height="32" patternUnits="userSpaceOnUse" shape-rendering="crispEdges">
+            <rect width="32" height="32" fill="#211b3d"/>
+            <rect x="2" y="2" width="4" height="4" fill="#29234b"/>
+            <rect x="22" y="18" width="5" height="4" fill="#191831"/>
+            <rect x="10" y="26" width="3" height="3" fill="#32234f"/>
+          </pattern>
+          <pattern id="catch-dash" width="16" height="8" patternUnits="userSpaceOnUse" shape-rendering="crispEdges">
+            <rect width="8" height="4" fill="#53f1d2"/>
+            <rect x="8" y="4" width="8" height="4" fill="#53f1d2"/>
+          </pattern>
+          <g id="ingredient-moon" shape-rendering="crispEdges">
+            <rect x="-4" y="-22" width="8" height="6" fill="#dffff7"/>
+            <rect x="-10" y="-16" width="20" height="6" fill="#8affed"/>
+            <rect x="-16" y="-10" width="32" height="8" fill="#53f1d2"/>
+            <rect x="-16" y="-2" width="32" height="8" fill="#27cfc7"/>
+            <rect x="-12" y="6" width="24" height="7" fill="#168da9"/>
+            <rect x="-7" y="13" width="14" height="5" fill="#155d84"/>
+            <rect x="-8" y="-12" width="5" height="5" fill="#eafffb"/>
+            <rect x="7" y="-2" width="5" height="4" fill="#a4fff0"/>
+            <rect x="-3" y="7" width="6" height="4" fill="#3bdde0"/>
+          </g>
+          <g id="ingredient-mushroom" shape-rendering="crispEdges">
+            <rect x="-4" y="-20" width="8" height="5" fill="#ffe8fb"/>
+            <rect x="-12" y="-15" width="24" height="6" fill="#ff9de0"/>
+            <rect x="-19" y="-9" width="38" height="9" fill="#ff62c5"/>
+            <rect x="-16" y="0" width="32" height="6" fill="#d63fa8"/>
+            <rect x="-9" y="6" width="18" height="11" fill="#fff0cf"/>
+            <rect x="-13" y="17" width="26" height="4" fill="#e6bb90"/>
+            <rect x="-10" y="-8" width="5" height="5" fill="#fff2ff"/>
+            <rect x="6" y="-2" width="5" height="4" fill="#ffb6e9"/>
+            <rect x="-3" y="9" width="5" height="4" fill="#ff62c5"/>
+          </g>
+          <g id="ingredient-sun" shape-rendering="crispEdges">
+            <rect x="-4" y="-22" width="8" height="8" fill="#fff7b8"/>
+            <rect x="-12" y="-14" width="24" height="7" fill="#ffe05e"/>
+            <rect x="-20" y="-7" width="40" height="12" fill="#ffbf49"/>
+            <rect x="-15" y="5" width="30" height="8" fill="#ff963f"/>
+            <rect x="-9" y="13" width="18" height="7" fill="#d95c4d"/>
+            <rect x="-8" y="-10" width="5" height="5" fill="#fffbe0"/>
+            <rect x="5" y="-2" width="7" height="5" fill="#ffeb8a"/>
+            <rect x="-4" y="7" width="6" height="4" fill="#ffc65a"/>
+          </g>
+        </defs>
+
+        <rect width="480" height="560" fill="url(#lab-wall)"/>
+        <rect x="0" y="0" width="480" height="13" fill="#392653"/>
+        <rect x="0" y="13" width="480" height="4" fill="#7b4b83"/>
+        <g shape-rendering="crispEdges" aria-hidden="true">
+          <rect x="32" y="42" width="5" height="5" fill="#ffe05e"/>
+          <rect x="37" y="47" width="4" height="4" fill="#ff9de0"/>
+          <rect x="438" y="38" width="6" height="6" fill="#53f1d2"/>
+          <rect x="430" y="46" width="4" height="4" fill="#ffe05e"/>
+          <rect x="53" y="300" width="4" height="4" fill="#ff62c5"/>
+          <rect x="419" y="276" width="5" height="5" fill="#8affed"/>
+          <rect x="53" y="331" width="6" height="6" fill="#ffe05e"/>
+          <rect x="419" y="320" width="4" height="4" fill="#ff9de0"/>
+          <rect x="78" y="79" width="3" height="3" fill="#fff0c2"/>
+          <rect x="395" y="93" width="3" height="3" fill="#fff0c2"/>
+          <rect x="73" y="382" width="4" height="4" fill="#8affed"/>
+          <rect x="402" y="399" width="4" height="4" fill="#ffe05e"/>
+        </g>
+
+        <g aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="18" y="154" width="89" height="8" fill="#65436e"/>
+          <rect x="22" y="162" width="80" height="36" fill="#30254d"/>
+          <rect x="25" y="169" width="15" height="20" fill="#43305d"/>
+          <rect x="45" y="169" width="15" height="20" fill="#49315d"/>
+          <rect x="65" y="169" width="15" height="20" fill="#3a2b55"/>
+          <rect x="84" y="169" width="12" height="20" fill="#52345e"/>
+          <rect x="373" y="154" width="89" height="8" fill="#65436e"/>
+          <rect x="378" y="162" width="80" height="36" fill="#30254d"/>
+          <rect x="382" y="169" width="15" height="20" fill="#49315d"/>
+          <rect x="402" y="169" width="15" height="20" fill="#3a2b55"/>
+          <rect x="422" y="169" width="15" height="20" fill="#52345e"/>
+          <rect x="441" y="169" width="12" height="20" fill="#43305d"/>
+          <rect x="0" y="207" width="480" height="7" fill="#513563"/>
+          <rect x="0" y="214" width="480" height="3" fill="#9a5e83"/>
+
+          <rect x="35" y="264" width="78" height="7" fill="#65436e"/>
+          <rect x="40" y="271" width="68" height="30" fill="#30254d"/>
+          <rect x="373" y="264" width="78" height="7" fill="#65436e"/>
+          <rect x="378" y="271" width="68" height="30" fill="#30254d"/>
+          <rect x="0" y="310" width="480" height="6" fill="#513563"/>
+          <rect x="0" y="316" width="480" height="3" fill="#9a5e83"/>
+
+          <path d="M102 99h12v17h-12zM108 116h24v12h-24z" fill="#7a4d83"/>
+          <path d="M228 99h24v29h-24z" fill="#7a4d83"/>
+          <path d="M366 99h12v17h-12zM348 116h24v12h-24z" fill="#7a4d83"/>
+          <rect x="108" y="105" width="12" height="4" fill="#53f1d2" class="portal-light"/>
+          <rect x="234" y="105" width="12" height="4" fill="#ff62c5" class="portal-light"/>
+          <rect x="360" y="105" width="12" height="4" fill="#ffe05e" class="portal-light"/>
+          <rect x="116" y="125" width="4" height="202" fill="#53f1d2" opacity=".12"/>
+          <rect x="238" y="125" width="4" height="202" fill="#ff62c5" opacity=".12"/>
+          <rect x="360" y="125" width="4" height="202" fill="#ffe05e" opacity=".12"/>
+        </g>
+
+        <g aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="42" y="345" width="396" height="5" fill="#513563"/>
+          <rect x="42" y="350" width="396" height="3" fill="url(#catch-dash)"/>
+          <rect x="42" y="353" width="396" height="4" fill="#15142b"/>
+          <text x="240" y="337" text-anchor="middle" fill="#b9ffe9" font-size="11" font-weight="bold" font-family="Courier New,monospace" letter-spacing="2">CATCH ZONE</text>
+
+          <rect x="27" y="429" width="426" height="9" fill="#59365f"/>
+          <rect x="34" y="438" width="412" height="8" fill="#2a2349"/>
+          <rect x="0" y="527" width="480" height="9" fill="#6c4380"/>
+          <rect x="0" y="536" width="480" height="24" fill="#2a2049"/>
+          <rect x="0" y="536" width="480" height="4" fill="#b763a0"/>
+          <rect x="18" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="61" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="104" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="147" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="190" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="233" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="276" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="319" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="362" y="540" width="31" height="7" fill="#392653"/>
+          <rect x="405" y="540" width="31" height="7" fill="#392653"/>
+        </g>
+
+        <g id="bottle-moon" transform="translate(116 484)" aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="-8" y="-45" width="16" height="7" fill="#10152d"/>
+          <rect x="-11" y="-38" width="22" height="10" fill="#10152d"/>
+          <rect x="-19" y="-28" width="38" height="36" fill="#10152d"/>
+          <rect x="-15" y="-24" width="30" height="28" fill="#27304c"/>
+          <rect id="moon-fill" x="-13" y="3" width="26" height="0" fill="#22cdbd"/>
+          <rect x="-10" y="-20" width="4" height="19" fill="#b6fff4" opacity=".72"/>
+          <rect x="5" y="-16" width="5" height="4" fill="#d7fff9" class="potion-bubble"/>
+          <rect x="2" y="-8" width="4" height="4" fill="#70f5df" class="potion-bubble"/>
+          <rect x="-16" y="5" width="32" height="4" fill="#10152d"/>
+          <text x="0" y="24" text-anchor="middle" fill="#8affed" font-size="9" font-weight="bold" font-family="Courier New,monospace">MOON</text>
+          <text id="moon-count" x="0" y="37" text-anchor="middle" fill="#e8dcff" font-size="8" font-family="Courier New,monospace">0/5</text>
+        </g>
+        <g id="bottle-mushroom" transform="translate(240 484)" aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="-8" y="-45" width="16" height="7" fill="#10152d"/>
+          <rect x="-11" y="-38" width="22" height="10" fill="#10152d"/>
+          <rect x="-19" y="-28" width="38" height="36" fill="#10152d"/>
+          <rect x="-15" y="-24" width="30" height="28" fill="#33254e"/>
+          <rect id="mushroom-fill" x="-13" y="3" width="26" height="0" fill="#dc43a7"/>
+          <rect x="-10" y="-20" width="4" height="19" fill="#ffd2f0" opacity=".72"/>
+          <rect x="5" y="-16" width="5" height="4" fill="#ffe0f6" class="potion-bubble"/>
+          <rect x="2" y="-8" width="4" height="4" fill="#ff82d2" class="potion-bubble"/>
+          <rect x="-16" y="5" width="32" height="4" fill="#10152d"/>
+          <text x="0" y="24" text-anchor="middle" fill="#ff9de0" font-size="9" font-weight="bold" font-family="Courier New,monospace">BLOOM</text>
+          <text id="mushroom-count" x="0" y="37" text-anchor="middle" fill="#e8dcff" font-size="8" font-family="Courier New,monospace">0/5</text>
+        </g>
+        <g id="bottle-sun" transform="translate(364 484)" aria-hidden="true" shape-rendering="crispEdges">
+          <rect x="-8" y="-45" width="16" height="7" fill="#10152d"/>
+          <rect x="-11" y="-38" width="22" height="10" fill="#10152d"/>
+          <rect x="-19" y="-28" width="38" height="36" fill="#10152d"/>
+          <rect x="-15" y="-24" width="30" height="28" fill="#332d49"/>
+          <rect id="sun-fill" x="-13" y="3" width="26" height="0" fill="#ed9b3f"/>
+          <rect x="-10" y="-20" width="4" height="19" fill="#fff2bf" opacity=".72"/>
+          <rect x="5" y="-16" width="5" height="4" fill="#fff3bd" class="potion-bubble"/>
+          <rect x="2" y="-8" width="4" height="4" fill="#ffe05e" class="potion-bubble"/>
+          <rect x="-16" y="5" width="32" height="4" fill="#10152d"/>
+          <text x="0" y="24" text-anchor="middle" fill="#ffe05e" font-size="9" font-weight="bold" font-family="Courier New,monospace">SUN</text>
+          <text id="sun-count" x="0" y="37" text-anchor="middle" fill="#e8dcff" font-size="8" font-family="Courier New,monospace">0/5</text>
+        </g>
+
+        <g id="effect-layer" shape-rendering="crispEdges"></g>
+        <g id="ingredient-layer" shape-rendering="crispEdges"></g>
+      </svg>
+      <div class="potion-overlay" id="potion-overlay">
+        <section class="potion-card" aria-live="polite">
+          <h2 id="overlay-title">READY TO BREW?</h2>
+          <p id="overlay-copy">Ingredients fall from the lab chutes. When one reaches the glowing catch zone, tap its matching bottle below or press 1, 2, or 3. Fill a bottle with five matching ingredients. Three spills end the shift!</p>
+          <button class="potion-start" id="start-game" type="button">✦ START BREWING ✦</button>
+        </section>
+      </div>
+    </div>
+
+    <p class="potion-message" id="potion-message" aria-live="polite">Pick a bottle when its matching ingredient reaches the neon catch zone!</p>
+    <div class="potion-buttons" role="group" aria-label="Choose the matching potion bottle">
+      <button class="potion-button" type="button" data-type="moon" aria-label="Catch with Moon Drop bottle, key 1"><span class="button-gem" aria-hidden="true"></span><span>MOON<small>KEY 1</small></span></button>
+      <button class="potion-button" type="button" data-type="mushroom" aria-label="Catch with Bloom bottle, key 2"><span class="button-gem" aria-hidden="true"></span><span>BLOOM<small>KEY 2</small></span></button>
+      <button class="potion-button" type="button" data-type="sun" aria-label="Catch with Sun bottle, key 3"><span class="button-gem" aria-hidden="true"></span><span>SUN<small>KEY 3</small></span></button>
+    </div>
+    <p class="potion-help">Tap the matching bottle or press 1 / 2 / 3 when the ingredient reaches the catch zone.</p>
+  </main>
+
+  <script>
+    (() => {
+      const CATCH_Y = 360, MISS_Y = 442, BOTTLE_Y = 476;
+      const TYPES = {
+        moon: { name:"MOON DROP", color:"#53f1d2", shadow:"#157e9a", bottleX:116, fill:"moon-fill", count:"moon-count" },
+        mushroom: { name:"BLOOM", color:"#ff62c5", shadow:"#a83089", bottleX:240, fill:"mushroom-fill", count:"mushroom-count" },
+        sun: { name:"SUN", color:"#ffe05e", shadow:"#d77a3d", bottleX:364, fill:"sun-fill", count:"sun-count" }
+      };
+      const TYPE_KEYS = Object.keys(TYPES);
+      const LANES = [116, 240, 364];
+      const ingredientLayer = document.querySelector("#ingredient-layer");
+      const effectLayer = document.querySelector("#effect-layer");
+      const overlay = document.querySelector("#potion-overlay");
+      const overlayTitle = document.querySelector("#overlay-title");
+      const overlayCopy = document.querySelector("#overlay-copy");
+      const startButton = document.querySelector("#start-game");
+      const scoreReadout = document.querySelector("#score-readout");
+      const brewReadout = document.querySelector("#brew-readout");
+      const streakReadout = document.querySelector("#streak-readout");
+      const spillReadout = document.querySelector("#spill-readout");
+      const bestReadout = document.querySelector("#best-readout");
+      const message = document.querySelector("#potion-message");
+      const potionButtons = Array.from(document.querySelectorAll(".potion-button"));
+      let running = false, animation = 0, current = null, spawnDelay = 0;
+      let score = 0, brews = 0, streak = 0, spills = 0, bestScore = 0;
+      let lastFrame = 0, particles = [];
+      const bottleLevels = { moon:0, mushroom:0, sun:0 };
+
+      try { bestScore = Number(localStorage.getItem("potionPanicBest")) || 0; } catch (_) { /* storage can be disabled */ }
+
+      function svgEl(tag, attrs = {}) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+        return node;
+      }
+      function updateHud() {
+        scoreReadout.textContent = String(score);
+        brewReadout.textContent = String(brews);
+        streakReadout.textContent = String(streak);
+        spillReadout.textContent = spills + " / 3";
+        bestReadout.textContent = String(bestScore);
+      }
+      function updateBottle(type) {
+        const level = bottleLevels[type];
+        const height = level * 4;
+        const fill = document.querySelector("#" + TYPES[type].fill);
+        fill.setAttribute("y", String(3 - height));
+        fill.setAttribute("height", String(height));
+        document.querySelector("#" + TYPES[type].count).textContent = level + "/5";
+      }
+      function updateButtons() {
+        const isReady = current && current.state === "falling" && current.y >= CATCH_Y && current.y <= MISS_Y;
+        for (const button of potionButtons) {
+          button.classList.toggle("ready", Boolean(isReady && button.dataset.type === current.type));
+        }
+      }
+      function setMessage(text) { message.textContent = text; }
+      function makeBurst(x, y, color, count, spread = 150) {
+        for (let i = 0; i < count; i++) {
+          const size = 3 + Math.floor(Math.random() * 4);
+          const node = svgEl("rect", { x:-size/2, y:-size/2, width:size, height:size, fill:Math.random() < .28 ? "#fff6d8" : color, transform:"translate(" + x + " " + y + ")" });
+          effectLayer.append(node);
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 35 + Math.random() * spread;
+          particles.push({ node, x, y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed-25, age:0, life:.32+Math.random()*.42 });
+        }
+      }
+      function spawnIngredient() {
+        const type = TYPE_KEYS[Math.floor(Math.random() * TYPE_KEYS.length)];
+        const baseX = LANES[Math.floor(Math.random() * LANES.length)];
+        const color = TYPES[type].color;
+        const node = svgEl("g", { "aria-label":TYPES[type].name });
+        node.append(svgEl("rect", { x:-25, y:-25, width:50, height:50, fill:color, opacity:".12" }));
+        node.append(svgEl("rect", { x:-29, y:-29, width:5, height:5, fill:color, opacity:".7" }));
+        node.append(svgEl("rect", { x:24, y:22, width:5, height:5, fill:color, opacity:".7" }));
+        node.append(svgEl("use", { href:"#ingredient-" + type }));
+        ingredientLayer.append(node);
+        current = { type, node, baseX, x:baseX, y:112, age:0, speed:Math.min(260, 138 + score*.55), state:"falling", isReady:false };
+        setMessage("A " + TYPES[type].name + " is dropping! Get ready...");
+      }
+      function removeCurrent() {
+        if (current && current.node.parentNode) current.node.remove();
+        current = null;
+        spawnDelay = .42;
+        updateButtons();
+      }
+      function loseIngredient(reason, color = "#ff7098") {
+        if (!current) return;
+        makeBurst(current.x, Math.min(current.y, MISS_Y), color, 14, 110);
+        current.node.remove();
+        current = null;
+        spills++;
+        streak = 0;
+        updateHud();
+        updateButtons();
+        if (spills >= 3) {
+          endGame();
+          return;
+        }
+        setMessage(reason + " One spill! Keep brewing!");
+        spawnDelay = .58;
+      }
+      function updateBest() {
+        if (score <= bestScore) return;
+        bestScore = score;
+        try { localStorage.setItem("potionPanicBest", String(bestScore)); } catch (_) { /* storage can be disabled */ }
+      }
+      function catchIngredient(type) {
+        if (!running || !current || current.state !== "falling") return;
+        if (current.y < CATCH_Y) {
+          setMessage("Wait for it to reach the glowing catch zone!");
+          return;
+        }
+        if (current.y >= MISS_Y) {
+          loseIngredient("Too slow!", "#b69aff");
+          return;
+        }
+        if (current.type !== type) {
+          loseIngredient("Wrong bottle!", "#ff739e");
+          return;
+        }
+        const brew = TYPES[type];
+        const points = 10 + Math.min(streak, 6) * 2;
+        score += points;
+        streak++;
+        bottleLevels[type]++;
+        current.state = "caught";
+        current.age = 0;
+        current.startX = current.x;
+        current.startY = current.y;
+        current.targetX = brew.bottleX;
+        makeBurst(current.x, current.y, brew.color, 18, 135);
+        let messageText = "Lovely catch! +" + points;
+        if (bottleLevels[type] >= 5) {
+          bottleLevels[type] = 0;
+          brews++;
+          score += 25;
+          messageText = brew.name + " POTION COMPLETE! +" + (points + 25);
+          makeBurst(brew.bottleX, BOTTLE_Y, brew.color, 24, 180);
+        }
+        updateBottle(type);
+        updateBest();
+        updateHud();
+        setMessage(messageText);
+        updateButtons();
+      }
+      function endGame() {
+        running = false;
+        cancelAnimationFrame(animation);
+        potionButtons.forEach(button => button.classList.remove("ready"));
+        overlay.hidden = false;
+        overlayTitle.textContent = "THE MIX WENT PLOP!";
+        overlayCopy.textContent = "You brewed " + brews + " potion" + (brews === 1 ? "" : "s") + " and scored " + score + ". Best score: " + bestScore + ". Want another shift?";
+        startButton.textContent = "✦ BREW AGAIN ✦";
+      }
+      function startGame() {
+        cancelAnimationFrame(animation);
+        running = true;
+        current = null;
+        spawnDelay = .45;
+        score = 0;
+        brews = 0;
+        streak = 0;
+        spills = 0;
+        particles = [];
+        bottleLevels.moon = bottleLevels.mushroom = bottleLevels.sun = 0;
+        ingredientLayer.replaceChildren();
+        effectLayer.replaceChildren();
+        for (const type of TYPE_KEYS) updateBottle(type);
+        updateHud();
+        updateButtons();
+        overlay.hidden = true;
+        overlayTitle.textContent = "READY TO BREW?";
+        startButton.textContent = "✦ START BREWING ✦";
+        setMessage("Watch the chutes—match each ingredient before it splashes!");
+        lastFrame = performance.now();
+        animation = requestAnimationFrame(frame);
+      }
+      function updateParticles(dt) {
+        particles = particles.filter(particle => {
+          particle.age += dt;
+          particle.x += particle.vx * dt;
+          particle.y += particle.vy * dt;
+          particle.vy += 115 * dt;
+          const opacity = Math.max(0, 1 - particle.age / particle.life);
+          particle.node.setAttribute("transform", "translate(" + particle.x.toFixed(1) + " " + particle.y.toFixed(1) + ") scale(" + (opacity < .45 ? .65 : 1) + ")");
+          particle.node.setAttribute("opacity", opacity.toFixed(2));
+          if (particle.age >= particle.life) {
+            particle.node.remove();
+            return false;
+          }
+          return true;
+        });
+      }
+      function frame(now) {
+        if (!running) return;
+        const dt = Math.min(.04, Math.max(0, (now - lastFrame) / 1000));
+        lastFrame = now;
+        if (current && current.state === "falling") {
+          current.age += dt;
+          current.y += current.speed * dt;
+          current.x = current.baseX + Math.sin(current.age * 5) * 5;
+          const bob = 1 + Math.sin(current.age * 7) * .045;
+          current.node.setAttribute("transform", "translate(" + current.x.toFixed(1) + " " + current.y.toFixed(1) + ") scale(" + bob.toFixed(2) + ")");
+          if (current.y >= CATCH_Y && current.y < MISS_Y) {
+            if (!current.isReady) {
+              current.isReady = true;
+              setMessage("Catch it now! Choose the glowing matching bottle!");
+            }
+            updateButtons();
+          }
+          if (current.y >= MISS_Y) {
+            loseIngredient("Too slow!", "#b69aff");
+          }
+        } else if (current && current.state === "caught") {
+          current.age += dt;
+          const t = Math.min(1, current.age / .38);
+          const inverse = 1 - t;
+          const controlX = (current.startX + current.targetX) / 2;
+          const controlY = Math.min(current.startY, BOTTLE_Y) - 44;
+          const x = inverse*inverse*current.startX + 2*inverse*t*controlX + t*t*current.targetX;
+          const y = inverse*inverse*current.startY + 2*inverse*t*controlY + t*t*BOTTLE_Y;
+          current.node.setAttribute("transform", "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ") scale(" + (1 - t*.48).toFixed(2) + ")");
+          if (t >= 1) removeCurrent();
+        }
+        updateParticles(dt);
+        if (running && !current) {
+          spawnDelay -= dt;
+          if (spawnDelay <= 0) spawnIngredient();
+        }
+        if (running) animation = requestAnimationFrame(frame);
+      }
+      for (const button of potionButtons) {
+        button.addEventListener("click", () => catchIngredient(button.dataset.type));
+      }
+      window.addEventListener("keydown", event => {
+        if (!running || event.repeat) return;
+        const key = event.key.toLowerCase();
+        const type = key === "1" || key === "q" ? "moon" : key === "2" || key === "w" ? "mushroom" : key === "3" || key === "e" ? "sun" : null;
+        if (type) {
+          event.preventDefault();
+          catchIngredient(type);
+        }
+      });
+      startButton.addEventListener("click", startGame);
+      updateHud();
+      updateButtons();
+    })();
+  </script>
+</body>
+</html>
