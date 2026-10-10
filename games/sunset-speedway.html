@@ -14,12 +14,6 @@
     .race-hud span { display: block; margin-top: .3rem; color: #ffd477; font-size: 1.05rem; }
     .race-screen { position: relative; width: min(100%,480px); aspect-ratio: 6 / 7; margin: 0 auto; overflow: hidden; border: 4px solid #fff0c2; background: #456b4b; box-shadow: 7px 7px #332044; touch-action: none; }
     .race-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-    .cockpit { background: #231d35; }
-    .rear-mirror { position: absolute; z-index: 2; top: 2.2rem; left: 50%; width: 30%; max-width: 142px; transform: translateX(-50%); pointer-events: none; }
-    .side-mirror { position: absolute; z-index: 2; top: 27%; right: .35rem; width: 18%; max-width: 86px; pointer-events: none; }
-    .mirror svg { display: block; width: 100%; height: auto; filter: drop-shadow(2px 3px #17142d); }
-    .dice { position: absolute; z-index: 2; top: 5.7rem; left: calc(50% - 33px); width: 66px; height: 86px; pointer-events: none; }
-    .dice svg { width: 100%; height: 100%; overflow: visible; transform-origin: 20px 0; transition: transform .12s ease-out; }
     .track-map { position: absolute; z-index: 2; top: .65rem; left: .65rem; width: 96px; padding: .35rem; border: 2px solid #fff0c2; background: #332044eF; box-shadow: 3px 3px #17142d; pointer-events: none; }
     .track-map svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
     .track-map-label { margin: 0 0 .25rem; color: #ffd477; text-align: center; font: bold .58rem "Courier New",monospace; letter-spacing: .06em; }
@@ -49,9 +43,6 @@
       .race-card h2 { font-size: .75rem; }
       .race-card p { font-size: .9rem; }
       .track-map { top: .5rem; left: .5rem; width: 82px; }
-      .rear-mirror { top: 1.9rem; }
-      .side-mirror { right: .15rem; }
-      .dice { top: 5rem; left: calc(50% - 27px); width: 54px; height: 74px; }
     }
     @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important;transition:none!important}}
   </style>
@@ -70,8 +61,8 @@
       <div>SPEED<span id="speed-readout">0 km/h</span></div>
     </div>
 
-    <div class="race-screen cockpit" id="race-screen" aria-label="First-person view from inside a pixel-art race car">
-      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Pixel-art racing circuit seen through a car windscreen" shape-rendering="crispEdges">
+    <div class="race-screen" id="race-screen" aria-label="Scrolling top-down view of the pixel race track">
+      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Top-down pixel cars racing along a winding track" shape-rendering="crispEdges">
         <defs>
           <pattern id="grass-pixels" width="24" height="24" patternUnits="userSpaceOnUse">
             <rect width="24" height="24" fill="#52784e"/><rect x="3" y="5" width="3" height="3" fill="#668956"/><rect x="15" y="15" width="4" height="3" fill="#426747"/><rect x="20" y="3" width="2" height="2" fill="#78915a"/>
@@ -93,30 +84,25 @@
             <rect x="-7" y="-16" width="14" height="31" fill="#334279"/><rect x="-6" y="-14" width="12" height="28" fill="#4778d1"/><rect x="-4" y="-16" width="8" height="6" fill="#80d9ed"/><rect x="-5" y="-7" width="10" height="11" fill="#343a62"/><rect x="-4" y="-6" width="8" height="8" fill="#a6e3e5"/><rect x="-6" y="6" width="12" height="4" fill="#365ab0"/><rect x="-2" y="-14" width="4" height="17" fill="#ffcf73"/><rect x="-7" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="4" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="-7" y="12" width="4" height="2" fill="#ffcf73"/><rect x="3" y="12" width="4" height="2" fill="#ffcf73"/>
           </g>
         </defs>
-        <rect width="480" height="560" fill="url(#sunset-sky)"/>
-        <rect x="42" y="63" width="28" height="4" fill="#ffb882"/><rect x="58" y="58" width="20" height="5" fill="#ffb882"/>
-        <rect x="344" y="82" width="36" height="4" fill="#f49a86"/><rect x="362" y="77" width="24" height="5" fill="#f49a86"/>
-        <rect x="205" y="78" width="70" height="4" fill="#ffda91"/><rect x="218" y="68" width="44" height="10" fill="#ffda91"/><rect x="226" y="61" width="28" height="7" fill="#ffda91"/>
-        <rect y="132" width="480" height="10" fill="#39435a"/><path d="M0 143h46v-20h12v20h47v-12h22v12h77v-25h18v25h65v-16h14v16h73v-22h24v22h42v-18h18v18h18v26H0Z" fill="#38434b"/>
-        <g id="road-render"></g>
-        <g id="traffic-render"></g>
-        <g aria-hidden="true" shape-rendering="crispEdges">
-          <path d="M0 0h480v25h-30l-15 17H45L30 25H0Z" fill="#2e213b"/><path d="M0 0h38l52 424-34 8L0 42Zm480 0h-38l-52 424 34 8 56-390Z" fill="#392542" stroke="#8c5470" stroke-width="5"/>
-          <path d="M0 426 116 392h248l116 34v134H0Z" fill="#35243d" stroke="#19192d" stroke-width="8"/>
-          <path d="M0 426 116 392h248l116 34" fill="none" stroke="#e9a078" stroke-width="5"/>
-          <path d="M42 462h82v5H42zm16 9h60v4H58zm278-9h82v5h-82zm16 9h60v4h-60z" fill="#694465"/>
-          <g id="steering-wheel" transform="rotate(0 240 494)">
-            <path d="M186 480h7v-10h8v-7h10v-5h58v5h10v7h8v10h7v21h-7v10h-8v7h-10v5h-58v-5h-10v-7h-8v-10h-7Z" fill="#211d31" stroke="#b87578" stroke-width="5"/>
-            <path d="M204 481h8v-9h8v-5h40v5h8v9h8v15h-8v9h-8v6h-40v-6h-8v-9h-8Z" fill="#47334b" stroke="#19192d" stroke-width="4"/>
-            <path d="M236 490h8v20h-8zm-21-4h15v7h-15zm35 0h15v7h-15z" fill="#d4a17e"/>
-            <rect id="car-accent" x="233" y="489" width="14" height="10" fill="#e84b5f"/>
+        <g id="world">
+          <rect x="-3000" y="-3000" width="6000" height="6000" fill="url(#grass-pixels)"/>
+          <g opacity=".9" aria-hidden="true" shape-rendering="crispEdges">
+            <rect x="-1800" y="-1600" width="8" height="7" fill="#769557"/><rect x="1050" y="-900" width="10" height="8" fill="#3f6948"/>
+            <rect x="-650" y="1250" width="9" height="8" fill="#78975b"/><rect x="1350" y="850" width="8" height="7" fill="#3f6948"/>
           </g>
-          <rect x="123" y="417" width="234" height="6" fill="#201d32"/><rect x="143" y="430" width="194" height="3" fill="#745067"/>
+          <path id="track-grass-edge" fill="none" stroke="#324d42" stroke-width="122" stroke-linejoin="round"/>
+          <path id="track-outline" fill="none" stroke="#29263e" stroke-width="112" stroke-linejoin="round"/>
+          <path id="track-curb-red" fill="none" stroke="#df6270" stroke-width="104" stroke-dasharray="20 18" stroke-linejoin="round"/>
+          <path id="track-curb-cream" fill="none" stroke="#f1d49c" stroke-width="104" stroke-dasharray="20 18" stroke-dashoffset="20" stroke-linejoin="round"/>
+          <path id="track-surface" fill="none" stroke="#4e4d58" stroke-width="90" stroke-linejoin="round"/>
+          <path id="track-centerline" fill="none" stroke="#e9d6a0" stroke-width="3" stroke-dasharray="14 18" stroke-linejoin="round"/>
+          <g id="start-line" aria-hidden="true"><rect x="-44" y="-5" width="88" height="10" fill="url(#start-checker)" stroke="#29263e" stroke-width="2"/></g>
+          <g id="props-layer" aria-hidden="true"></g>
+          <g id="hazards-layer"></g>
+          <g id="traffic-layer"></g>
+          <g id="player-car"><use href="#car-red-art"/></g>
         </g>
       </svg>
-      <div class="rear-mirror mirror" aria-hidden="true"><svg viewBox="0 0 150 64" shape-rendering="crispEdges"><defs><clipPath id="rear-clip"><path d="M12 10h126l-5 44H17Z"/></clipPath></defs><g clip-path="url(#rear-clip)"><rect x="10" y="8" width="130" height="48" fill="#f7a477"/><path d="M10 26h130v30H10Z" fill="#57754b"/><path id="rear-mirror-road" d="M67 10h16l45 45H22Z" fill="#484957"/><path d="M74 10h2l9 45h-3Z" fill="#fff0c2" opacity=".7"/><g id="rear-mirror-cars"></g></g><path d="M7 7h136l-5 50H12Z" fill="none" stroke="#29223a" stroke-width="7"/><path d="M13 12h124" stroke="#bc8d90" stroke-width="2"/></svg></div>
-      <div class="side-mirror mirror" aria-hidden="true"><svg viewBox="0 0 100 75" shape-rendering="crispEdges"><defs><clipPath id="side-clip"><path d="M7 12h84l-7 52H14Z"/></clipPath></defs><g clip-path="url(#side-clip)"><rect x="5" y="8" width="90" height="58" fill="#e88982"/><rect x="5" y="34" width="90" height="34" fill="#55754a"/><path id="side-mirror-road" d="M62 8h8l38 60H40Z" fill="#454653"/><path d="M67 10h2l8 58h-2Z" fill="#fff0c2" opacity=".7"/><g id="side-mirror-cars"></g></g><path d="M4 8h92l-7 60H11Z" fill="none" stroke="#29223a" stroke-width="7"/><path d="M13 14h75" stroke="#bc8d90" stroke-width="2"/></svg></div>
-      <div class="dice" aria-hidden="true"><svg viewBox="0 0 40 55" shape-rendering="crispEdges"><path d="M14 0v13" stroke="#211d31" stroke-width="2"/><path d="M27 0v18" stroke="#211d31" stroke-width="2"/><g transform="rotate(-8 12 24)"><rect x="4" y="16" width="17" height="17" fill="#fff0c2" stroke="#463451" stroke-width="2"/><rect x="7" y="19" width="3" height="3" fill="#e35b62"/><rect x="14" y="26" width="3" height="3" fill="#e35b62"/><rect x="7" y="27" width="3" height="3" fill="#e35b62"/></g><g transform="rotate(8 29 31)"><rect x="21" y="22" width="17" height="17" fill="#f3be72" stroke="#463451" stroke-width="2"/><rect x="24" y="25" width="3" height="3" fill="#e35b62"/><rect x="31" y="25" width="3" height="3" fill="#e35b62"/><rect x="24" y="32" width="3" height="3" fill="#e35b62"/><rect x="31" y="32" width="3" height="3" fill="#e35b62"/></g></svg></div>
       <div class="track-map" aria-label="Minimap showing your position on the full track">
         <p class="track-map-label">TRACK MAP</p>
         <svg viewBox="0 0 100 120" role="img" aria-label="Winding race track with your current position marked in yellow"><path id="map-track-border" fill="none" stroke="#17142d" stroke-width="13"/><path id="map-track" fill="none" stroke="#76727b" stroke-width="9"/><path id="map-track-dashes" fill="none" stroke="#e9d6a0" stroke-width="1" stroke-dasharray="2 2"/><path id="map-start" fill="none" stroke="#e76673" stroke-width="3"/><path id="map-player" d="M0 -4 L3 3 L0 1 L-3 3Z" transform="translate(50 10)" fill="#ffd477" stroke="#332044" stroke-width=".8"/></svg>
@@ -150,16 +136,12 @@
     (() => {
       const CX = 240, CY = 280;
       const LAPS_TO_WIN = 3, MAX_SPEED = 225;
-      const roadRender = document.querySelector("#road-render");
-      const trafficRender = document.querySelector("#traffic-render");
+      const world = document.querySelector("#world");
+      const playerCar = document.querySelector("#player-car");
+      const trafficLayer = document.querySelector("#traffic-layer");
+      const hazardsLayer = document.querySelector("#hazards-layer");
+      const propsLayer = document.querySelector("#props-layer");
       const mapPlayer = document.querySelector("#map-player");
-      const rearRoad = document.querySelector("#rear-mirror-road");
-      const sideRoad = document.querySelector("#side-mirror-road");
-      const rearCars = document.querySelector("#rear-mirror-cars");
-      const sideCars = document.querySelector("#side-mirror-cars");
-      const steeringWheel = document.querySelector("#steering-wheel");
-      const dice = document.querySelector(".dice svg");
-      const carAccent = document.querySelector("#car-accent");
       const overlay = document.querySelector("#race-overlay");
       const title = document.querySelector("#overlay-title");
       const copy = document.querySelector("#overlay-copy");
@@ -173,8 +155,8 @@
       const carNames = { red: "Rally", green: "Clover", blue: "Comet" };
       let selectedCar = "red", running = false;
       let playerDistance = 0, laneOffset = 0, speed = 145, elapsed = 0, lastTime = 0, animation = 0;
-      let cameraAngle = 0, steeringWheelAngle = 0;
       let npcs = [], path = [], totalLength = 0, bestTime = Infinity;
+      let potholes = [];
       const trackPoints = [
         [240,68],[340,70],[405,98],[420,150],[404,202],[365,230],[331,247],[322,277],
         [356,305],[402,338],[407,380],[378,421],[328,450],[268,470],[212,464],[168,438],
@@ -209,12 +191,19 @@
           path.push(point);
         }
         const mapSamples = path.filter((_, i) => i % 9 === 0);
-        const d = mapSamples.map((p, i) => ` ${i ? "L" : "M"}${Math.round((50 + (p.x - CX) * .21) / 1.5) * 1.5} ${Math.round((60 + (p.y - CY) * .21) / 1.5) * 1.5}`).join("") + "Z";
-        for (const id of ["#map-track-border", "#map-track", "#map-track-dashes"]) document.querySelector(id).setAttribute("d", d);
+        const mapD = mapSamples.map((p, i) => ` ${i ? "L" : "M"}${Math.round((50 + (p.x - CX) * .21) / 1.5) * 1.5} ${Math.round((60 + (p.y - CY) * .21) / 1.5) * 1.5}`).join("") + "Z";
+        for (const id of ["#map-track-border", "#map-track", "#map-track-dashes"]) document.querySelector(id).setAttribute("d", mapD);
+        const roadSamples = path.filter((_, i) => i % 3 === 0);
+        const roadD = roadSamples.map((p, i) => `${i ? "L" : "M"}${snapPixel(p.x, 4)} ${snapPixel(p.y, 4)}`).join("") + "Z";
+        for (const id of ["#track-grass-edge", "#track-outline", "#track-curb-red", "#track-curb-cream", "#track-surface", "#track-centerline"]) document.querySelector(id).setAttribute("d", roadD);
         const first = path[0], next = path[5];
         const dx = next.x-first.x, dy = next.y-first.y, length = Math.hypot(dx,dy) || 1;
         const nx = -dy/length*5, ny = dx/length*5;
         document.querySelector("#map-start").setAttribute("d", `M${(50+(first.x+nx-CX)*.21).toFixed(1)} ${(60+(first.y+ny-CY)*.21).toFixed(1)} L${(50+(first.x-nx-CX)*.21).toFixed(1)} ${(60+(first.y-ny-CY)*.21).toFixed(1)}`);
+        const start = pointAt(0);
+        document.querySelector("#start-line").setAttribute("transform",`translate(${start.x} ${start.y}) rotate(${start.angle})`);
+        buildPotholes();
+        buildTrackProps();
       }
       function pointAt(distance, lane = 0) {
         function centerAt(atDistance) {
@@ -248,127 +237,46 @@
         timeReadout.textContent = formatTime(elapsed);
         speedReadout.textContent = `${Math.round(speed)} km/h`;
       }
-      function cameraBasis(point) {
-        const heading = (point.angle - 90) * Math.PI / 180;
-        const fx = Math.cos(heading), fy = Math.sin(heading);
-        return { nx: -fy, ny: fx };
+      function snapPixel(value, size = 4) { return Math.round(value / size) * size; }
+      function setCarPosition(node, point) {
+        node.setAttribute("transform", `translate(${snapPixel(point.x)} ${snapPixel(point.y)}) rotate(${Math.round(point.angle)})`);
       }
-      function relativeSide(point, origin, basis) {
-        return (point.x - origin.x) * basis.nx + (point.y - origin.y) * basis.ny;
+      function buildPotholes() {
+        potholes = [];
+        hazardsLayer.replaceChildren();
+        const positions = [[.13,-25],[.36,20],[.61,-10],[.84,25]];
+        positions.forEach(([fraction,lane],index) => {
+          const hole = svgEl("g", { "aria-label": "Pothole" });
+          hole.append(svgEl("path", { d:"M-20 -6h8v-5h24v5h7v13h-9v5h-21v-5h-9z", fill:"#29263e" }));
+          hole.append(svgEl("path", { d:"M-14 -5h8v-3h17v4h5v8h-8v3h-17v-4h-5z", fill:"#17182b" }));
+          hole.append(svgEl("path", { d:index%2 ? "M-7 -4v5h-4v4m14-8v4h5" : "M-9 -4h5v4h5v5m7-12v4h-4", fill:"none", stroke:"#7e7283", "stroke-width":3 }));
+          hazardsLayer.append(hole);
+          potholes.push({ distance: totalLength*fraction, lane, node: hole });
+        });
       }
-      function snapPixel(value, size = 4) {
-        return Math.round(value / size) * size;
-      }
-      function mainProjection(side, depth) {
-        const scale = 280 / (depth + 60);
-        return { x: 240 + side * scale, y: 130 + 60 * scale, scale };
-      }
-      function polygon(points, fill) {
-        return `<polygon points="${points.map(p => `${snapPixel(p.x)},${snapPixel(p.y)}`).join(" ")}" fill="${fill}"/>`;
-      }
-      function renderRoad(playerPoint) {
-        const basis = cameraBasis(playerPoint);
-        const depths = [0,5,10,15,21,28,37,49,64,84,110,145,190,250,330,440,580,760];
-        const parts = [];
-        for (let i=0; i<depths.length-1; i++) {
-          const d1=depths[i], d2=depths[i+1];
-          const p1=pointAt(playerDistance+d1), p2=pointAt(playerDistance+d2);
-          const s1=relativeSide(p1,playerPoint,basis), s2=relativeSide(p2,playerPoint,basis);
-          const leftNear=mainProjection(s1-35,d1), rightNear=mainProjection(s1+35,d1);
-          const leftFar=mainProjection(s2-35,d2), rightFar=mainProjection(s2+35,d2);
-          const vergeNearL=mainProjection(s1-53,d1), vergeNearR=mainProjection(s1+53,d1);
-          const vergeFarL=mainProjection(s2-53,d2), vergeFarR=mainProjection(s2+53,d2);
-          parts.push(polygon([vergeFarL,vergeFarR,vergeNearR,vergeNearL], i%2 ? "#466b45" : "#52784e"));
-          parts.push(polygon([leftFar,rightFar,rightNear,leftNear], i%2 ? "#484854" : "#4e4d58"));
-          const curbColor=i%2 ? "#f1d49c" : "#df6270";
-          parts.push(polygon([leftFar,mainProjection(s2-29,d2),mainProjection(s1-29,d1),leftNear],curbColor));
-          parts.push(polygon([mainProjection(s2+29,d2),rightFar,rightNear,mainProjection(s1+29,d1)],curbColor));
-          if (i%2===0 && d2<400) {
-            const m1=mainProjection(s1,d1),m2=mainProjection(s2,d2);
-            parts.push(polygon([{x:m2.x-1.2,y:m2.y},{x:m2.x+1.2,y:m2.y},{x:m1.x+1.2,y:m1.y},{x:m1.x-1.2,y:m1.y}],"#e9d6a0"));
-          }
+      function buildTrackProps() {
+        propsLayer.replaceChildren();
+        for (let i=0; i<16; i++) {
+          const point=pointAt(totalLength*(i/16+.025),i%2?-78:78);
+          const tree=svgEl("g",{transform:`translate(${snapPixel(point.x)} ${snapPixel(point.y)})`});
+          tree.append(svgEl("rect",{x:-5,y:2,width:10,height:17,fill:"#5d3b42"}),svgEl("path",{d:"M-16 3h6v-7h5v-7h10v5h6v7h5v7h-32z",fill:i%3===0?"#397354":"#3f7950",stroke:"#294c45","stroke-width":3}),svgEl("rect",{x:-8,y:-11,width:5,height:4,fill:"#7eaa62"}),svgEl("rect",{x:4,y:-5,width:5,height:4,fill:"#6e9a5b"}));
+          propsLayer.append(tree);
         }
-        roadRender.innerHTML=parts.join("");
-      }
-      function carSprite(x,y,scale,color,number) {
-        const w=Math.min(52,14*scale), h=Math.min(62,21*scale), half=w/2;
-        const group=svgEl("g",{transform:`translate(${snapPixel(x,2)} ${snapPixel(y,2)})`,"shape-rendering":"crispEdges"});
-        group.append(svgEl("rect",{x:-half-2,y:-h*.25,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:half-2,y:-h*.25,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:-half-2,y:h*.2,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:half-2,y:h*.2,width:4,height:h*.3,fill:"#201d32"}));
-        group.append(svgEl("path",{d:`M${-half*.72} ${h*.45} L${-half} ${-h*.18} L${-half*.68} ${-h*.48} L${half*.68} ${-h*.48} L${half} ${-h*.18} L${half*.72} ${h*.45} Z`,fill:color,stroke:"#29263e","stroke-width":Math.max(1,scale)}));
-        group.append(svgEl("path",{d:`M${-half*.54} ${-h*.14} L${-half*.38} ${-h*.38} H${half*.38} L${half*.54} ${-h*.14} Z`,fill:"#96d7d7"}));
-        group.append(svgEl("rect",{x:-half*.68,y:h*.28,width:w*.18,height:Math.max(2,h*.08),fill:"#ffd477"}),svgEl("rect",{x:half*.5,y:h*.28,width:w*.18,height:Math.max(2,h*.08),fill:"#ffd477"}));
-        if(scale>1.15) { const label=svgEl("text",{x:0,y:h*.18,"text-anchor":"middle",fill:"#fff0c2","font-size":Math.max(4,3*scale),"font-weight":"bold","font-family":"Courier New,monospace"}); label.textContent=number; group.append(label); }
-        return group;
-      }
-      function renderTraffic(playerPoint) {
-        const basis=cameraBasis(playerPoint), visible=[];
-        for(const npc of npcs) {
-          let ahead=((npc.distance-playerDistance)%totalLength+totalLength)%totalLength;
-          if(ahead>totalLength/2 || ahead<1 || ahead>360) continue;
-          const point=pointAt(npc.distance,npc.lane);
-          const side=relativeSide(point,playerPoint,basis);
-          const projected=mainProjection(side,ahead);
-          visible.push({ahead,point:carSprite(snapPixel(projected.x,2),snapPixel(projected.y,2),projected.scale,npc.color,npc.number)});
-        }
-        visible.sort((a,b)=>b.ahead-a.ahead);
-        trafficRender.replaceChildren(...visible.map(v=>v.point));
-      }
-      function renderMirrors(playerPoint) {
-        const basis=cameraBasis(playerPoint);
-        const back=(dist,edge)=>{
-          const p=pointAt(playerDistance-dist);
-          const side=relativeSide(p,playerPoint,basis)+edge;
-          const scale=45/(dist+40), x=75-side*scale, y=9+45*40/(dist+40);
-          return {x,y};
-        };
-        const backNear=back(2,35), backFar=back(170,35);
-        const backNearL=back(2,-35), backFarL=back(170,-35);
-        rearRoad.setAttribute("d",`M${backFarL.x.toFixed(1)} ${backFarL.y.toFixed(1)} L${backFar.x.toFixed(1)} ${backFar.y.toFixed(1)} L${backNear.x.toFixed(1)} ${backNear.y.toFixed(1)} L${backNearL.x.toFixed(1)} ${backNearL.y.toFixed(1)}Z`);
-        const forward=(dist,edge)=>{
-          const p=pointAt(playerDistance+dist);
-          const side=relativeSide(p,playerPoint,basis);
-          const scale=42/(dist+45), x=52+(side+edge)*scale*.55, y=8+56*45/(dist+45);
-          return {x,y};
-        };
-        const sidePath=[forward(150,-35),forward(150,35),forward(2,35),forward(2,-35)];
-        sideRoad.setAttribute("d",`M${sidePath.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("L")}Z`);
-        const rearMarks=[],sideMarks=[];
-        for(const npc of npcs) {
-          const behind=((playerDistance-npc.distance)%totalLength+totalLength)%totalLength;
-          if(behind<180) {
-            const point=pointAt(npc.distance,npc.lane), side=relativeSide(point,playerPoint,basis), scale=45/(behind+40);
-            const x=75-side*scale,y=9+45*40/(behind+40),w=Math.max(3,10*scale),h=Math.max(3,8*scale);
-            const marker=svgEl("rect",{x:(x-w/2).toFixed(1),y:(y-h/2).toFixed(1),width:w.toFixed(1),height:h.toFixed(1),fill:npc.color,stroke:"#29263e","stroke-width":1});
-            rearMarks.push(marker);
-          }
-          let relative=npc.distance-playerDistance;
-          relative=((relative+totalLength/2)%totalLength+totalLength)%totalLength-totalLength/2;
-          if(Math.abs(relative)<130) {
-            const point=pointAt(npc.distance,npc.lane), side=relativeSide(point,playerPoint,basis);
-            if(side>2) {
-              const depth=Math.abs(relative),scale=42/(depth+45),x=53+(side-18)*scale*.45,y=8+56*45/(depth+45),w=Math.max(3,9*scale),h=Math.max(3,8*scale);
-              sideMarks.push(svgEl("rect",{x:(x-w/2).toFixed(1),y:(y-h/2).toFixed(1),width:w.toFixed(1),height:h.toFixed(1),fill:npc.color,stroke:"#29263e","stroke-width":1}));
-            }
-          }
-        }
-        rearCars.replaceChildren(...rearMarks);
-        sideCars.replaceChildren(...sideMarks);
       }
       function updateMap(playerPoint) {
         const x=50+(playerPoint.x-CX)*.21, y=60+(playerPoint.y-CY)*.21;
         mapPlayer.setAttribute("transform",`translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${playerPoint.angle.toFixed(1)})`);
       }
-      function drawScene(cameraPoint, mapPoint = cameraPoint) {
-        renderRoad(cameraPoint);
-        renderTraffic(cameraPoint);
-        renderMirrors(cameraPoint);
-        updateMap(mapPoint);
+      function updateScene(playerPoint) {
+        setCarPosition(playerCar, playerPoint);
+        for (const npc of npcs) setCarPosition(npc.node, pointAt(npc.distance, npc.lane));
+        for (const hole of potholes) setCarPosition(hole.node, pointAt(hole.distance, hole.lane));
+        world.setAttribute("transform", `translate(240 390) scale(1.5) translate(${-playerPoint.x.toFixed(1)} ${-playerPoint.y.toFixed(1)})`);
+        updateMap(playerPoint);
       }
       function clearNpcs() {
         npcs = [];
-        trafficRender.replaceChildren();
-        rearCars.replaceChildren();
-        sideCars.replaceChildren();
+        trafficLayer.replaceChildren();
       }
       function makeNpcs() {
         clearNpcs();
@@ -377,7 +285,13 @@
         const speeds = [158, 174, 148, 183];
         const colors = ["#4778d1", "#42a96a", "#e84b5f", "#4778d1"];
         for (let i = 0; i < starts.length; i++) {
-          npcs.push({ distance: totalLength * starts[i], lane: lanes[i], speed: speeds[i], color: colors[i], number: i + 2 });
+          const node=svgEl("g",{"aria-hidden":"true"});
+          node.append(svgEl("use",{href:`#car-${["blue","green","red","blue"][i]}-art`}));
+          const number=svgEl("text",{x:0,y:2,"text-anchor":"middle",fill:"#fff0c2","font-size":7,"font-weight":"bold","font-family":"Courier New,monospace"});
+          number.textContent=String(i+2);
+          node.append(number);
+          trafficLayer.append(node);
+          npcs.push({ node, distance: totalLength * starts[i], lane: lanes[i], speed: speeds[i], color: colors[i], number: i + 2 });
         }
       }
       function startRace() {
@@ -387,18 +301,13 @@
         laneOffset = 0;
         speed = 145;
         elapsed = 0;
-        cameraAngle = pointAt(0).angle;
-        steeringWheelAngle = 0;
-        steeringWheel.setAttribute("transform","rotate(0 240 494)");
-        dice.style.transform="rotate(0deg)";
         lastTime = performance.now();
         held.left = held.right = held.accelerate = held.brake = false;
         keyState.clear();
-        const accents={red:"#e84b5f",green:"#42a96a",blue:"#4778d1"};
-        carAccent.setAttribute("fill",accents[selectedCar]);
+        playerCar.querySelector("use").setAttribute("href",`#car-${selectedCar}-art`);
         makeNpcs();
         const startPoint=pointAt(playerDistance,laneOffset);
-        drawScene({...startPoint,angle:cameraAngle},startPoint);
+        updateScene(startPoint);
         lapReadout.textContent = `1 / ${LAPS_TO_WIN}`;
         timeReadout.textContent = formatTime(0);
         speedReadout.textContent = `${Math.round(speed)} km/h`;
@@ -409,7 +318,7 @@
         overlay.hidden = true;
         animation = requestAnimationFrame(frame);
       }
-      function endRace(won) {
+      function endRace(won, reason = "You crashed into another car.") {
         if (!running) return;
         running = false;
         cancelAnimationFrame(animation);
@@ -427,7 +336,7 @@
           }
           copy.textContent = `Three laps in ${formatTime(elapsed)}! ${record ? "NEW BEST TIME! 🏆" : `Best time: ${formatTime(bestTime)}.`}`;
         } else {
-          copy.textContent = `You bumped into another car on lap ${Math.min(LAPS_TO_WIN, Math.floor(playerDistance / totalLength) + 1)}. Want another go?`;
+          copy.textContent = `${reason} You reached lap ${Math.min(LAPS_TO_WIN, Math.floor(playerDistance / totalLength) + 1)}. Want another go?`;
         }
         startButton.textContent = "🏁 RACE AGAIN";
       }
@@ -448,24 +357,27 @@
         playerDistance += speed * dt;
         elapsed += dt;
         const playerPoint = pointAt(playerDistance, laneOffset);
-        const angleDelta=((playerPoint.angle-cameraAngle+540)%360)-180;
-        cameraAngle += angleDelta * Math.min(1,dt*3.5);
-        const cameraPoint={...playerPoint,angle:cameraAngle};
         for (const npc of npcs) {
           npc.distance += npc.speed * dt;
           const point = pointAt(npc.distance, npc.lane);
           if (Math.hypot(point.x - playerPoint.x, point.y - playerPoint.y) < 24) {
             updateHud();
-            drawScene(cameraPoint,playerPoint);
-            endRace(false);
+            updateScene(playerPoint);
+            endRace(false,"You bumped into another car.");
             return;
           }
         }
-        const wheelTarget=steerInput*16;
-        steeringWheelAngle += (wheelTarget-steeringWheelAngle)*Math.min(1,dt*7);
-        steeringWheel.setAttribute("transform",`rotate(${steeringWheelAngle.toFixed(1)} 240 494)`);
-        dice.style.transform=`rotate(${(steeringWheelAngle*.26).toFixed(1)}deg)`;
-        drawScene(cameraPoint,playerPoint);
+        for (const hole of potholes) {
+          let distanceToHole=playerDistance-hole.distance;
+          distanceToHole=((distanceToHole+totalLength/2)%totalLength+totalLength)%totalLength-totalLength/2;
+          if (Math.abs(distanceToHole)<15 && Math.abs(laneOffset-hole.lane)<19) {
+            updateHud();
+            updateScene(playerPoint);
+            endRace(false,"You hit a pothole.");
+            return;
+          }
+        }
+        updateScene(playerPoint);
         updateHud();
         if (playerDistance >= totalLength * LAPS_TO_WIN) {
           endRace(true);
@@ -490,7 +402,6 @@
       for (const button of document.querySelectorAll(".car-option")) {
         button.addEventListener("click", () => {
           selectedCar = button.getAttribute("data-car");
-          carAccent.setAttribute("fill",({red:"#e84b5f",green:"#42a96a",blue:"#4778d1"})[selectedCar]);
           for (const option of document.querySelectorAll(".car-option")) option.setAttribute("aria-pressed", String(option === button));
         });
       }
@@ -507,8 +418,7 @@
       startButton.addEventListener("click", startRace);
       buildPath();
       const startingPoint = pointAt(0, 0);
-      cameraAngle=startingPoint.angle;
-      drawScene({...startingPoint,angle:cameraAngle},startingPoint);
+      updateScene(startingPoint);
       updateHud();
     })();
   </script>
