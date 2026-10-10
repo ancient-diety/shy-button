@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17152d">
+  <title>Haunted Hayride · Sunset Arcade</title>
+  <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+  <link rel="stylesheet" href="../arcade.css">
+  <style>
+    .hayride-game { width:min(100%,740px); }
+    .hayride-hud { width:min(100%,560px); margin:.8rem auto .55rem; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.45rem; text-align:left; font-size:.77rem; font-weight:bold; }
+    .hayride-hud > div { min-width:0; padding:.48rem .6rem; border:2px solid #ffc778; background:#302748; box-shadow:3px 3px #090d1d; }
+    .hayride-hud span { display:block; margin-top:.25rem; color:#ffe59a; font-size:1rem; }
+    .hayride-progress { width:min(100%,560px); height:14px; margin:0 auto .75rem; border:3px solid #f9e6bb; background:#151526; box-shadow:3px 3px #090d1d; }
+    .hayride-progress span { display:block; width:0; height:100%; background:repeating-linear-gradient(90deg,#ed8b57 0 12px,#ffc56c 12px 16px); transition:width .18s steps(3,end); }
+    .hayride-screen { position:relative; width:min(100%,480px); aspect-ratio:3/4; margin:0 auto; overflow:hidden; border:4px solid #f9e6bb; background:#17152d; box-shadow:7px 7px #090d1d; isolation:isolate; touch-action:none; overscroll-behavior:contain; }
+    .hayride-svg { display:block; width:100%; height:100%; image-rendering:pixelated; shape-rendering:crispEdges; }
+    #scene-bats { transform-box:fill-box; transform-origin:center; animation:bats-drift 3.6s steps(4,end) infinite alternate; }
+    #scene-fog { animation:fog-drift 10s steps(8,end) infinite alternate; }
+    .hayride-overlay { position:absolute; z-index:5; inset:0; display:grid; place-items:center; overflow-y:auto; padding:.8rem; background:#101125df; overscroll-behavior:contain; }
+    .hayride-overlay[hidden] { display:none; }
+    .hayride-card { box-sizing:border-box; width:min(100%,410px); max-height:100%; overflow-y:auto; padding:clamp(.8rem,4vw,1.3rem); border:3px solid #ffc778; color:#f9e6bb; background:#282444f5; box-shadow:6px 6px #090d1d; -webkit-overflow-scrolling:touch; }
+    .hayride-card h2 { margin:.2rem 0 .6rem; color:#ffe59a; font:clamp(.7rem,2.7vw,.9rem)/1.7 "Press Start 2P","Courier New",monospace; }
+    .hayride-card p { margin:.4rem 0 .7rem; line-height:1.5; }
+    .hayride-start { min-height:48px; max-width:100%; padding:.65rem .9rem; border:3px solid #f9e6bb; color:#251e37; background:#ffc778; box-shadow:4px 4px #090d1d; font:bold .9rem "Courier New",monospace; touch-action:manipulation; }
+    .hayride-controls { width:min(100%,480px); margin:.8rem auto 0; display:grid; grid-template-columns:1fr 1fr; gap:.65rem; touch-action:none; user-select:none; -webkit-user-select:none; }
+    .hayride-control { min-height:58px; border:3px solid #f9e6bb; color:#f9e6bb; background:#302748; box-shadow:4px 4px #090d1d; font:bold .9rem "Courier New",monospace; touch-action:none; user-select:none; -webkit-user-select:none; }
+    .hayride-control.held,.hayride-control:active { transform:translateY(2px); color:#241c34; background:#ffc778; box-shadow:1px 1px #090d1d; }
+    .hayride-help { margin:.7rem auto 0; color:#f9dfc1; font-size:.82rem; line-height:1.45; }
+    .hayride-best { margin:0 auto .55rem; color:#f9dfc1; font-size:.74rem; letter-spacing:.08em; }
+    .hayride-best span { color:#ffe59a; font-weight:bold; }
+    @keyframes bats-drift { to { transform:translate(18px,5px); } }
+    @keyframes fog-drift { to { transform:translateX(22px); } }
+    @keyframes hayride-bump { 20% { transform:translateX(-7px); } 40% { transform:translateX(7px); } 60% { transform:translateX(-4px); } 80% { transform:translateX(3px); } }
+    .hayride-screen.bump { animation:hayride-bump .22s steps(2,end); }
+    @media(max-width:520px) {
+      .hayride-game { padding-left:.65rem; padding-right:.65rem; }
+      .hayride-hud { gap:.3rem; font-size:.68rem; }
+      .hayride-hud > div { padding:.4rem .35rem; }
+      .hayride-hud span { font-size:.88rem; }
+      .hayride-screen { border-width:3px; }
+      .hayride-overlay { padding:.45rem; }
+      .hayride-card { padding:.65rem .75rem; }
+      .hayride-card h2 { margin:.1rem 0 .4rem; font-size:.68rem; line-height:1.5; }
+      .hayride-card p { margin:.3rem 0 .5rem; font-size:.83rem; line-height:1.35; }
+      .hayride-start { min-height:44px; padding:.55rem .8rem; }
+      .hayride-control { min-height:54px; }
+    }
+    @media(max-width:360px) { .hayride-hud { font-size:.61rem; } .hayride-hud > div { padding:.35rem .25rem; } }
+    @media(prefers-reduced-motion:reduce) { #scene-bats,#scene-fog { animation:none; } .hayride-screen.bump { animation:none; } .hayride-progress span { transition:none; } }
+  </style>
+</head>
+<body>
+  <main class="game-page hayride-game">
+    <a class="back-link" href="../index.html">← BACK TO THE ARCADE</a>
+    <div class="pixel-sun" aria-hidden="true">☾</div>
+    <p class="eyebrow">LAST RIDE LEAVES AT MIDNIGHT</p>
+    <h1>Haunted Hayride</h1>
+    <p class="game-description">The tractor is yours. The road is haunted. The passengers are mostly pumpkins.</p>
+
+    <div class="hayride-hud" aria-label="Hayride status">
+      <div>ROUTE<span id="route-readout">0.0 / 3.0 MI</span></div>
+      <div>CANDY<span id="candy-readout">0</span></div>
+      <div>JUMPS<span id="scare-readout">♥ ♥ ♥</span></div>
+    </div>
+    <div class="hayride-progress" role="progressbar" aria-label="Route progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="route-progress"></span></div>
+    <p class="hayride-best">BEST CANDY HAUL <span id="best-readout">0</span></p>
+
+    <div class="hayride-screen" id="hayride-screen">
+      <svg class="hayride-svg" id="hayride-svg" viewBox="0 0 480 640" role="img" aria-label="Pixel view from a little tractor driving down a winding haunted farm road">
+        <defs>
+          <linearGradient id="hayride-sky" x2="0" y2="1"><stop stop-color="#17162f"/><stop offset=".55" stop-color="#514064"/><stop offset="1" stop-color="#b05d61"/></linearGradient>
+          <pattern id="field-pixels" width="24" height="24" patternUnits="userSpaceOnUse" shape-rendering="crispEdges"><rect width="24" height="24" fill="#293746"/><rect x="3" y="5" width="4" height="4" fill="#354548"/><rect x="16" y="14" width="5" height="3" fill="#34434a"/><rect x="8" y="20" width="3" height="2" fill="#1f3040"/></pattern>
+          <pattern id="road-pixels" width="24" height="24" patternUnits="userSpaceOnUse" shape-rendering="crispEdges"><rect width="24" height="24" fill="#383244"/><rect x="3" y="4" width="3" height="3" fill="#44384a"/><rect x="16" y="15" width="4" height="3" fill="#302d3e"/></pattern>
+          <g id="sprite-tree" shape-rendering="crispEdges"><rect x="-7" y="-4" width="14" height="58" fill="#372d3d"/><rect x="-3" y="8" width="6" height="40" fill="#59404a"/><path d="M-8 17h-13v-11h8v-15h10v-18h21v20h10v17h10v13h-15v13H-8z" fill="#1e2938" stroke="#141b2d" stroke-width="4"/><path d="M-12 3h-7v-9h9v-9h8V-28h15v13h8v10h9v11H14v12H-9z" fill="#35414a"/><rect x="-5" y="-18" width="4" height="4" fill="#9f5c5a"/></g>
+          <g id="sprite-corn" shape-rendering="crispEdges"><path d="M-18 20h7v-18h5v-20h5v16h6v-24h5v24h7v22h7v14h-42z" fill="#665441"/><path d="M-7 4h6v-17h6v22h6v-14h5v28H-8z" fill="#a07843"/><rect x="-3" y="-24" width="4" height="7" fill="#d0994e"/><rect x="9" y="-19" width="4" height="6" fill="#d0994e"/></g>
+          <g id="sprite-scarecrow" shape-rendering="crispEdges"><path d="M-3 14h6v35h-6z" fill="#705044"/><path d="M-23 17h46v7h-46z" fill="#a9754c"/><path d="M-18 4h36v18h-36z" fill="#d49a55"/><rect x="-13" y="-10" width="26" height="19" fill="#c68a4d"/><path d="M-18 -10h36v-6h-8v-7H-7v7h-11z" fill="#30263c"/><rect x="-8" y="-3" width="5" height="5" fill="#201b2e"/><rect x="4" y="-3" width="5" height="5" fill="#201b2e"/><path d="M-5 6h10" stroke="#8b394b" stroke-width="3"/><path d="M-14 24l-12 18h6l13-12m16-6 12 18h-6L6 31" fill="#55404a"/></g>
+          <g id="sprite-gravestone" shape-rendering="crispEdges"><path d="M-14 7v-15q0-12 14-12t14 12V7z" fill="#78807b" stroke="#38404b" stroke-width="4"/><path d="M-6 -5h12M-1 -10v10" stroke="#4a4d57" stroke-width="3"/><rect x="-19" y="7" width="38" height="7" fill="#4c464c"/></g>
+          <g id="sprite-pumpkin" shape-rendering="crispEdges"><path d="M0-20h7v-9h9v12q15 3 17 17 1 17-12 23H-18Q-33 17-31 0q1-14 17-17z" fill="#a74f3c" stroke="#552d3a" stroke-width="5"/><path d="M-18-13q-12 5-12 18 0 13 10 17zM17-15q12 5 12 19 0 11-10 17z" fill="#d96d46"/><rect x="-13" y="-2" width="8" height="10" fill="#ffe48b"/><rect x="8" y="-2" width="8" height="10" fill="#ffe48b"/><path d="M-8 12h5v5h7v-5h6v10H-8z" fill="#ffe48b"/><path d="M-2-21h8v-9h-5v-7h-7v10h4z" fill="#768a4a"/></g>
+          <g id="sprite-haybale" shape-rendering="crispEdges"><path d="M-27-14h43l11 8v22h-47l-9-8v-14z" fill="#b68a4b" stroke="#4a3a3b" stroke-width="5"/><path d="M-18-8h27M-18 0h34M-14 8h34" stroke="#dfb260" stroke-width="4"/><path d="M11-12v23" stroke="#725341" stroke-width="4"/></g>
+          <g id="sprite-ghost" shape-rendering="crispEdges"><path d="M-20 21v-27q0-19 20-19t20 19v27l-10-6-10 7-10-7z" fill="#b9d9ce" stroke="#5a7b80" stroke-width="4"/><rect x="-11" y="-14" width="5" height="7" fill="#293044"/><rect x="6" y="-14" width="5" height="7" fill="#293044"/><path d="M-5-1q5 6 10 0" fill="none" stroke="#526d79" stroke-width="3"/><rect x="-15" y="-26" width="5" height="4" fill="#eff6d5"/></g>
+          <g id="sprite-candy" shape-rendering="crispEdges"><path d="M-21-5h9v-8h24v8h9v17h-9v7h-24v-7h-9z" fill="#f8ca63" stroke="#683d54" stroke-width="4"/><rect x="-6" y="-7" width="7" height="17" fill="#f27c67"/><rect x="7" y="-7" width="5" height="17" fill="#a4d99a"/><path d="M-13-1h5m-5 6h5" stroke="#fff0c3" stroke-width="3"/></g>
+          <g id="sprite-log" shape-rendering="crispEdges"><path d="M-42-12h76v25h-76z" fill="#6a483f" stroke="#332d3d" stroke-width="5"/><path d="M-34-5h60M-29 4h49" stroke="#a06a47" stroke-width="5"/><path d="M-40-12h9v25h-9z" fill="#bd8551"/><path d="M27-12h8v25h-8z" fill="#bd8551"/></g>
+        </defs>
+
+        <g aria-hidden="true" shape-rendering="crispEdges">
+          <rect width="480" height="640" fill="url(#hayride-sky)"/>
+          <rect y="170" width="480" height="125" fill="#51445f"/><rect y="194" width="480" height="112" fill="#8d5a67"/>
+          <path d="M0 226h45v-22h35v18h31v-35h33v20h37v-30h35v31h27v-18h35v25h32v-34h40v30h34v-27h37v48h37v38H0z" fill="#353449"/>
+          <path d="M0 248h63v-14h48v17h34v-25h31v21h44v-17h40v23h29v-19h39v18h43v-27h36v20h39v-17h34v59H0z" fill="#252d3b"/>
+          <g fill="#ffe59a"><rect x="38" y="38" width="5" height="5"/><rect x="88" y="77" width="4" height="4"/><rect x="143" y="30" width="5" height="5"/><rect x="212" y="68" width="4" height="4"/><rect x="335" y="39" width="5" height="5"/><rect x="421" y="82" width="4" height="4"/><rect x="459" y="32" width="5" height="5"/><rect x="27" y="112" width="4" height="4"/><rect x="283" y="103" width="5" height="5"/><rect x="382" y="120" width="4" height="4"/></g>
+          <path d="M370 39h23v6h9v23h-7v7h-24v-7h-7V48h6z" fill="#ffe7a8"/><path d="M375 46h12v8h8v7h-7v5h-13v-7h-5v-8h5z" fill="#514064"/>
+          <g id="scene-bats" fill="#1b2033"><path d="M110 89h8l8-9 3 11 10-7-3 13h-10l-5 6-5-6h-10l-4-13z"/><path d="M151 112h7l7-7 3 9 8-5-2 10h-8l-4 5-5-5h-8l-3-10z"/><path d="M91 119h6l6-6 2 8 7-4-2 9h-7l-4 4-4-4h-7l-2-9z"/></g>
+          <g id="scene-mansion">
+            <path d="M330 205v-72h16v-28h22v28h25v-16h17v16h30v74z" fill="#222236"/>
+            <path d="M324 135l33-31 17 15 23-35 25 34 26-15 24 29v10H324z" fill="#191b2d"/>
+            <rect x="358" y="152" width="9" height="16" fill="#ffc46d"/><rect x="390" y="151" width="9" height="16" fill="#ffc46d"/><rect x="425" y="151" width="9" height="16" fill="#ffc46d"/><rect x="448" y="151" width="8" height="16" fill="#ffc46d"/>
+            <rect x="399" y="175" width="18" height="30" fill="#3e2b3b"/><rect x="406" y="177" width="4" height="25" fill="#9d5157"/>
+          </g>
+          <path d="M0 263q71-29 137 1t142 0 201 1v375H0z" fill="url(#field-pixels)"/>
+          <path d="M0 273q83-24 164 0t170 0 146 0v62H0z" fill="#3d434a" opacity=".74"/>
+          <g id="scene-field-details" fill="#b48b54"><path d="M8 301h7v-35h5v35h7v-23h5v28H8z"/><path d="M63 322h6v-28h5v18h8v-25h5v39H63z"/><path d="M409 302h8v-25h4v25h7v-18h5v26h-24z"/><path d="M453 327h7v-34h5v34h7v-22h5v28h-24z"/></g>
+          <path d="M216 247h48l27 389H189z" fill="#f0b76e" opacity=".075"/>
+        </g>
+
+        <g id="road-layer" shape-rendering="crispEdges">
+          <path id="road-outer" fill="#201f31"/>
+          <path id="road-surface" fill="url(#road-pixels)"/>
+          <g id="road-markings"></g>
+          <path id="headlights" d="" fill="#ffe99d" opacity=".09"/>
+        </g>
+        <g id="scenery-layer" shape-rendering="crispEdges"></g>
+        <g id="candy-layer" shape-rendering="crispEdges"></g>
+        <g id="hazard-layer" shape-rendering="crispEdges"></g>
+        <g id="effect-layer" shape-rendering="crispEdges"></g>
+        <g id="scene-fog" aria-hidden="true" fill="#d4a092" opacity=".15"><path d="M0 300h87v8h45v5H0zm306 26h174v8H353v5h-47zM0 371h152v7h-68v5H0zm344-13h136v8h-71v5h-65z"/></g>
+
+        <g aria-hidden="true" shape-rendering="crispEdges">
+          <path d="M0 0h27v416l21 63H0zM480 0h-27v416l-21 63h48z" fill="#171727"/><path d="M27 0h8v412l-18 53h-5zM453 0h-8v412l18 53h5z" fill="#51404e"/>
+          <path d="M0 0h480v13H0zM0 0h480v4H0z" fill="#111323"/><path d="M34 13h412v7H34z" fill="#a05a5c"/>
+          <rect x="186" y="26" width="108" height="25" fill="#111525" stroke="#83605f" stroke-width="4"/><rect x="194" y="33" width="92" height="12" fill="#353047"/><text x="240" y="42" text-anchor="middle" fill="#ffc778" font-size="8" font-weight="bold" font-family="Courier New,monospace">MOON FARM RD</text>
+          <path d="M0 475h480v27H0z" fill="#151622"/><path d="M0 475h480v7H0z" fill="#5b4b53"/>
+          <path d="M55 635v-94q0-22 25-22t25 22v94z" fill="#171b26" stroke="#614047" stroke-width="6"/><path d="M68 633v-90q0-12 12-12t12 12v90z" fill="#89503f"/><path d="M72 544h17v55H72z" fill="#b36242"/><path d="M62 608h37v12H62z" fill="#313443"/><path d="M57 620h47v15H57z" fill="#57414a"/>
+          <path d="M375 635v-94q0-22 25-22t25 22v94z" fill="#171b26" stroke="#614047" stroke-width="6"/><path d="M388 633v-90q0-12 12-12t12 12v90z" fill="#89503f"/><path d="M392 544h17v55h-17z" fill="#b36242"/><path d="M382 608h37v12h-37z" fill="#313443"/><path d="M377 620h47v15h-47z" fill="#57414a"/>
+          <path d="M0 502h480v138H0z" fill="#22232f"/><path d="M0 502h480v8H0z" fill="#9b584c"/><path d="M0 512h480v5H0z" fill="#c27a4e"/>
+          <path d="M79 640v-63q0-41 38-58l71-33h104l71 33q38 17 38 58v63z" fill="#792f3d" stroke="#321f32" stroke-width="8"/><path d="M136 640v-58q0-31 25-45l48-24h62l48 24q25 14 25 45v58z" fill="#bb4f43"/><path d="M183 515h114l23 22H160z" fill="#e18050"/><path d="M199 525h82v8h-82z" fill="#f0aa60"/><path d="M103 553h31v16h-31zM346 553h31v16h-31z" fill="#ffc86d"/><path d="M107 558h22v5h-22zM351 558h22v5h-22z" fill="#fff2b5"/><path d="M181 581h118v9H181zM175 601h130v7H175z" fill="#8e3b40"/><path d="M153 635h174v5H153z" fill="#df7951"/>
+          <path d="M0 636h480v4H0z" fill="#111522"/><path d="M211 556q0-35 29-35t29 35" fill="none" stroke="#151822" stroke-width="11"/><circle cx="240" cy="560" r="27" fill="none" stroke="#151822" stroke-width="9"/><path d="M240 534v24m-20 15 20-15 20 15" fill="none" stroke="#151822" stroke-width="6"/><path d="M231 556h18v8h-18z" fill="#60403e"/>
+          <rect x="31" y="515" width="50" height="18" fill="#171a25" stroke="#583943" stroke-width="3"/><rect x="39" y="520" width="10" height="7" fill="#a1d29a"/><rect x="54" y="520" width="21" height="7" fill="#e3aa64"/><rect x="399" y="515" width="50" height="18" fill="#171a25" stroke="#583943" stroke-width="3"/><rect x="407" y="520" width="10" height="7" fill="#e17b68"/><rect x="422" y="520" width="21" height="7" fill="#a1d29a"/>
+          <g id="steering-wheel" transform="rotate(0 240 560)"><circle cx="240" cy="560" r="28" fill="none" stroke="#342c38" stroke-width="7"/><circle cx="240" cy="560" r="21" fill="none" stroke="#80604d" stroke-width="3"/><path d="M240 539v21m-18 14 18-14 18 14" fill="none" stroke="#342c38" stroke-width="6"/><circle cx="240" cy="560" r="5" fill="#bd7950"/></g>
+        </g>
+      </svg>
+      <div class="hayride-overlay" id="hayride-overlay">
+        <section class="hayride-card" aria-live="polite">
+          <h2 id="overlay-title">THE HAUNTED HAYRIDE</h2>
+          <p id="overlay-copy">Take the old tractor down the moonlit farm road. Steer around possessed pumpkins, hay bales, and one very rude log. Scoop up candy for points, but don't get spooked three times!</p>
+          <p>Hold <strong>◀ LEFT</strong> or <strong>RIGHT ▶</strong>, or use your arrow keys / A and D. The tractor rolls on by itself. Get to the end of the 3 mile route to finish your shift!</p>
+          <button class="hayride-start" id="start-hayride" type="button">✦ START THE RIDE ✦</button>
+        </section>
+      </div>
+    </div>
+
+    <div class="hayride-controls" role="group" aria-label="Steering controls">
+      <button class="hayride-control" type="button" data-steer="left" aria-label="Hold to steer left">◀ HOLD LEFT</button>
+      <button class="hayride-control" type="button" data-steer="right" aria-label="Hold to steer right">HOLD RIGHT ▶</button>
+    </div>
+    <p class="hayride-help" id="ride-message" aria-live="polite">Hold a steering button or use ← → / A D. Dodge the spooky stuff, grab candy, and keep the tractor on the road.</p>
+  </main>
+
+  <script>
+    (() => {
+      const ROUTE_LENGTH = 9600;
+      const VIEW_DISTANCE = 1900;
+      const HORIZON = 238;
+      const ROAD_BOTTOM = 506;
+      const ROAD_HALF_NEAR = 177;
+      const svg = document.querySelector("#hayride-svg");
+      const roadOuter = document.querySelector("#road-outer");
+      const roadSurface = document.querySelector("#road-surface");
+      const markings = document.querySelector("#road-markings");
+      const sceneryLayer = document.querySelector("#scenery-layer");
+      const candyLayer = document.querySelector("#candy-layer");
+      const hazardLayer = document.querySelector("#hazard-layer");
+      const effectLayer = document.querySelector("#effect-layer");
+      const wheel = document.querySelector("#steering-wheel");
+      const overlay = document.querySelector("#hayride-overlay");
+      const overlayTitle = document.querySelector("#overlay-title");
+      const overlayCopy = document.querySelector("#overlay-copy");
+      const startButton = document.querySelector("#start-hayride");
+      const routeReadout = document.querySelector("#route-readout");
+      const candyReadout = document.querySelector("#candy-readout");
+      const scareReadout = document.querySelector("#scare-readout");
+      const routeBar = document.querySelector("#route-progress");
+      const progressTrack = document.querySelector(".hayride-progress");
+      const bestReadout = document.querySelector("#best-readout");
+      const steering = { left:false, right:false };
+      const keyState = new Set();
+      let running = false, distance = 0, playerLane = 0, laneVelocity = 0, candy = 0, scares = 0, lastFrame = 0, raf = 0, roadside = [], hazards = [], sweets = [], particles = [], best = 0, lastRoadside = 0, offRoadTimer = 0, resumeAfterVisibility = false, messageTimer = 0;
+      try { best = Number(localStorage.getItem("hauntedHayrideBest")) || 0; } catch (_) { /* storage may be disabled */ }
+      bestReadout.textContent = String(best);
+
+      function el(name, attrs = {}) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+        for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value));
+        return node;
+      }
+      function seedRandom(seed) {
+        let value = seed >>> 0;
+        return () => { value = (value * 1664525 + 1013904223) >>> 0; return value / 4294967296; };
+      }
+      function routeBend(at) { return Math.sin(at / 830) * 58 + Math.sin(at / 390) * 18; }
+      function projectedAhead(at, depth) {
+        const perspective = Math.pow(1 - depth / VIEW_DISTANCE, .72);
+        return 240 - playerLane * ROAD_HALF_NEAR * perspective + (routeBend(at + depth) - routeBend(at)) * perspective;
+      }
+      function project(at, lane, depth) {
+        const p = Math.max(0, Math.min(1, 1 - depth / VIEW_DISTANCE));
+        const y = HORIZON + Math.pow(p, 1.45) * (ROAD_BOTTOM - HORIZON);
+        const half = 22 + p * (ROAD_HALF_NEAR - 22);
+        return { x:projectedAhead(at, depth) + lane * half, y, scale:.18 + p * .9, p, half };
+      }
+      function roadPath(at, outer) {
+        const left = [], right = [];
+        const count = 24;
+        for (let i = 0; i <= count; i++) {
+          const p = i / count;
+          const depth = VIEW_DISTANCE * (1 - p);
+          const x = projectedAhead(at, depth);
+          const half = 22 + p * (ROAD_HALF_NEAR - 22) + (outer ? 10 : 0);
+          const y = HORIZON + Math.pow(p, 1.45) * (ROAD_BOTTOM - HORIZON);
+          left.push(`${Math.round(x-half)},${Math.round(y)}`);
+          right.push(`${Math.round(x+half)},${Math.round(y)}`);
+        }
+        return `M${left.join(" L")} L${right.reverse().join(" L")}Z`;
+      }
+      function renderRoad() {
+        roadOuter.setAttribute("d", roadPath(distance, true));
+        roadSurface.setAttribute("d", roadPath(distance, false));
+        markings.replaceChildren();
+        for (let at = Math.floor(distance / 210) * 210 + 35; at < distance + VIEW_DISTANCE; at += 210) {
+          const depth = at - distance;
+          if (depth < 20 || depth > VIEW_DISTANCE) continue;
+          const point = project(distance, 0, depth);
+          const size = 2 + point.p * 10;
+          markings.append(el("path", { d:`M${Math.round(point.x-size/2)} ${Math.round(point.y-size*1.7)}h${Math.round(size)}v${Math.round(size*1.7)}h-${Math.round(size)}z`, fill:"#c49a73", opacity:.42 + point.p * .35 }));
+        }
+        document.querySelector("#headlights").setAttribute("d", `M240 488 L${Math.round(240-ROAD_HALF_NEAR*.95)} ${ROAD_BOTTOM} H${Math.round(240+ROAD_HALF_NEAR*.95)}Z`);
+      }
+      function makeRoadside() {
+        roadside = [];
+        const random = seedRandom(54031);
+        let n = 0;
+        for (let at = 180; at < ROUTE_LENGTH + VIEW_DISTANCE; at += 255) {
+          for (const side of [-1,1]) {
+            const pick = random();
+            const kind = pick < .44 ? "corn" : pick < .7 ? "tree" : pick < .85 ? "grave" : "scarecrow";
+            roadside.push({ at:at + random()*80, lane:side*(1.15 + random()*.6), kind, side, phase:n++ });
+          }
+        }
+      }
+      function makeEvents() {
+        hazards = [];
+        sweets = [];
+        const random = seedRandom(74029);
+        const hazardIds = ["sprite-pumpkin","sprite-haybale","sprite-ghost","sprite-log"];
+        let i = 0;
+        for (let at = 740; at < ROUTE_LENGTH - 160; at += 690) {
+          const lane = Math.round((random()*1.48 - .74)*10)/10;
+        hazards.push({ at:at + random()*125, lane, id:hazardIds[i++ % hazardIds.length], hit:false, checked:false });
+        }
+        for (let at = 430; at < ROUTE_LENGTH; at += 410) {
+          sweets.push({ at:at + random()*80, lane:Math.round((random()*1.5 - .75)*10)/10, taken:false, checked:false });
+        }
+      }
+      function placeLayer(items, layer, sprite, onNear) {
+        for (const item of items) {
+          if (item.taken || item.passed) { item.node?.remove(); continue; }
+          const gap = item.at - distance;
+          if (gap < -30) { item.passed=true; item.node?.remove(); continue; }
+          if (gap > VIEW_DISTANCE) continue;
+          const pos = project(distance, item.lane, gap);
+          const node = item.node;
+          if (!node) {
+            item.node = el("g", { "aria-hidden":"true" });
+            item.node.append(el("use", { href:`#${item.id || sprite}` }));
+            layer.append(item.node);
+          }
+          item.node.setAttribute("transform", `translate(${Math.round(pos.x)} ${Math.round(pos.y)}) scale(${pos.scale.toFixed(2)})`);
+          if (gap < 300 && gap > 240 && !item.checked) { item.checked=true; onNear?.(item); }
+          if (gap <= 0) item.passed = true;
+        }
+      }
+      function renderScenery() {
+        sceneryLayer.replaceChildren();
+        for (const item of roadside) {
+          const gap = item.at - distance;
+          if (gap < -100 || gap > VIEW_DISTANCE) continue;
+          const pos = project(distance, item.lane, gap);
+          const group = el("g", { transform:`translate(${Math.round(pos.x)} ${Math.round(pos.y)}) scale(${pos.scale.toFixed(2)})`, opacity:Math.min(1,.3+pos.p*1.4), "aria-hidden":"true" });
+          group.append(el("use", { href:`#sprite-${item.kind}` }));
+          if (item.kind === "grave" && item.phase % 4 === 0) {
+            const little = el("g", { transform:"translate(18 -10) scale(.48)" });
+            little.append(el("use", { href:"#sprite-ghost" })); group.append(little);
+          }
+          sceneryLayer.append(group);
+        }
+      }
+      function updateHud() {
+        const pct = Math.min(100, distance / ROUTE_LENGTH * 100);
+        routeReadout.textContent = `${(pct * .03).toFixed(1)} / 3.0 MI`;
+        candyReadout.textContent = String(candy);
+        scareReadout.textContent = "♥".repeat(Math.max(0,3-scares)) + "♡".repeat(Math.min(3,scares));
+        routeBar.style.width = `${pct}%`;
+        progressTrack.setAttribute("aria-valuenow", String(Math.round(pct)));
+      }
+      function burst(x, y, color, amount = 8) {
+        const shades = [color,"#ffe59a","#fff0c4"];
+        for (let i = 0; i < amount; i++) {
+          const dot = el("rect", { x:Math.round(x), y:Math.round(y), width:4, height:4, fill:shades[i%shades.length] });
+          effectLayer.append(dot);
+          particles.push({ node:dot, x, y, vx:(Math.random()-.5)*95, vy:-30-Math.random()*90, life:.55+Math.random()*.3, max:.85 });
+        }
+      }
+      function showOverlay(title, message, buttonText) {
+        running = false;
+        steering.left = steering.right = false;
+        keyState.clear();
+        clearTimeout(messageTimer);
+        document.querySelectorAll(".hayride-control").forEach(button => button.classList.remove("held"));
+        overlayTitle.textContent = title;
+        overlayCopy.innerHTML = message;
+        startButton.textContent = buttonText;
+        overlay.hidden = false;
+        startButton.focus({ preventScroll:true });
+      }
+      function endRide(won) {
+        showOverlay(won ? "RIDE COMPLETE!" : "THE RIDE GOT YOU!", won
+          ? `You made it through the haunted farm with <strong>${candy} candies</strong>! Your tractor and passengers are only a little bit haunted now.`
+          : `You collected <strong>${candy} candies</strong> before the scares got too much. The tractor is parked safely. Fancy another go?`, won ? "✦ RIDE AGAIN ✦" : "✦ TRY AGAIN ✦");
+      }
+      function takeScare(x, y) {
+        scares++;
+        burst(x, y, "#c6e6d3", 14);
+        updateHud();
+        if (scares >= 3) { endRide(false); return; }
+        const screen = document.querySelector("#hayride-screen");
+        screen.classList.remove("bump");
+        void screen.offsetWidth;
+        screen.classList.add("bump");
+        const rideMessage = document.querySelector("#ride-message");
+        rideMessage.textContent = scares === 1 ? "EEK! Something moved in the corn. Two jumps left!" : "A scarecrow waved. One more jump and the ride is over!";
+        clearTimeout(messageTimer);
+        messageTimer = setTimeout(() => { rideMessage.textContent="Hold a steering button or use ← → / A D. Dodge the spooky stuff, grab candy, and keep the tractor on the road."; }, 1600);
+      }
+      function resetRide() {
+        distance=0; playerLane=0; laneVelocity=0; candy=0; scares=0; lastRoadside=0; offRoadTimer=0; particles=[];
+        document.querySelector("#ride-message").textContent="Hold a steering button or use ← → / A D. Dodge the spooky stuff, grab candy, and keep the tractor on the road.";
+        clearTimeout(messageTimer);
+        effectLayer.replaceChildren();
+        candyLayer.replaceChildren(); hazardLayer.replaceChildren();
+        makeEvents(); makeRoadside(); updateHud(); renderRoad(); renderScenery();
+        overlay.hidden = true; running = true; lastFrame = 0;
+        cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
+      }
+      function frame(now) {
+        raf = 0;
+        if (!running) return;
+        const dt = Math.min(.05, Math.max(0,(now-lastFrame)/1000));
+        lastFrame = now;
+        const direction = (steering.right || keyState.has("right") ? 1:0) - (steering.left || keyState.has("left") ? 1:0);
+        laneVelocity += direction * dt * 4.6;
+        laneVelocity *= Math.pow(.055,dt);
+        playerLane = Math.max(-1.22,Math.min(1.22,playerLane + laneVelocity*dt));
+        wheel.setAttribute("transform",`rotate(${Math.round(-direction*13-playerLane*8)} 240 560)`);
+        distance += (138 + Math.min(42,distance/ROUTE_LENGTH*42)) * dt;
+        if (Math.abs(playerLane) > .98) {
+          offRoadTimer += dt;
+          if (offRoadTimer > 1.15 && now-lastRoadside > 1700) { lastRoadside=now; offRoadTimer=0; takeScare(playerLane<0?95:385,460); }
+        } else offRoadTimer = 0;
+        if (!running) return;
+        renderRoad(); renderScenery();
+        placeLayer(sweets,candyLayer,"sprite-candy",item => {
+          if (Math.abs(playerLane-item.lane) < .2) {
+            item.taken = true; candy += 10;
+            const pos=project(distance,item.lane,item.at-distance); burst(pos.x,pos.y,"#ffc778",7);
+            if (candy > best) { best=candy; bestReadout.textContent=String(best); try { localStorage.setItem("hauntedHayrideBest",String(best)); } catch (_) { /* storage may be disabled */ } }
+            updateHud();
+          }
+        });
+        placeLayer(hazards,hazardLayer,"sprite-pumpkin",item => {
+          if (!item.hit && Math.abs(playerLane-item.lane) < .23) { item.hit=true; const pos=project(distance,item.lane,item.at-distance); takeScare(pos.x,pos.y); }
+        });
+        if (!running) return;
+        for (let i=particles.length-1;i>=0;i--) {
+          const p=particles[i]; p.life-=dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vy+=165*dt;
+          p.node.setAttribute("x",String(Math.round(p.x))); p.node.setAttribute("y",String(Math.round(p.y))); p.node.setAttribute("opacity",String(Math.max(0,p.life/p.max)));
+          if (p.life<=0) { p.node.remove(); particles.splice(i,1); }
+        }
+        updateHud();
+        if (distance >= ROUTE_LENGTH) { distance=ROUTE_LENGTH; updateHud(); endRide(true); return; }
+        raf = requestAnimationFrame(frame);
+      }
+      function holdButton(button) {
+        const direction=button.dataset.steer;
+        const release=() => { steering[direction]=false; button.classList.remove("held"); };
+        button.addEventListener("pointerdown",event=>{ event.preventDefault(); if (!running) return; button.setPointerCapture?.(event.pointerId); steering[direction]=true; button.classList.add("held"); });
+        button.addEventListener("pointerup",release); button.addEventListener("pointercancel",release); button.addEventListener("lostpointercapture",release);
+        button.addEventListener("contextmenu",event=>event.preventDefault());
+      }
+      document.querySelectorAll(".hayride-control").forEach(holdButton);
+      function keyDirection(event) {
+        if (["ArrowLeft","a","A"].includes(event.key)) return "left";
+        if (["ArrowRight","d","D"].includes(event.key)) return "right";
+        return "";
+      }
+      window.addEventListener("keydown",event=>{ const dir=keyDirection(event); if(dir && running){ event.preventDefault(); keyState.add(dir); } });
+      window.addEventListener("keyup",event=>{ const dir=keyDirection(event); if(dir){ event.preventDefault(); keyState.delete(dir); } });
+      window.addEventListener("blur",()=>{ steering.left=steering.right=false; keyState.clear(); document.querySelectorAll(".hayride-control").forEach(button=>button.classList.remove("held")); });
+      document.addEventListener("visibilitychange",()=>{ if(document.hidden){ resumeAfterVisibility=running; running=false; cancelAnimationFrame(raf); } else if(resumeAfterVisibility && overlay.hidden){ resumeAfterVisibility=false; running=true; lastFrame=0; raf=requestAnimationFrame(frame); } });
+      startButton.addEventListener("click",resetRide);
+      makeRoadside(); makeEvents(); renderRoad(); renderScenery(); updateHud();
+    })();
+  </script>
+</body>
+</html>
