@@ -163,6 +163,7 @@
         return { x: enemyX, y: enemyY, node: group };
       }
       function makeWave() {
+        clearShots();
         enemies = [];
         clearMinions();
         enemyLayer.replaceChildren();
@@ -179,6 +180,7 @@
         updateHud();
       }
       function makeBoss() {
+        clearShots();
         enemies = [];
         clearMinions();
         enemyLayer.replaceChildren();
@@ -391,7 +393,7 @@
         }
 
         for (const shot of shots) {
-          shot.y -= shot.speed * dt;
+          shot.y += shot.velocityY * dt;
           shot.node.setAttribute("y", shot.y);
           if (shot.y < -20) { shot.node.remove(); shot.dead = true; continue; }
           if (bossMode) {
