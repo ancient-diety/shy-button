@@ -18,7 +18,7 @@
     .rear-mirror { position: absolute; z-index: 2; top: 2.2rem; left: 50%; width: 30%; max-width: 142px; transform: translateX(-50%); pointer-events: none; }
     .side-mirror { position: absolute; z-index: 2; top: 27%; right: .35rem; width: 18%; max-width: 86px; pointer-events: none; }
     .mirror svg { display: block; width: 100%; height: auto; filter: drop-shadow(2px 3px #17142d); }
-    .dice { position: absolute; z-index: 2; top: 5.7rem; left: 52%; width: 40px; height: 55px; pointer-events: none; }
+    .dice { position: absolute; z-index: 2; top: 5.7rem; left: calc(50% - 33px); width: 66px; height: 86px; pointer-events: none; }
     .dice svg { width: 100%; height: 100%; overflow: visible; transform-origin: 20px 0; transition: transform .12s ease-out; }
     .track-map { position: absolute; z-index: 2; top: .65rem; left: .65rem; width: 96px; padding: .35rem; border: 2px solid #fff0c2; background: #332044eF; box-shadow: 3px 3px #17142d; pointer-events: none; }
     .track-map svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
@@ -51,7 +51,7 @@
       .track-map { top: .5rem; left: .5rem; width: 82px; }
       .rear-mirror { top: 1.9rem; }
       .side-mirror { right: .15rem; }
-      .dice { top: 5rem; width: 32px; height: 46px; }
+      .dice { top: 5rem; left: calc(50% - 27px); width: 54px; height: 74px; }
     }
     @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important;transition:none!important}}
   </style>
@@ -98,7 +98,7 @@
         <rect x="344" y="82" width="36" height="4" fill="#f49a86"/><rect x="362" y="77" width="24" height="5" fill="#f49a86"/>
         <rect x="205" y="78" width="70" height="4" fill="#ffda91"/><rect x="218" y="68" width="44" height="10" fill="#ffda91"/><rect x="226" y="61" width="28" height="7" fill="#ffda91"/>
         <rect y="132" width="480" height="10" fill="#39435a"/><path d="M0 143h46v-20h12v20h47v-12h22v12h77v-25h18v25h65v-16h14v16h73v-22h24v22h42v-18h18v18h18v26H0Z" fill="#38434b"/>
-        <path id="road-render"/>
+        <g id="road-render"></g>
         <g id="traffic-render"></g>
         <g aria-hidden="true" shape-rendering="crispEdges">
           <path d="M0 0h480v25h-30l-15 17H45L30 25H0Z" fill="#2e213b"/><path d="M0 0h38l52 424-34 8L0 42Zm480 0h-38l-52 424 34 8 56-390Z" fill="#392542" stroke="#8c5470" stroke-width="5"/>
@@ -208,7 +208,8 @@
           point.distance = totalLength;
           path.push(point);
         }
-        const d = path.slice(0, -1).map((p, i) => `${i ? "L" : "M"}${(50 + (p.x - CX) * .21).toFixed(1)} ${(60 + (p.y - CY) * .21).toFixed(1)}`).join(" ") + "Z";
+        const mapSamples = path.filter((_, i) => i % 9 === 0);
+        const d = mapSamples.map((p, i) => ` ${i ? "L" : "M"}${Math.round((50 + (p.x - CX) * .21) / 1.5) * 1.5} ${Math.round((60 + (p.y - CY) * .21) / 1.5) * 1.5}`).join("") + "Z";
         for (const id of ["#map-track-border", "#map-track", "#map-track-dashes"]) document.querySelector(id).setAttribute("d", d);
         const first = path[0], next = path[5];
         const dx = next.x-first.x, dy = next.y-first.y, length = Math.hypot(dx,dy) || 1;
@@ -252,12 +253,15 @@
       function relativeSide(point, origin, basis) {
         return (point.x - origin.x) * basis.nx + (point.y - origin.y) * basis.ny;
       }
+      function snapPixel(value, size = 3) {
+        return Math.round(value / size) * size;
+      }
       function mainProjection(side, depth) {
         const scale = 280 / (depth + 60);
         return { x: 240 + side * scale, y: 130 + 60 * scale, scale };
       }
       function polygon(points, fill) {
-        return `<polygon points="${points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" fill="${fill}"/>`;
+        return `<polygon points="${points.map(p => `${snapPixel(p.x)},${snapPixel(p.y)}`).join(" ")}" fill="${fill}"/>`;
       }
       function renderRoad(playerPoint) {
         const basis = cameraBasis(playerPoint);
@@ -285,7 +289,7 @@
       }
       function carSprite(x,y,scale,color,number) {
         const w=Math.min(52,14*scale), h=Math.min(62,21*scale), half=w/2;
-        const group=svgEl("g",{transform:`translate(${x.toFixed(1)} ${y.toFixed(1)})`});
+        const group=svgEl("g",{transform:`translate(${snapPixel(x,2)} ${snapPixel(y,2)})`,"shape-rendering":"crispEdges"});
         group.append(svgEl("rect",{x:-half-2,y:-h*.25,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:half-2,y:-h*.25,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:-half-2,y:h*.2,width:4,height:h*.3,fill:"#201d32"}),svgEl("rect",{x:half-2,y:h*.2,width:4,height:h*.3,fill:"#201d32"}));
         group.append(svgEl("path",{d:`M${-half*.72} ${h*.45} L${-half} ${-h*.18} L${-half*.68} ${-h*.48} L${half*.68} ${-h*.48} L${half} ${-h*.18} L${half*.72} ${h*.45} Z`,fill:color,stroke:"#29263e","stroke-width":Math.max(1,scale)}));
         group.append(svgEl("path",{d:`M${-half*.54} ${-h*.14} L${-half*.38} ${-h*.38} H${half*.38} L${half*.54} ${-h*.14} Z`,fill:"#96d7d7"}));
@@ -301,7 +305,7 @@
           const point=pointAt(npc.distance,npc.lane);
           const side=relativeSide(point,playerPoint,basis);
           const projected=mainProjection(side,ahead);
-          visible.push({ahead,point:carSprite(projected.x,projected.y,projected.scale,npc.color,npc.number)});
+          visible.push({ahead,point:carSprite(snapPixel(projected.x,2),snapPixel(projected.y,2),projected.scale,npc.color,npc.number)});
         }
         visible.sort((a,b)=>b.ahead-a.ahead);
         trafficRender.replaceChildren(...visible.map(v=>v.point));
