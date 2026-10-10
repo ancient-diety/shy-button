@@ -53,7 +53,7 @@
     <div class="pixel-sun" aria-hidden="true">✷</div>
     <p class="eyebrow">START YOUR ENGINES</p>
     <h1>Sunset Speedway</h1>
-    <p class="game-description">Pick a car and race three laps on a winding, vertically scrolling sunset track. Dodge rival drivers and potholes; one crash ends the race!</p>
+    <p class="game-description">Pick a car and race three laps on a straight, vertically scrolling sunset track. Dodge rival drivers and potholes; one crash ends the race!</p>
 
     <div class="race-hud" aria-label="Race status">
       <div>LAP<span id="lap-readout">1 / 3</span></div>
@@ -107,7 +107,7 @@
       </svg>
       <div class="track-map" aria-label="Minimap showing your position on the full track">
         <p class="track-map-label">TRACK MAP</p>
-        <svg viewBox="0 0 100 120" role="img" aria-label="Winding race track with your current position marked in yellow"><path id="map-track-border" fill="none" stroke="#17142d" stroke-width="13"/><path id="map-track" fill="none" stroke="#76727b" stroke-width="9"/><path id="map-track-dashes" fill="none" stroke="#e9d6a0" stroke-width="1" stroke-dasharray="2 2"/><path id="map-start" fill="none" stroke="#e76673" stroke-width="3"/><path id="map-player" d="M0 -4 L3 3 L0 1 L-3 3Z" transform="translate(50 10)" fill="#ffd477" stroke="#332044" stroke-width=".8"/></svg>
+        <svg viewBox="0 0 100 120" role="img" aria-label="Straight race track with your current position marked in yellow"><path id="map-track-border" fill="none" stroke="#17142d" stroke-width="13"/><path id="map-track" fill="none" stroke="#76727b" stroke-width="9"/><path id="map-track-dashes" fill="none" stroke="#e9d6a0" stroke-width="1" stroke-dasharray="2 2"/><path id="map-start" fill="none" stroke="#e76673" stroke-width="3"/><path id="map-player" d="M0 -4 L3 3 L0 1 L-3 3Z" transform="translate(50 10)" fill="#ffd477" stroke="#332044" stroke-width=".8"/></svg>
       </div>
       <div class="race-overlay" id="race-overlay">
         <section class="race-card" aria-live="polite">
@@ -139,7 +139,6 @@
       const CX = 240, PLAYER_Y = 430;
       const LAP_LENGTH = 1800, LAPS_TO_WIN = 3, RACE_LENGTH = LAP_LENGTH * LAPS_TO_WIN;
       const MAX_SPEED = 225, ROAD_HALF_WIDTH = 45, ZOOM = 1.16;
-      const curveOffsets = [0, 0, 8, 22, 42, 58, 70, 76, 70, 54, 32, 4, -24, -50, -68, -76, -68, -44, -16, 0];
       const world = document.querySelector("#world");
       const playerCar = document.querySelector("#player-car");
       const trafficLayer = document.querySelector("#traffic-layer");
@@ -170,18 +169,7 @@
         return node;
       }
       function snapPixel(value, size = 4) { return Math.round(value / size) * size; }
-      function roadOffset(distance) {
-        const wrapped = ((distance % LAP_LENGTH) + LAP_LENGTH) % LAP_LENGTH;
-        const scaled = wrapped / LAP_LENGTH * curveOffsets.length;
-        const segment = Math.floor(scaled), t = scaled - segment;
-        const count = curveOffsets.length;
-        const p0 = curveOffsets[(segment - 1 + count) % count];
-        const p1 = curveOffsets[segment % count];
-        const p2 = curveOffsets[(segment + 1) % count];
-        const p3 = curveOffsets[(segment + 2) % count];
-        const t2 = t * t, t3 = t2 * t;
-        return .5 * ((2 * p1) + (-p0 + p2) * t + (2*p0 - 5*p1 + 4*p2 - p3) * t2 + (-p0 + 3*p1 - 3*p2 + p3) * t3);
-      }
+      function roadOffset() { return 0; }
       function roadCenter(distance) { return CX + roadOffset(distance); }
       function roadHeading(distance) {
         const change = roadCenter(distance + 16) - roadCenter(distance - 16);
