@@ -265,6 +265,7 @@
     }
     @media(prefers-reduced-motion:reduce) { .status-light{animation:none}.game-carousel{scroll-behavior:auto!important}.start-link{transition:none} }
 </style>
+    <link rel="stylesheet" href="arcade-shell.css">
 </head>
 
 <body class="arcade-home">
@@ -287,13 +288,13 @@
             </div>
         </header>
 
-        <section class="screen-housing" aria-label="Arcade game selection screen">
+        <section class="screen-housing" aria-label="Arcade screen">
 
             <div class="screen-topline">
-                <span>SELECT YOUR GAME</span>
+                <span id="screen-label">SELECT YOUR GAME</span>
                 <span class="screen-status">
                     <i class="status-light" aria-hidden="true"></i>
-                    INSERT COIN? JUST KIDDING · FREE!
+                    <span id="screen-status-text">INSERT COIN? JUST KIDDING · FREE!</span>
                 </span>
             </div>
 
@@ -419,6 +420,15 @@
         </article>
                 </section>
 
+                <section class="game-player" id="game-player" aria-label="Now playing" hidden>
+                    <div class="player-toolbar">
+                        <button class="player-button" id="exit-game" type="button" aria-label="Back to game selection">&#8592; GAMES</button>
+                        <p class="playing-title" id="playing-title" aria-live="polite"></p>
+                        <button class="player-button" id="restart-game" type="button" aria-label="Restart game">RESTART</button>
+                    </div>
+                    <div class="game-frame-slot" id="game-frame-slot"></div>
+                </section>
+
                 <button
                     class="screen-arrow previous"
                     id="previous-game"
@@ -500,99 +510,7 @@
 
     </main>
 
-    <script>
-        (() => {
-            const carousel = document.querySelector("#game-carousel");
-            const slides = Array.from(carousel.querySelectorAll(".game-slide"));
-            const previousButton = document.querySelector("#previous-game");
-            const nextButton = document.querySelector("#next-game");
-            const pageCount = document.querySelector("#page-count");
-            const dots = document.querySelector("#page-dots");
-
-            let activeIndex = 0;
-            let scrollFrame = 0;
-
-            function setActive(index, scroll = true) {
-                activeIndex = (index + slides.length) % slides.length;
-
-                slides.forEach((slide, slideIndex) => {
-                    const active = slideIndex === activeIndex;
-                    slide.setAttribute("aria-hidden", String(!active));
-                    slide.inert = !active;
-                    dots.children[slideIndex].setAttribute(
-                        "aria-current",
-                        String(active)
-                    );
-                });
-
-                pageCount.textContent =
-                    String(activeIndex + 1).padStart(2, "0") +
-                    " / " +
-                    String(slides.length).padStart(2, "0");
-
-                if (scroll) {
-                    const reducedMotion = window.matchMedia(
-                        "(prefers-reduced-motion: reduce)"
-                    ).matches;
-
-                    carousel.scrollTo({
-                        left: activeIndex * carousel.clientWidth,
-                        behavior: reducedMotion ? "auto" : "smooth"
-                    });
-                }
-            }
-
-            slides.forEach((slide, index) => {
-                const dot = document.createElement("button");
-                dot.type = "button";
-                dot.className = "page-dot";
-                dot.setAttribute(
-                    "aria-label",
-                    "Go to game " + (index + 1) + ": " +
-                    slide.querySelector("h2").textContent
-                );
-                dot.setAttribute("aria-current", "false");
-                dot.addEventListener("click", () => setActive(index));
-                dots.append(dot);
-            });
-
-            previousButton.addEventListener("click", () => {
-                setActive(activeIndex - 1);
-            });
-
-            nextButton.addEventListener("click", () => {
-                setActive(activeIndex + 1);
-            });
-
-            carousel.addEventListener("scroll", () => {
-                if (scrollFrame) return;
-
-                scrollFrame = requestAnimationFrame(() => {
-                    scrollFrame = 0;
-                    const index = Math.round(
-                        carousel.scrollLeft / carousel.clientWidth
-                    );
-
-                    if (index !== activeIndex && index >= 0 && index < slides.length) {
-                        setActive(index, false);
-                    }
-                });
-            }, { passive: true });
-
-            carousel.addEventListener("keydown", event => {
-                if (event.target !== carousel) return;
-
-                if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                    event.preventDefault();
-                    setActive(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
-                }
-            });
-
-            window.addEventListener("resize", () => setActive(activeIndex, true));
-
-            setActive(0, false);
-        })();
-    </script>
+    <script src="arcade-shell.js"></script>
 
 </body>
 </html>
