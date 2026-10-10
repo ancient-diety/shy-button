@@ -5,9 +5,10 @@ A tiny retro game corner with sunset colors and pixel-inspired details. Pick a g
 - **Catch the Shy Button** — catch it after five little hops.
 - **A Tiny Garden** — water a plant until it blooms, then grow another.
 - **Homework Blaze** — click the falling math sheets to burn them before they hit the desk.
+- **Alien Attack** — fly a pixel ship, clear alien waves, and take on the boss.
+- **Sunset Speedway** — choose a pixel car, race three laps, and avoid the other drivers.
 
 Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
-- **Alien Attack** — fly a pixel ship, clear alien waves, and take on the boss.
 
 ## Play locally
 

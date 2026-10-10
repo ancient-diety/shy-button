@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#332044">
+  <title>Sunset Speedway · Sunset Arcade</title>
+  <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+  <link rel="stylesheet" href="../arcade.css">
+  <style>
+    .race-game { width: min(100%, 760px); }
+    .race-hud { width: min(100%, 520px); margin: 1rem auto .8rem; display: grid; grid-template-columns: repeat(3,1fr); gap: .55rem; text-align: left; font-weight: bold; }
+    .race-hud > div { padding: .55rem .7rem; border: 2px solid #ffcf9b; background: #754366; box-shadow: 3px 3px #332044; }
+    .race-hud span { display: block; margin-top: .3rem; color: #ffd477; font-size: 1.05rem; }
+    .race-screen { position: relative; width: min(100%,480px); aspect-ratio: 6 / 7; margin: 0 auto; overflow: hidden; border: 4px solid #fff0c2; background: #456b4b; box-shadow: 7px 7px #332044; touch-action: none; }
+    .race-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .race-overlay { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: .8rem; background: #241a46d9; }
+    .race-overlay[hidden] { display: none; }
+    .race-card { width: min(100%,420px); padding: clamp(.8rem,4vw,1.35rem); border: 3px solid #ffd477; background: #482b5fee; box-shadow: 6px 6px #17142d; }
+    .race-card h2 { margin: .2rem 0 .65rem; color: #ffd477; font: .9rem/1.7 "Press Start 2P","Courier New",monospace; }
+    .race-card p { margin: .45rem 0 .8rem; line-height: 1.45; }
+    .car-picker { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .45rem; margin: .7rem 0; }
+    .car-option { min-width: 0; min-height: 82px; display: grid; justify-items: center; align-content: center; gap: .2rem; padding: .35rem .15rem; border: 2px solid #c68a90; color: #fff0c2; background: #603d63; font: bold .7rem "Courier New",monospace; }
+    .car-option svg { width: 30px; height: 42px; image-rendering: pixelated; }
+    .car-option[aria-pressed="true"] { border: 3px solid #ffd477; background: #8b4c69; box-shadow: 3px 3px #241a46; }
+    .race-start { min-height: 46px; padding: .65rem .9rem; border: 3px solid #fff0c2; color: #351f4c; background: #9fe0dc; box-shadow: 4px 4px #241a46; font: bold .95rem "Courier New",monospace; }
+    .race-controls { width: min(100%,480px); margin: .85rem auto 0; display: grid; grid-template-columns: 1fr 1fr 1.25fr 1fr; gap: .45rem; }
+    .race-control { min-height: 48px; border: 3px solid #fff0c2; color: #fff0c2; background: #69436d; box-shadow: 3px 3px #332044; font: bold .88rem "Courier New",monospace; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+    .race-control.go { color: #3b2745; background: #ffcf73; }
+    .race-control.held,.race-control:active { transform: translateY(2px); box-shadow: 1px 1px #332044; background: #956080; }
+    .race-control.go.held,.race-control.go:active { background: #ffab59; }
+    .race-help { margin: .75rem auto 0; color: #ffe2ca; font-size: .86rem; line-height: 1.5; }
+    @media(max-width:520px){
+      .race-game { padding-left: .65rem; padding-right: .65rem; }
+      .race-hud { gap: .35rem; font-size: .8rem; }
+      .race-hud > div { padding: .45rem .5rem; }
+      .race-hud span { font-size: .95rem; }
+      .race-controls { gap: .35rem; }
+      .race-control { min-height: 52px; padding: .2rem; font-size: .78rem; }
+      .race-card h2 { font-size: .75rem; }
+      .race-card p { font-size: .9rem; }
+    }
+    @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important}}
+  </style>
+</head>
+<body>
+  <main class="game-page race-game">
+    <a class="back-link" href="../index.html">← BACK TO THE ARCADE</a>
+    <div class="pixel-sun" aria-hidden="true">✷</div>
+    <p class="eyebrow">START YOUR ENGINES</p>
+    <h1>Sunset Speedway</h1>
+    <p class="game-description">Pick a car, race three laps around the sunset circuit, and weave through the other drivers. One crash ends the race!</p>
+
+    <div class="race-hud" aria-label="Race status">
+      <div>LAP<span id="lap-readout">1 / 3</span></div>
+      <div>TIME<span id="time-readout">00:00.00</span></div>
+      <div>SPEED<span id="speed-readout">0 km/h</span></div>
+    </div>
+
+    <div class="race-screen" id="race-screen" aria-label="Top-down pixel racing circuit">
+      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Tiny pixel cars race around an oval track at sunset" shape-rendering="crispEdges">
+        <defs>
+          <pattern id="grass-pixels" width="24" height="24" patternUnits="userSpaceOnUse">
+            <rect width="24" height="24" fill="#52784e"/><rect x="3" y="5" width="3" height="3" fill="#668956"/><rect x="15" y="15" width="4" height="3" fill="#426747"/><rect x="20" y="3" width="2" height="2" fill="#78915a"/>
+          </pattern>
+          <pattern id="start-checker" width="16" height="8" patternUnits="userSpaceOnUse">
+            <rect width="16" height="8" fill="#fff0c2"/><rect width="8" height="4" fill="#332044"/><rect x="8" y="4" width="8" height="4" fill="#332044"/>
+          </pattern>
+          <g id="car-red-art">
+            <rect x="-10" y="-11" width="4" height="7" fill="#29263e"/><rect x="6" y="-11" width="4" height="7" fill="#29263e"/><rect x="-10" y="6" width="4" height="7" fill="#29263e"/><rect x="6" y="6" width="4" height="7" fill="#29263e"/>
+            <rect x="-7" y="-16" width="14" height="32" fill="#792d50"/><rect x="-6" y="-16" width="12" height="29" fill="#e84b5f"/><rect x="-5" y="-14" width="10" height="6" fill="#ff9a68"/><rect x="-5" y="-6" width="10" height="12" fill="#513b5c"/><rect x="-4" y="-5" width="8" height="8" fill="#90d1cf"/><rect x="-6" y="7" width="12" height="4" fill="#c43f58"/><rect x="-2" y="-14" width="4" height="19" fill="#ffd477"/><rect x="-7" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="4" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="-7" y="12" width="4" height="2" fill="#ffcf73"/><rect x="3" y="12" width="4" height="2" fill="#ffcf73"/>
+          </g>
+          <g id="car-green-art">
+            <rect x="-10" y="-10" width="4" height="7" fill="#29263e"/><rect x="6" y="-10" width="4" height="7" fill="#29263e"/><rect x="-10" y="6" width="4" height="7" fill="#29263e"/><rect x="6" y="6" width="4" height="7" fill="#29263e"/>
+            <rect x="-8" y="-13" width="16" height="27" fill="#2c594b"/><rect x="-7" y="-15" width="14" height="28" fill="#42a96a"/><rect x="-5" y="-16" width="10" height="5" fill="#9ce08b"/><rect x="-5" y="-7" width="10" height="10" fill="#385266"/><rect x="-4" y="-6" width="8" height="7" fill="#9edfd2"/><rect x="-8" y="6" width="16" height="4" fill="#287854"/><rect x="-7" y="-14" width="2" height="20" fill="#fff0c2"/><rect x="5" y="-14" width="2" height="20" fill="#fff0c2"/><rect x="-7" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="4" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="-7" y="11" width="4" height="2" fill="#ffcf73"/><rect x="3" y="11" width="4" height="2" fill="#ffcf73"/>
+          </g>
+          <g id="car-blue-art">
+            <rect x="-10" y="-12" width="4" height="7" fill="#29263e"/><rect x="6" y="-12" width="4" height="7" fill="#29263e"/><rect x="-10" y="6" width="4" height="7" fill="#29263e"/><rect x="6" y="6" width="4" height="7" fill="#29263e"/>
+            <rect x="-7" y="-16" width="14" height="31" fill="#334279"/><rect x="-6" y="-14" width="12" height="28" fill="#4778d1"/><rect x="-4" y="-16" width="8" height="6" fill="#80d9ed"/><rect x="-5" y="-7" width="10" height="11" fill="#343a62"/><rect x="-4" y="-6" width="8" height="8" fill="#a6e3e5"/><rect x="-6" y="6" width="12" height="4" fill="#365ab0"/><rect x="-2" y="-14" width="4" height="17" fill="#ffcf73"/><rect x="-7" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="4" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="-7" y="12" width="4" height="2" fill="#ffcf73"/><rect x="3" y="12" width="4" height="2" fill="#ffcf73"/>
+          </g>
+        </defs>
+        <rect width="480" height="560" fill="url(#grass-pixels)"/>
+        <path d="M60 280V256h8v-40h8v-36h10v-32h14v-28h18V96h24V72h38V58h120v14h38v24h24v24h18v28h14v32h10v36h8v40h8v48h-8v40h-8v36h-10v32h-14v28h-18v24h-24v24h-38v14H180v-14h-38v-24h-24v-24h-18v-28H86v-32H76v-36h-8v-40h-8z" fill="#29263e"/>
+        <ellipse cx="240" cy="280" rx="184" ry="224" fill="#504b52" stroke="#f3be72" stroke-width="8"/>
+        <ellipse cx="240" cy="280" rx="112" ry="152" fill="url(#grass-pixels)" stroke="#e76673" stroke-width="8"/>
+        <ellipse cx="240" cy="280" rx="148" ry="188" fill="none" stroke="#e9d6a0" stroke-width="3" stroke-dasharray="8 12"/>
+        <path d="M96 165h18v-12h12v-18h14v-12h18v-12h25v-10h28v-8h58v8h28v10h25v12h18v12h14v18h12v12h18" fill="none" stroke="#5f5a60" stroke-width="5" opacity=".7"/>
+        <rect x="156" y="86" width="168" height="8" fill="url(#start-checker)"/>
+        <g aria-hidden="true">
+          <rect x="178" y="252" width="124" height="4" fill="#6a8256"/><rect x="188" y="256" width="104" height="4" fill="#405c48"/>
+          <text x="240" y="244" text-anchor="middle" fill="#fff0c2" font-size="12" font-weight="bold" font-family="Courier New,monospace">SUNSET</text>
+          <text x="240" y="275" text-anchor="middle" fill="#ffd477" font-size="17" font-weight="bold" font-family="Courier New,monospace">SPEEDWAY</text>
+          <text x="240" y="298" text-anchor="middle" fill="#ffe2ca" font-size="9" font-family="Courier New,monospace">★  TURBO CUP  ★</text>
+          <rect x="217" y="309" width="46" height="3" fill="#e76673"/><rect x="225" y="313" width="30" height="3" fill="#f3be72"/>
+        </g>
+        <g id="racer-layer"></g>
+        <g id="player-car"><use href="#car-red-art"/></g>
+      </svg>
+      <div class="race-overlay" id="race-overlay">
+        <section class="race-card" aria-live="polite">
+          <h2 id="overlay-title">CHOOSE YOUR CAR</h2>
+          <div id="car-picker-panel">
+            <p id="car-picker-copy">Three laps. Lots of traffic. Try not to kiss a bumper!</p>
+            <div class="car-picker" role="group" aria-label="Choose your racer">
+              <button class="car-option" type="button" data-car="red" aria-pressed="true"><svg viewBox="-12 -18 24 36" aria-hidden="true"><use href="#car-red-art"/></svg><span>RED · RALLY</span></button>
+              <button class="car-option" type="button" data-car="green" aria-pressed="false"><svg viewBox="-12 -18 24 36" aria-hidden="true"><use href="#car-green-art"/></svg><span>GREEN · CLOVER</span></button>
+              <button class="car-option" type="button" data-car="blue" aria-pressed="false"><svg viewBox="-12 -18 24 36" aria-hidden="true"><use href="#car-blue-art"/></svg><span>BLUE · COMET</span></button>
+            </div>
+          </div>
+          <p id="overlay-copy">Use ◀ ▶ to change lanes. Hold ↑ to speed up and ↓ to brake.</p>
+          <button class="race-start" id="start-race" type="button">🏁 START RACE</button>
+        </section>
+      </div>
+    </div>
+
+    <div class="race-controls" aria-label="Driving controls">
+      <button class="race-control" id="steer-left" type="button" aria-label="Steer left">◀ LEFT</button>
+      <button class="race-control" id="steer-right" type="button" aria-label="Steer right">RIGHT ▶</button>
+      <button class="race-control go" id="accelerate" type="button" aria-label="Accelerate">▲ GO</button>
+      <button class="race-control" id="brake" type="button" aria-label="Brake">▼ BRAKE</button>
+    </div>
+    <p class="race-help">Keyboard: ← → or A / D to steer · hold ↑ / W to go · ↓ / S to brake. On mobile, hold the buttons.</p>
+  </main>
+  <script>
+    (() => {
+      const CX = 240, CY = 280;
+      const RX = 148, RY = 188, LAPS_TO_WIN = 3, MAX_SPEED = 225;
+      const racerLayer = document.querySelector("#racer-layer");
+      const playerCar = document.querySelector("#player-car");
+      const overlay = document.querySelector("#race-overlay");
+      const title = document.querySelector("#overlay-title");
+      const copy = document.querySelector("#overlay-copy");
+      const pickerPanel = document.querySelector("#car-picker-panel");
+      const startButton = document.querySelector("#start-race");
+      const lapReadout = document.querySelector("#lap-readout");
+      const timeReadout = document.querySelector("#time-readout");
+      const speedReadout = document.querySelector("#speed-readout");
+      const held = { left: false, right: false, accelerate: false, brake: false };
+      const keyState = new Set();
+      const carNames = { red: "Rally", green: "Clover", blue: "Comet" };
+      let selectedCar = "red", running = false;
+      let playerDistance = 0, laneOffset = 0, speed = 145, elapsed = 0, lastTime = 0, animation = 0;
+      let npcs = [], path = [], totalLength = 0, bestTime = Infinity;
+
+      try { bestTime = Number(localStorage.getItem("sunsetSpeedwayBest")) || Infinity; } catch (_) { /* storage can be disabled */ }
+
+      function svgEl(tag, attrs = {}) {
+        const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+        for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, value);
+        return node;
+      }
+      function buildPath() {
+        path = [];
+        totalLength = 0;
+        const steps = 720;
+        for (let i = 0; i <= steps; i++) {
+          const angle = -Math.PI / 2 + i / steps * Math.PI * 2;
+          const point = { x: CX + RX * Math.cos(angle), y: CY + RY * Math.sin(angle) };
+          if (i) totalLength += Math.hypot(point.x - path[i - 1].x, point.y - path[i - 1].y);
+          point.distance = totalLength;
+          path.push(point);
+        }
+      }
+      function pointAt(distance, lane = 0) {
+        let d = ((distance % totalLength) + totalLength) % totalLength;
+        let low = 0, high = path.length - 1;
+        while (low + 1 < high) {
+          const mid = (low + high) >> 1;
+          if (path[mid].distance < d) low = mid; else high = mid;
+        }
+        const a = path[low], b = path[high];
+        const span = b.distance - a.distance || 1;
+        const t = Math.max(0, Math.min(1, (d - a.distance) / span));
+        const x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
+        const tangentX = b.x - a.x, tangentY = b.y - a.y;
+        const length = Math.hypot(tangentX, tangentY) || 1;
+        const nx = -tangentY / length, ny = tangentX / length;
+        const angle = Math.atan2(tangentY, tangentX) * 180 / Math.PI + 90;
+        return { x: x + nx * lane, y: y + ny * lane, angle };
+      }
+      function setCarPosition(node, point) {
+        node.setAttribute("transform", `translate(${point.x.toFixed(2)} ${point.y.toFixed(2)}) rotate(${point.angle.toFixed(1)})`);
+      }
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const whole = Math.floor(seconds % 60);
+        const centiseconds = Math.floor((seconds % 1) * 100);
+        return `${String(minutes).padStart(2,"0")}:${String(whole).padStart(2,"0")}.${String(centiseconds).padStart(2,"0")}`;
+      }
+      function updateHud() {
+        const completed = Math.floor(playerDistance / totalLength);
+        lapReadout.textContent = `${Math.min(LAPS_TO_WIN, completed + 1)} / ${LAPS_TO_WIN}`;
+        timeReadout.textContent = formatTime(elapsed);
+        speedReadout.textContent = `${Math.round(speed)} km/h`;
+      }
+      function clearNpcs() {
+        npcs = [];
+        racerLayer.replaceChildren();
+      }
+      function makeNpcs() {
+        clearNpcs();
+        const starts = [.105, .255, .465, .715];
+        const lanes = [-22, 20, 0, 23];
+        const speeds = [158, 174, 148, 183];
+        const cars = ["blue", "green", "red", "blue"];
+        for (let i = 0; i < starts.length; i++) {
+          const node = svgEl("g", { "aria-hidden": "true" });
+          node.append(svgEl("use", { href: `#car-${cars[i]}-art` }));
+          const number = svgEl("text", { x: 0, y: 2, "text-anchor": "middle", fill: "#fff0c2", "font-size": 7, "font-weight": "bold", "font-family": "Courier New,monospace" });
+          number.textContent = String(i + 2);
+          node.append(number);
+          racerLayer.append(node);
+          npcs.push({ node, distance: totalLength * starts[i], lane: lanes[i], speed: speeds[i] });
+        }
+      }
+      function startRace() {
+        cancelAnimationFrame(animation);
+        running = true;
+        playerDistance = 0;
+        laneOffset = 0;
+        speed = 145;
+        elapsed = 0;
+        lastTime = performance.now();
+        held.left = held.right = held.accelerate = held.brake = false;
+        keyState.clear();
+        playerCar.querySelector("use").setAttribute("href", `#car-${selectedCar}-art`);
+        setCarPosition(playerCar, pointAt(playerDistance, laneOffset));
+        makeNpcs();
+        lapReadout.textContent = `1 / ${LAPS_TO_WIN}`;
+        timeReadout.textContent = formatTime(0);
+        speedReadout.textContent = `${Math.round(speed)} km/h`;
+        pickerPanel.hidden = true;
+        title.textContent = "GO! GO! GO!";
+        copy.textContent = `You're driving the ${carNames[selectedCar]}. Dodge the traffic and finish all three laps!`;
+        startButton.textContent = "🏁 RACE AGAIN";
+        overlay.hidden = true;
+        animation = requestAnimationFrame(frame);
+      }
+      function endRace(won) {
+        if (!running) return;
+        running = false;
+        cancelAnimationFrame(animation);
+        held.left = held.right = held.accelerate = held.brake = false;
+        keyState.clear();
+        overlay.hidden = false;
+        pickerPanel.hidden = false;
+        document.querySelector("#car-picker-copy").textContent = "Choose another car, or keep yours and race again.";
+        title.textContent = won ? "FINISH LINE!" : "CRASH!";
+        if (won) {
+          const record = elapsed < bestTime;
+          if (record) {
+            bestTime = elapsed;
+            try { localStorage.setItem("sunsetSpeedwayBest", String(bestTime)); } catch (_) { /* storage can be disabled */ }
+          }
+          copy.textContent = `Three laps in ${formatTime(elapsed)}! ${record ? "NEW BEST TIME! 🏆" : `Best time: ${formatTime(bestTime)}.`}`;
+        } else {
+          copy.textContent = `You bumped into another car on lap ${Math.min(LAPS_TO_WIN, Math.floor(playerDistance / totalLength) + 1)}. Want another go?`;
+        }
+        startButton.textContent = "🏁 RACE AGAIN";
+      }
+      function frame(now) {
+        if (!running) return;
+        const dt = Math.min(.05, Math.max(0, (now - lastTime) / 1000));
+        lastTime = now;
+        const left = held.left || keyState.has("ArrowLeft") || keyState.has("a") || keyState.has("A");
+        const right = held.right || keyState.has("ArrowRight") || keyState.has("d") || keyState.has("D");
+        const accelerating = held.accelerate || keyState.has("ArrowUp") || keyState.has("w") || keyState.has("W");
+        const braking = held.brake || keyState.has("ArrowDown") || keyState.has("s") || keyState.has("S");
+        if (left) laneOffset -= 78 * dt;
+        if (right) laneOffset += 78 * dt;
+        laneOffset = Math.max(-30, Math.min(30, laneOffset));
+        speed += accelerating ? 92 * dt : -28 * dt;
+        if (braking) speed -= 115 * dt;
+        speed = Math.max(86, Math.min(MAX_SPEED, speed));
+        playerDistance += speed * dt;
+        elapsed += dt;
+        const playerPoint = pointAt(playerDistance, laneOffset);
+        setCarPosition(playerCar, playerPoint);
+        for (const npc of npcs) {
+          npc.distance += npc.speed * dt;
+          const point = pointAt(npc.distance, npc.lane);
+          setCarPosition(npc.node, point);
+          if (Math.hypot(point.x - playerPoint.x, point.y - playerPoint.y) < 24) {
+            updateHud();
+            endRace(false);
+            return;
+          }
+        }
+        updateHud();
+        if (playerDistance >= totalLength * LAPS_TO_WIN) {
+          endRace(true);
+          return;
+        }
+        animation = requestAnimationFrame(frame);
+      }
+      function bindHold(id, property) {
+        const button = document.querySelector(id);
+        button.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          held[property] = true;
+          button.classList.add("held");
+          button.setPointerCapture?.(event.pointerId);
+        });
+        const release = () => { held[property] = false; button.classList.remove("held"); };
+        button.addEventListener("pointerup", release);
+        button.addEventListener("pointercancel", release);
+        button.addEventListener("lostpointercapture", release);
+        button.addEventListener("contextmenu", event => event.preventDefault());
+      }
+      for (const button of document.querySelectorAll(".car-option")) {
+        button.addEventListener("click", () => {
+          selectedCar = button.getAttribute("data-car");
+          for (const option of document.querySelectorAll(".car-option")) option.setAttribute("aria-pressed", String(option === button));
+        });
+      }
+      bindHold("#steer-left", "left");
+      bindHold("#steer-right", "right");
+      bindHold("#accelerate", "accelerate");
+      bindHold("#brake", "brake");
+      window.addEventListener("keydown", event => {
+        if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) event.preventDefault();
+        keyState.add(event.key);
+      });
+      window.addEventListener("keyup", event => keyState.delete(event.key));
+      window.addEventListener("blur", () => { keyState.clear(); held.left = held.right = held.accelerate = held.brake = false; });
+      startButton.addEventListener("click", startRace);
+      buildPath();
+      playerCar.querySelector("use").setAttribute("href", `#car-${selectedCar}-art`);
+      updateHud();
+    })();
+  </script>
+</body>
+</html>
