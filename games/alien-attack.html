@@ -127,7 +127,7 @@
       const keyState = new Set();
       const W = 480, H = 320, MAX_HP = 25, BOSS_HP = 40;
       let x = W / 2, hp = MAX_HP, score = 0, best = 0, wave = 1;
-      let enemies = [], shots = [], enemyShots = [], bossHp = BOSS_HP;
+      let enemies = [], minions = [], shots = [], enemyShots = [], bossHp = BOSS_HP;
       let bossMode = false, running = false, lastTime = 0, playerFireAt = 0, enemyFireAt = 0;
       let animation = 0, transitionTimer = 0, invulnerableUntil = 0, bossX = W / 2 - 32;
 
@@ -164,6 +164,7 @@
       }
       function makeWave() {
         enemies = [];
+        clearMinions();
         enemyLayer.replaceChildren();
         bossMode = false;
         boss.style.display = "none";
@@ -179,6 +180,7 @@
       }
       function makeBoss() {
         enemies = [];
+        clearMinions();
         enemyLayer.replaceChildren();
         bossMode = true;
         bossHp = BOSS_HP;
@@ -189,10 +191,25 @@
         enemyFireAt = performance.now() + 900;
         updateHud();
       }
-      function addShot(xPos, yPos, fromEnemy = false, color = "#9fe0dc", width = 4, height = 12, velocityX = 0) {
+      function addShot(xPos, yPos, fromEnemy = false, color = "#9fe0dc", width = 4, height = 12, velocityX = 0, velocityY = fromEnemy ? 155 : -280) {
         const node = svgEl("rect", { x: xPos - width / 2, y: yPos, width, height, fill: color, class: "pixel-shot" });
         shotLayer.append(node);
-        (fromEnemy ? enemyShots : shots).push({ x: xPos, y: yPos, node, speed: fromEnemy ? 155 : 280, width, height, velocityX });
+        (fromEnemy ? enemyShots : shots).push({ x: xPos, y: yPos, node, velocityX, velocityY, width, height });
+      }
+      function clearMinions() {
+        for (const minion of minions) minion.node.remove();
+        minions = [];
+      }
+      function launchMinions() {
+        const offsets = [-30, 0, 30];
+        for (const offset of offsets) {
+          const minionX = Math.max(8, Math.min(W - 32, bossX + 20 + offset));
+          const node = svgEl("g", { transform: `translate(${minionX} 104)` });
+          node.append(svgEl("use", { href: "#alien-blue-art", x: 0, y: 0 }));
+          enemyLayer.append(node);
+          minions.push({ x: minionX, y: 104, node });
+        }
+        addBurst(bossX + 32, 100, "#b8e6ff");
       }
       function addBurst(xPos, yPos, color = "#ffd477") {
         const g = svgEl("g", { transform: `translate(${xPos} ${yPos})` });
@@ -228,7 +245,7 @@
         wave = 4;
         makeBoss();
         overlayTitle.textContent = "MOTHERSHIP INCOMING!";
-        overlayCopy.textContent = "The alien commander is here. Keep firing and watch out for the triple-shot!";
+        overlayCopy.textContent = "The mothership fires a five-shot fan and sometimes sends three little aliens after you!";
         overlay.querySelector(".overlay-card").classList.add("between-waves");
         overlay.style.background = "#241a4688";
         overlay.hidden = false;
@@ -240,6 +257,7 @@
         cancelAnimationFrame(animation);
         window.clearTimeout(transitionTimer);
         clearShots();
+        clearMinions();
         overlay.hidden = false;
         overlay.style.background = "#241a46df";
         overlay.querySelector(".overlay-card").classList.remove("between-waves");
@@ -269,6 +287,7 @@
         overlay.style.background = "#241a46df";
         startButton.textContent = "🚀 Start the mission";
         clearShots();
+        clearMinions();
         makeWave();
         updateHud();
         animation = requestAnimationFrame(frame);
@@ -281,12 +300,16 @@
       function enemyFire(now) {
         if (now < enemyFireAt) return;
         if (bossMode) {
-          for (const offset of [-24, 0, 24]) {
-            const shotX = bossX + 32 + offset;
-            const aim = Math.max(-90, Math.min(90, (x - shotX) * .32));
-            addShot(shotX, 101, true, "#ff729d", 7, 15, aim);
+          if (Math.random() < .68) {
+            for (const angle of [-60, -30, 0, 30, 60]) {
+              const radians = angle * Math.PI / 180;
+              const speed = 175;
+              addShot(bossX + 32, 101, true, "#ff729d", 7, 15, Math.sin(radians) * speed, Math.cos(radians) * speed);
+            }
+          } else {
+            launchMinions();
           }
-          enemyFireAt = now + Math.max(520, 1000 - (BOSS_HP - bossHp) * 8);
+          enemyFireAt = now + Math.max(900, 1550 - (BOSS_HP - bossHp) * 8) + Math.random() * 450;
         } else if (enemies.length) {
           const shooter = enemies[Math.floor(Math.random() * enemies.length)];
           const shotX = shooter.x + 12;
@@ -324,6 +347,23 @@
           const bossStep = 140 * dt;
           bossX += Math.max(-bossStep, Math.min(bossStep, targetBossX - bossX));
           boss.setAttribute("transform", `translate(${bossX} 34)`);
+          for (const minion of minions) {
+            const targetX = x - 12;
+            const minionStep = 58 * dt;
+            minion.x += Math.max(-minionStep, Math.min(minionStep, targetX - minion.x));
+            minion.y += 68 * dt;
+            minion.node.setAttribute("transform", `translate(${minion.x} ${minion.y})`);
+            if (minion.y > 258 && Math.abs(minion.x + 12 - x) < 23) {
+              addBurst(minion.x + 12, minion.y + 10, "#b8e6ff");
+              minion.node.remove();
+              minion.dead = true;
+              damagePlayer(2, now);
+            } else if (minion.y > H) {
+              minion.node.remove();
+              minion.dead = true;
+            }
+          }
+          minions = minions.filter(minion => !minion.dead);
           if (bossHp <= 0) {
             score += 1000;
             updateHud();
@@ -355,7 +395,10 @@
           shot.node.setAttribute("y", shot.y);
           if (shot.y < -20) { shot.node.remove(); shot.dead = true; continue; }
           if (bossMode) {
-            if (shot.x >= bossX && shot.x <= bossX + 64 && shot.y < 96 && shot.y > 34) {
+            const minion = minions.find(m => shot.x >= m.x - 3 && shot.x <= m.x + 27 && shot.y <= m.y + 22 && shot.y + shot.height >= m.y);
+            if (minion) {
+              shot.node.remove(); shot.dead = true; minion.node.remove(); minion.dead = true; score += 100; addBurst(minion.x + 12, minion.y + 10, "#cbff8c"); updateHud();
+            } else if (shot.x >= bossX && shot.x <= bossX + 64 && shot.y < 96 && shot.y > 34) {
               shot.node.remove(); shot.dead = true; bossHp--; score += 10; addBurst(shot.x, Math.max(35, shot.y), "#ffd477"); updateHud();
             }
           } else {
@@ -366,8 +409,9 @@
           }
         }
         shots = shots.filter(s => !s.dead);
+        minions = minions.filter(minion => !minion.dead);
         for (const shot of enemyShots) {
-          shot.y += shot.speed * dt;
+          shot.y += shot.velocityY * dt;
           shot.x += shot.velocityX * dt;
           shot.node.setAttribute("x", shot.x - shot.width / 2);
           shot.node.setAttribute("y", shot.y);
