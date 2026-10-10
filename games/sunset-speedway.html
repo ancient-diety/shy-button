@@ -107,7 +107,7 @@
       </svg>
       <div class="track-map" aria-label="Minimap showing your position on the full track">
         <p class="track-map-label">TRACK MAP</p>
-        <svg viewBox="0 0 100 120" role="img" aria-label="Straight race track with your current position marked in yellow"><path id="map-track-border" fill="none" stroke="#17142d" stroke-width="13"/><path id="map-track" fill="none" stroke="#76727b" stroke-width="9"/><path id="map-track-dashes" fill="none" stroke="#e9d6a0" stroke-width="1" stroke-dasharray="2 2"/><path id="map-start" fill="none" stroke="#e76673" stroke-width="3"/><path id="map-player" d="M0 -4 L3 3 L0 1 L-3 3Z" transform="translate(50 10)" fill="#ffd477" stroke="#332044" stroke-width=".8"/></svg>
+        <svg viewBox="0 0 100 120" role="img" aria-label="Straight race track with your current position marked in yellow"><path id="map-track-border" fill="none" stroke="#17142d" stroke-width="13"/><path id="map-track" fill="none" stroke="#76727b" stroke-width="9"/><path id="map-track-dashes" fill="none" stroke="#e9d6a0" stroke-width="1" stroke-dasharray="2 2"/><path id="map-start" fill="none" stroke="#e76673" stroke-width="3"/><path id="map-player" d="M0 -4 L3 3 L0 1 L-3 3Z" transform="translate(50 113)" fill="#ffd477" stroke="#332044" stroke-width=".8"/></svg>
       </div>
       <div class="race-overlay" id="race-overlay">
         <section class="race-card" aria-live="polite">
@@ -203,7 +203,7 @@
         }
         const mapD = mapSamples.join(" ");
         for (const id of ["#map-track-border", "#map-track", "#map-track-dashes"]) document.querySelector(id).setAttribute("d", mapD);
-        document.querySelector("#map-start").setAttribute("d", "M36 5 L64 5");
+        document.querySelector("#map-start").setAttribute("d", "M36 113 L64 113");
 
         startLineLayer.replaceChildren();
         for (let lap = 0; lap <= LAPS_TO_WIN; lap++) {
@@ -266,7 +266,7 @@
       function updateMap() {
         const wrapped = ((playerDistance % LAP_LENGTH) + LAP_LENGTH) % LAP_LENGTH;
         const x = 50 + roadOffset(wrapped) * .29;
-        const y = 5 + wrapped / LAP_LENGTH * 108;
+        const y = 113 - wrapped / LAP_LENGTH * 108;
         mapPlayer.setAttribute("transform", "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ")");
       }
       function updateScene() {
