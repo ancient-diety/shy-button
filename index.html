@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#442451">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sunset Arcade</title>
   <link rel="icon" href="Pixel%20Star%20Gamer%20Icon.png" type="image/png">
   <link rel="stylesheet" href="arcade.css">
+<<<<<<< HEAD
   <style>
     body.arcade-home { width:100%; height:100vh; height:100svh; min-height:0; overflow:hidden; display:grid; place-items:center; padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left)); background:radial-gradient(ellipse at 50% 0%,#775287 0%,#49305c 42%,#27213d 100%); }
     body.arcade-home:before { opacity:.11; background-size:18px 18px; }
@@ -233,126 +233,61 @@
       body.arcade-home .start-link { min-height:36px; }
     }
   </style>
+=======
+>>>>>>> parent of 317bcd7 (Redesign arcade home page and carousel)
 </head>
-<body class="arcade-home">
-  <main class="arcade-cabinet">
-    <header class="machine-marquee">
-      <div class="marquee-side"><span class="marquee-star" aria-hidden="true">✦</span><span>PIXEL<br>ARCADE</span></div>
-      <h1 class="marquee-title">SUNSET <span>ARCADE</span></h1>
-      <div class="marquee-side"><span>FREE PLAY<br>1 PLAYER</span><span class="marquee-star" aria-hidden="true">✦</span></div>
-    </header>
+<body>
+  <main class="home-panel">
+    <div class="pixel-sun" aria-hidden="true">☀</div>
+    <p class="eyebrow">WELCOME, PLAYER ONE</p>
+    <h1>Sunset Arcade</h1>
+    <p class="intro">A tiny corner of the internet for small, silly games.<br>Pick a game and stay awhile.</p>
 
-    <section class="screen-housing" aria-label="Arcade game selection screen">
-      <div class="screen-topline"><span>SELECT YOUR GAME</span><span class="screen-status"><i class="status-light" aria-hidden="true"></i> INSERT COIN? JUST KIDDING — FREE!</span></div>
-      <div class="screen-window">
-        <section class="game-carousel" id="game-carousel" tabindex="0" aria-label="Sunset Arcade games" aria-roledescription="carousel">
-          <article class="game-slide" style="--slide-bg-a:#9c4f77;--slide-bg-b:#39264e" role="group" aria-roledescription="slide" aria-label="1 of 7: Catch the Shy Button">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 01</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Pixel sunset with a shy red button hiding near a tiny star">
-                <rect width="600" height="360" fill="#a95178"/><rect width="600" height="112" fill="#705080"/><rect y="112" width="600" height="58" fill="#db6c78"/><rect y="170" width="600" height="48" fill="#f49a69"/><rect y="218" width="600" height="142" fill="#422b50"/>
-                <rect x="439" y="42" width="76" height="76" fill="#ffe08b"/><rect x="423" y="58" width="108" height="45" fill="#ffe08b"/><rect x="455" y="26" width="44" height="108" fill="#ffe08b"/>
-                <rect x="58" y="46" width="7" height="7" fill="#fff0c2"/><rect x="156" y="99" width="6" height="6" fill="#fff0c2"/><rect x="357" y="51" width="5" height="5" fill="#fff0c2"/><rect x="554" y="147" width="6" height="6" fill="#ffd68f"/>
-                <rect x="0" y="218" width="600" height="8" fill="#dd806f"/><rect x="55" y="250" width="110" height="20" fill="#543252"/><rect x="183" y="268" width="90" height="14" fill="#543252"/><rect x="395" y="247" width="155" height="25" fill="#543252"/><rect x="65" y="272" width="9" height="34" fill="#2b2443"/><rect x="147" y="272" width="9" height="34" fill="#2b2443"/>
-                <rect x="265" y="183" width="82" height="74" fill="#332445"/><rect x="275" y="174" width="62" height="10" fill="#fff0c2"/><rect x="270" y="192" width="72" height="53" fill="#e65b6a"/><rect x="278" y="200" width="56" height="37" fill="#f97973"/><text x="306" y="226" text-anchor="middle" fill="#fff0c2" font-size="19" font-weight="bold" font-family="Courier New,monospace">HI?</text><rect x="284" y="253" width="45" height="8" fill="#332445"/>
-                <path d="M369 151h10v10h10v10h-10v10h-10v-10h-10v-10h10z" fill="#fff0c2"/><rect x="390" y="172" width="5" height="5" fill="#ffe08b"/>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 01 / 07 · THE GREETER</p><h2>Catch the Shy Button</h2><p class="description">A button with stage fright! Catch it after its tiny hops so you can say hi.</p><a class="start-link" href="games/shy-button.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">A VERY SMALL HELLO AWAITS</p></div>
-          </article>
-
-          <article class="game-slide" style="--slide-bg-a:#596b62;--slide-bg-b:#293d4a" role="group" aria-roledescription="slide" aria-label="2 of 7: A Tiny Garden">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 02</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Pixel flower in a terracotta pot under a sunny sky">
-                <rect width="600" height="360" fill="#7a9b95"/><rect y="28" width="600" height="198" fill="#a8d5cb"/><rect x="64" y="65" width="76" height="15" fill="#e8f4ce"/><rect x="44" y="80" width="113" height="16" fill="#e8f4ce"/><rect x="426" y="111" width="105" height="15" fill="#e8f4ce"/><rect x="449" y="95" width="57" height="16" fill="#e8f4ce"/>
-                <rect x="476" y="43" width="49" height="49" fill="#ffe483"/><rect x="465" y="54" width="71" height="27" fill="#ffe483"/><rect x="492" y="32" width="19" height="72" fill="#ffe483"/>
-                <rect y="226" width="600" height="134" fill="#6e574f"/><rect y="226" width="600" height="12" fill="#b77e63"/><rect x="34" y="258" width="17" height="17" fill="#836858"/><rect x="131" y="306" width="18" height="17" fill="#836858"/><rect x="523" y="274" width="21" height="15" fill="#836858"/>
-                <rect x="286" y="206" width="27" height="93" fill="#4f994f"/><rect x="269" y="241" width="28" height="15" fill="#65bd63"/><rect x="244" y="226" width="31" height="12" fill="#65bd63"/><rect x="307" y="258" width="33" height="15" fill="#65bd63"/><rect x="324" y="242" width="22" height="13" fill="#65bd63"/>
-                <rect x="277" y="134" width="43" height="35" fill="#f9c84e"/><rect x="244" y="145" width="31" height="28" fill="#ffdf62"/><rect x="322" y="145" width="31" height="28" fill="#ffdf62"/><rect x="257" y="117" width="28" height="28" fill="#ffe782"/><rect x="310" y="117" width="28" height="28" fill="#ffe782"/><rect x="276" y="168" width="45" height="25" fill="#ffdf62"/><rect x="289" y="145" width="7" height="7" fill="#553c43"/><rect x="307" y="145" width="7" height="7" fill="#553c43"/><rect x="298" y="155" width="7" height="5" fill="#ce6d5d"/>
-                <rect x="246" y="293" width="106" height="14" fill="#53364a"/><rect x="258" y="307" width="84" height="47" fill="#c46b4d"/><rect x="269" y="318" width="62" height="28" fill="#de8054"/><rect x="252" y="354" width="96" height="8" fill="#53364a"/><rect x="272" y="321" width="8" height="8" fill="#fff0c2"/>
-                <rect x="91" y="181" width="7" height="7" fill="#fff0c2"/><rect x="180" y="133" width="8" height="8" fill="#fff0c2"/><rect x="391" y="183" width="7" height="7" fill="#fff0c2"/>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 02 / 07 · THE GREEN THUMB</p><h2>A Tiny Garden</h2><p class="description">Water your little pixel plant one splash at a time until it becomes a sunny sunflower.</p><a class="start-link" href="games/tiny-garden.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">A LITTLE WATER GOES A LONG WAY</p></div>
-          </article>
-
-          <article class="game-slide" style="--slide-bg-a:#a14f62;--slide-bg-b:#39264b" role="group" aria-roledescription="slide" aria-label="3 of 7: Homework Blaze">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 03</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Pixel math homework pages above a desk with a bright flame">
-                <rect width="600" height="360" fill="#6d4267"/><rect y="0" width="600" height="170" fill="#45395d"/><rect x="51" y="47" width="5" height="5" fill="#fff0c2"/><rect x="169" y="80" width="6" height="6" fill="#fff0c2"/><rect x="431" y="44" width="5" height="5" fill="#fff0c2"/><rect x="515" y="113" width="7" height="7" fill="#fff0c2"/>
-                <rect x="77" y="90" width="121" height="104" fill="#29233f"/><rect x="86" y="82" width="104" height="102" fill="#fff0c2"/><rect x="99" y="101" width="56" height="7" fill="#ce7583"/><rect x="99" y="122" width="70" height="4" fill="#61708a"/><rect x="99" y="139" width="52" height="4" fill="#61708a"/><text x="116" y="165" fill="#b25568" font-size="26" font-family="Courier New,monospace">2+2?</text>
-                <rect x="254" y="155" width="47" height="36" fill="#f79a4e"/><rect x="267" y="132" width="42" height="58" fill="#ffba50"/><rect x="283" y="111" width="34" height="64" fill="#ffe483"/><rect x="301" y="146" width="31" height="43" fill="#ff754f"/><rect x="310" y="125" width="22" height="49" fill="#fff0a4"/><rect x="281" y="174" width="32" height="19" fill="#ffdf67"/>
-                <rect x="332" y="80" width="114" height="100" fill="#29233f"/><rect x="340" y="71" width="97" height="102" fill="#fff0c2"/><rect x="352" y="91" width="56" height="7" fill="#ce7583"/><rect x="352" y="111" width="70" height="4" fill="#61708a"/><rect x="352" y="128" width="52" height="4" fill="#61708a"/><text x="360" y="156" fill="#b25568" font-size="24" font-family="Courier New,monospace">9-3?</text>
-                <rect y="230" width="600" height="20" fill="#e69a5e"/><rect y="250" width="600" height="110" fill="#9c594f"/><rect x="49" y="270" width="87" height="13" fill="#b86a54"/><rect x="172" y="291" width="140" height="10" fill="#b86a54"/><rect x="404" y="271" width="113" height="15" fill="#b86a54"/><rect x="252" y="193" width="65" height="33" fill="#28223e"/><rect x="261" y="199" width="47" height="24" fill="#f4b34f"/>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 03 / 07 · THE CLASS CLOWN</p><h2>Homework Blaze</h2><p class="description">The math sheets are falling! Click each one to set it ablaze before it hits your desk.</p><a class="start-link" href="games/homework-blaze.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">NO CALCULATORS WERE HARMED</p></div>
-          </article>
-
-          <article class="game-slide" style="--slide-bg-a:#28395e;--slide-bg-b:#18223f" role="group" aria-roledescription="slide" aria-label="4 of 7: Alien Attack">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 04</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Pixel spaceship firing at three rows of colorful aliens in space">
-                <rect width="600" height="360" fill="#111a36"/><rect x="39" y="51" width="6" height="6" fill="#fff0c2"/><rect x="149" y="107" width="5" height="5" fill="#fff0c2"/><rect x="265" y="31" width="6" height="6" fill="#fff0c2"/><rect x="398" y="83" width="5" height="5" fill="#fff0c2"/><rect x="529" y="38" width="7" height="7" fill="#fff0c2"/><rect x="556" y="172" width="5" height="5" fill="#fff0c2"/><rect x="82" y="207" width="5" height="5" fill="#fff0c2"/>
-                <rect x="79" y="98" width="51" height="28" fill="#7bdd75"/><rect x="67" y="108" width="13" height="10" fill="#7bdd75"/><rect x="129" y="108" width="13" height="10" fill="#7bdd75"/><rect x="91" y="107" width="8" height="8" fill="#141b35"/><rect x="111" y="107" width="8" height="8" fill="#141b35"/><rect x="92" y="126" width="9" height="8" fill="#7bdd75"/><rect x="110" y="126" width="9" height="8" fill="#7bdd75"/>
-                <rect x="188" y="98" width="51" height="28" fill="#fa8d71"/><rect x="176" y="108" width="13" height="10" fill="#fa8d71"/><rect x="238" y="108" width="13" height="10" fill="#fa8d71"/><rect x="200" y="107" width="8" height="8" fill="#141b35"/><rect x="220" y="107" width="8" height="8" fill="#141b35"/><rect x="201" y="126" width="9" height="8" fill="#fa8d71"/><rect x="219" y="126" width="9" height="8" fill="#fa8d71"/>
-                <rect x="297" y="98" width="51" height="28" fill="#83d8eb"/><rect x="285" y="108" width="13" height="10" fill="#83d8eb"/><rect x="347" y="108" width="13" height="10" fill="#83d8eb"/><rect x="309" y="107" width="8" height="8" fill="#141b35"/><rect x="329" y="107" width="8" height="8" fill="#141b35"/><rect x="310" y="126" width="9" height="8" fill="#83d8eb"/><rect x="328" y="126" width="9" height="8" fill="#83d8eb"/>
-                <rect x="395" y="177" width="101" height="24" fill="#5a4788"/><rect x="409" y="163" width="73" height="47" fill="#785db0"/><rect x="420" y="156" width="51" height="14" fill="#a98bd4"/><rect x="424" y="180" width="14" height="10" fill="#ff668b"/><rect x="452" y="180" width="14" height="10" fill="#ff668b"/><rect x="442" y="191" width="10" height="9" fill="#ffe483"/>
-                <rect x="283" y="299" width="34" height="20" fill="#62eddb"/><rect x="267" y="318" width="66" height="15" fill="#62eddb"/><rect x="249" y="333" width="102" height="15" fill="#378bd0"/><rect x="278" y="282" width="44" height="17" fill="#fff0c2"/><rect x="290" y="252" width="20" height="30" fill="#ff668b"/><rect x="300" y="229" width="4" height="23" fill="#ffe483"/><rect x="234" y="263" width="4" height="39" fill="#ffe483"/><rect x="361" y="256" width="4" height="43" fill="#ffe483"/>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 04 / 07 · THE SPACE CADET</p><h2>Alien Attack</h2><p class="description">Pilot your pixel ship, clear alien waves, and face the mothership's five-bullet tantrum.</p><a class="start-link" href="games/alien-attack.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">THE MOTHERSHIP IS NOT HERE TO CHAT</p></div>
-          </article>
-
-          <article class="game-slide" style="--slide-bg-a:#7d4c61;--slide-bg-b:#292d48" role="group" aria-roledescription="slide" aria-label="5 of 7: Sunset Speedway">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 05</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Vertical pixel race track with red and white curbs, three cars, and a pothole">
-                <rect width="600" height="360" fill="#5c986d"/><rect x="43" y="0" width="514" height="360" fill="#397650"/><rect x="127" y="0" width="347" height="360" fill="#514d5c"/><rect x="149" y="0" width="14" height="360" fill="#faf0d0"/><rect x="167" y="0" width="9" height="360" fill="#f07069"/><rect x="424" y="0" width="9" height="360" fill="#f07069"/><rect x="438" y="0" width="14" height="360" fill="#faf0d0"/>
-                <rect x="296" y="0" width="8" height="36" fill="#f4da83"/><rect x="296" y="66" width="8" height="36" fill="#f4da83"/><rect x="296" y="132" width="8" height="36" fill="#f4da83"/><rect x="296" y="198" width="8" height="36" fill="#f4da83"/><rect x="296" y="264" width="8" height="36" fill="#f4da83"/>
-                <rect x="205" y="64" width="47" height="72" fill="#e45e63"/><rect x="211" y="53" width="35" height="11" fill="#ffe3a0"/><rect x="215" y="80" width="8" height="17" fill="#352844"/><rect x="234" y="80" width="8" height="17" fill="#352844"/><rect x="215" y="115" width="8" height="14" fill="#352844"/><rect x="234" y="115" width="8" height="14" fill="#352844"/>
-                <rect x="343" y="193" width="47" height="72" fill="#5cc7a5"/><rect x="349" y="182" width="35" height="11" fill="#ffe3a0"/><rect x="353" y="209" width="8" height="17" fill="#352844"/><rect x="372" y="209" width="8" height="17" fill="#352844"/><rect x="353" y="244" width="8" height="14" fill="#352844"/><rect x="372" y="244" width="8" height="14" fill="#352844"/>
-                <rect x="275" y="269" width="47" height="72" fill="#69a9e9"/><rect x="281" y="258" width="35" height="11" fill="#ffe3a0"/><rect x="285" y="285" width="8" height="17" fill="#352844"/><rect x="304" y="285" width="8" height="17" fill="#352844"/><rect x="285" y="320" width="8" height="14" fill="#352844"/><rect x="304" y="320" width="8" height="14" fill="#352844"/>
-                <rect x="333" y="117" width="48" height="18" fill="#30293d"/><rect x="342" y="112" width="31" height="7" fill="#6f6874"/><rect x="343" y="124" width="7" height="5" fill="#151729"/><rect x="362" y="126" width="5" height="4" fill="#9a8471"/>
-                <rect x="88" y="47" width="9" height="41" fill="#36724f"/><rect x="78" y="56" width="29" height="21" fill="#257455"/><rect x="497" y="287" width="9" height="41" fill="#36724f"/><rect x="487" y="296" width="29" height="21" fill="#257455"/>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 05 / 07 · THE ROAD RASCAL</p><h2>Sunset Speedway</h2><p class="description">Choose your car, dodge the traffic and potholes, then race three laps to the finish.</p><a class="start-link" href="games/sunset-speedway.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">HONK HONK. THAT IS THE WHOLE HORN</p></div>
-          </article>
-
-          <article class="game-slide" style="--slide-bg-a:#544273;--slide-bg-b:#202140" role="group" aria-roledescription="slide" aria-label="6 of 7: Potion Panic">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 06</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Pixel potion laboratory with three colorful bottles and a sparkling ingredient">
-                <rect width="600" height="360" fill="#201d3c"/><rect x="0" y="0" width="600" height="13" fill="#46345f"/><rect x="28" y="82" width="121" height="8" fill="#775080"/><rect x="38" y="90" width="101" height="38" fill="#30254d"/><rect x="451" y="82" width="121" height="8" fill="#775080"/><rect x="461" y="90" width="101" height="38" fill="#30254d"/>
-                <rect x="74" y="47" width="10" height="10" fill="#ffe483"/><rect x="81" y="57" width="9" height="8" fill="#ff83c9"/><rect x="500" y="45" width="9" height="9" fill="#65e9e3"/><rect x="513" y="58" width="7" height="7" fill="#ffe483"/>
-                <rect x="285" y="93" width="29" height="9" fill="#8a6186"/><rect x="280" y="102" width="39" height="10" fill="#927baf"/><rect x="270" y="112" width="58" height="17" fill="#c8a4ec"/><rect x="270" y="129" width="58" height="19" fill="#8b6dd2"/><rect x="276" y="148" width="47" height="11" fill="#645bb4"/><rect x="281" y="159" width="36" height="6" fill="#343567"/><rect x="260" y="75" width="8" height="8" fill="#65e9e3"/><rect x="328" y="77" width="8" height="8" fill="#ffe483"/>
-                <rect x="96" y="216" width="44" height="8" fill="#14152d"/><rect x="91" y="224" width="54" height="12" fill="#14152d"/><rect x="83" y="236" width="70" height="58" fill="#14152d"/><rect x="89" y="242" width="58" height="45" fill="#244058"/><rect x="93" y="267" width="50" height="17" fill="#29cfc2"/><rect x="97" y="248" width="7" height="33" fill="#bdfff3"/><rect x="121" y="252" width="7" height="7" fill="#e5ffff"/>
-                <rect x="278" y="216" width="44" height="8" fill="#14152d"/><rect x="273" y="224" width="54" height="12" fill="#14152d"/><rect x="265" y="236" width="70" height="58" fill="#14152d"/><rect x="271" y="242" width="58" height="45" fill="#49324e"/><rect x="275" y="267" width="50" height="17" fill="#d84ca8"/><rect x="279" y="248" width="7" height="33" fill="#ffd5ef"/><rect x="303" y="252" width="7" height="7" fill="#fff0f8"/>
-                <rect x="460" y="216" width="44" height="8" fill="#14152d"/><rect x="455" y="224" width="54" height="12" fill="#14152d"/><rect x="447" y="236" width="70" height="58" fill="#14152d"/><rect x="453" y="242" width="58" height="45" fill="#464050"/><rect x="457" y="267" width="50" height="17" fill="#f2a340"/><rect x="461" y="248" width="7" height="33" fill="#fff3bf"/><rect x="485" y="252" width="7" height="7" fill="#fff9db"/>
-                <rect y="311" width="600" height="8" fill="#785284"/><rect y="319" width="600" height="41" fill="#33274d"/><rect x="59" y="331" width="39" height="7" fill="#4c385d"/><rect x="122" y="331" width="39" height="7" fill="#4c385d"/><rect x="185" y="331" width="39" height="7" fill="#4c385d"/><rect x="248" y="331" width="39" height="7" fill="#4c385d"/><rect x="311" y="331" width="39" height="7" fill="#4c385d"/><rect x="374" y="331" width="39" height="7" fill="#4c385d"/><rect x="437" y="331" width="39" height="7" fill="#4c385d"/>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 06 / 07 · THE MIX MASTER</p><h2>Potion Panic</h2><p class="description">Catch each glowing ingredient in its matching bottle, build a streak, and brew something sparkly.</p><a class="start-link" href="games/potion-panic.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">CAULDRON NOT INCLUDED</p></div>
-          </article>
-
-          <article class="game-slide" style="--slide-bg-a:#316b79;--slide-bg-b:#282949" role="group" aria-roledescription="slide" aria-label="7 of 7: Moon Mart Night Shift">
-            <div class="game-preview"><span class="preview-tag">PIXEL GAME 07</span>
-              <svg class="preview-art" viewBox="0 0 600 360" role="img" aria-label="Pixel alien grocery store with a moon milk carton, screaming pickle, and colorful sorting bins">
-                <rect width="600" height="360" fill="#192747"/><rect x="28" y="28" width="544" height="116" fill="#285170"/><rect x="41" y="42" width="6" height="6" fill="#fff0c2"/><rect x="96" y="95" width="7" height="7" fill="#ffe483"/><rect x="454" y="56" width="5" height="5" fill="#c9f56a"/><rect x="513" y="115" width="5" height="5" fill="#65e9e3"/><rect x="251" y="36" width="96" height="28" fill="#ffac59"/><rect x="258" y="43" width="82" height="14" fill="#182644"/><text x="299" y="54" text-anchor="middle" fill="#c9f56a" font-size="10" font-weight="bold" font-family="Courier New,monospace">MOON MART</text>
-                <rect x="470" y="91" width="39" height="32" fill="#dca8f2"/><rect x="462" y="98" width="8" height="14" fill="#dca8f2"/><rect x="509" y="99" width="8" height="14" fill="#dca8f2"/><rect x="478" y="101" width="7" height="7" fill="#111b38"/><rect x="494" y="101" width="7" height="7" fill="#111b38"/><rect x="486" y="114" width="9" height="4" fill="#ff7693"/>
-                <rect y="159" width="600" height="13" fill="#718a85"/><rect y="172" width="600" height="7" fill="#b0c47c"/><rect y="189" width="600" height="84" fill="#303b58"/><rect y="189" width="600" height="8" fill="#09152e"/><rect y="265" width="600" height="8" fill="#09152e"/>
-                <rect x="156" y="201" width="37" height="47" fill="#55d9df"/><rect x="160" y="195" width="29" height="8" fill="#b5fff1"/><rect x="167" y="220" width="16" height="10" fill="#f6f7c7"/><rect x="239" y="209" width="45" height="31" fill="#65bb58"/><rect x="245" y="201" width="8" height="8" fill="#9be04e"/><rect x="249" y="218" width="6" height="6" fill="#15213b"/><rect x="269" y="218" width="6" height="6" fill="#15213b"/><rect x="255" y="229" width="15" height="6" fill="#fff1d3"/>
-                <rect x="67" y="291" width="125" height="54" fill="#28566d"/><rect x="67" y="291" width="125" height="9" fill="#65e9e3"/><rect x="238" y="291" width="125" height="54" fill="#744653"/><rect x="238" y="291" width="125" height="9" fill="#ffac59"/><rect x="409" y="291" width="125" height="54" fill="#496647"/><rect x="409" y="291" width="125" height="9" fill="#c9f56a"/><text x="129" y="330" text-anchor="middle" fill="#e3ffff" font-size="11" font-weight="bold" font-family="Courier New,monospace">CHILL</text><text x="300" y="330" text-anchor="middle" fill="#fff0c2" font-size="11" font-weight="bold" font-family="Courier New,monospace">CRUNCH</text><text x="471" y="330" text-anchor="middle" fill="#f1ffd6" font-size="11" font-weight="bold" font-family="Courier New,monospace">WIGGLE</text>
-              </svg>
-            </div>
-            <div class="slide-info"><p class="game-number">GAME 07 / 07 · THE SPACE SHOPKEEPER</p><h2>Moon Mart Night Shift</h2><p class="description">Sort moon milk, meteor nuggets, and screaming pickles before the scanner buys them.</p><a class="start-link" href="games/moon-mart.html"><span>START GAME</span><span class="start-arrow" aria-hidden="true">▶</span></a><p class="slide-hint">THE PICKLE IS NOT ON THE PAYROLL</p></div>
-          </article>
-        </section>
-        <button class="screen-arrow previous" id="previous-game" type="button" aria-label="Previous game">◀</button>
-        <button class="screen-arrow next" id="next-game" type="button" aria-label="Next game">▶</button>
-      </div>
-      <nav class="screen-pager" aria-label="Choose a game screen">
-        <span class="page-count" id="page-count" aria-live="polite">01 / 07</span>
-        <div class="page-dots" id="page-dots" aria-label="Game screens"></div>
-      </nav>
+    <section class="game-grid" aria-label="Choose a game">
+      <a class="game-card" href="games/shy-button.html">
+        <span class="card-icon" aria-hidden="true">✦</span>
+        <span class="card-title">Catch the Shy Button</span>
+        <span class="card-copy">It keeps scooting away. Catch it to say hi!</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
+      <a class="game-card" href="games/tiny-garden.html">
+        <span class="card-icon sprout" aria-hidden="true">♣</span>
+        <span class="card-title">A Tiny Garden</span>
+        <span class="card-copy">Give a thirsty little plant some water.</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
+      <a class="game-card" href="games/homework-blaze.html">
+        <span class="card-icon" aria-hidden="true">🔥</span>
+        <span class="card-title">Homework Blaze</span>
+        <span class="card-copy">Burn the math sheets before they hit the desk!</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
+      <a class="game-card" href="games/alien-attack.html">
+        <span class="card-icon" aria-hidden="true">👾</span>
+        <span class="card-title">Alien Attack</span>
+        <span class="card-copy">Pilot your pixel ship, blast through alien waves, and face the boss!</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
+      <a class="game-card" href="games/sunset-speedway.html">
+        <span class="card-icon" aria-hidden="true">🏎️</span>
+        <span class="card-title">Sunset Speedway</span>
+        <span class="card-copy">Pick a pixel car, race three laps, and dodge the traffic!</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
+      <a class="game-card" href="games/potion-panic.html">
+        <span class="card-icon" aria-hidden="true">🧪</span>
+        <span class="card-title">Potion Panic</span>
+        <span class="card-copy">Catch glowing ingredients in their matching bottles!</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
+      <a class="game-card" href="games/moon-mart.html">
+        <span class="card-icon" aria-hidden="true">🛒</span>
+        <span class="card-title">Moon Mart Night Shift</span>
+        <span class="card-copy">Sort weird space groceries before the scanner beeps!</span>
+        <span class="play-link">[ PLAY ]</span>
+      </a>
     </section>
+<<<<<<< HEAD
 
     <footer class="control-deck" aria-label="Decorative arcade control panel">
       <div class="joystick-wrap" aria-hidden="true"><div class="joystick"><i class="joystick-shaft"></i><b class="joystick-ball"></b></div><span>JOYSTICK<br>JUST FOR SHOW</span></div>
@@ -360,63 +295,9 @@
       <div class="action-wrap" aria-hidden="true"><div class="decor-button"></div><div class="decor-button"></div><div class="decor-button"></div><span>BUTTONS<br>JUST FOR SHOW</span></div>
     </footer>
     <div class="machine-foot" aria-hidden="true"><span>✦ SUNSET ARCADE ✦</span><span class="speaker"><i></i><i></i><i></i><i></i><i></i></span><span class="coin-return"><i class="coin-slot"></i> COIN RETURN</span><span>PLAYER ONE</span></div>
+=======
+    <p class="footer-note">MORE GAMES COMING WHENEVER WE THINK OF THEM ✷</p>
+>>>>>>> parent of 317bcd7 (Redesign arcade home page and carousel)
   </main>
-
-  <script>
-    (() => {
-      const carousel = document.querySelector("#game-carousel");
-      const slides = Array.from(carousel.querySelectorAll(".game-slide"));
-      const previousButton = document.querySelector("#previous-game");
-      const nextButton = document.querySelector("#next-game");
-      const pageCount = document.querySelector("#page-count");
-      const dots = document.querySelector("#page-dots");
-      let activeIndex = 0;
-      let scrollFrame = 0;
-
-      function setActive(index, scroll = true) {
-        activeIndex = (index + slides.length) % slides.length;
-        slides.forEach((slide, slideIndex) => {
-          const active = slideIndex === activeIndex;
-          slide.setAttribute("aria-hidden", String(!active));
-          slide.inert = !active;
-          const dot = dots.children[slideIndex];
-          dot.setAttribute("aria-current", String(active));
-        });
-        pageCount.textContent = String(activeIndex + 1).padStart(2,"0") + " / " + String(slides.length).padStart(2,"0");
-        if (scroll) {
-          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-          carousel.scrollTo({ left:activeIndex * carousel.clientWidth, behavior:reduced ? "auto" : "smooth" });
-        }
-      }
-      slides.forEach((slide, index) => {
-        const dot = document.createElement("button");
-        dot.type = "button";
-        dot.className = "page-dot";
-        dot.setAttribute("aria-label", "Go to game " + (index + 1) + ": " + slide.querySelector("h2").textContent);
-        dot.setAttribute("aria-current", "false");
-        dot.addEventListener("click", () => setActive(index));
-        dots.append(dot);
-      });
-      previousButton.addEventListener("click", () => setActive(activeIndex - 1));
-      nextButton.addEventListener("click", () => setActive(activeIndex + 1));
-      carousel.addEventListener("scroll", () => {
-        if (scrollFrame) return;
-        scrollFrame = requestAnimationFrame(() => {
-          scrollFrame = 0;
-          const index = Math.round(carousel.scrollLeft / carousel.clientWidth);
-          if (index !== activeIndex && index >= 0 && index < slides.length) setActive(index, false);
-        });
-      }, { passive:true });
-      carousel.addEventListener("keydown", event => {
-        if (event.target !== carousel) return;
-        if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-          event.preventDefault();
-          setActive(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
-        }
-      });
-      window.addEventListener("resize", () => setActive(activeIndex, true));
-      setActive(0, false);
-    })();
-  </script>
 </body>
 </html>
