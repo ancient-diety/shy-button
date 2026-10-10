@@ -179,6 +179,7 @@
       const keyState = new Set();
       let running = false, distance = 0, playerLane = 0, laneVelocity = 0, candy = 0, scares = 0, lastFrame = 0, raf = 0, roadside = [], hazards = [], sweets = [], particles = [], best = 0, lastRoadside = 0, offRoadTimer = 0, resumeAfterVisibility = false, messageTimer = 0;
       try { best = Number(localStorage.getItem("hauntedHayrideBest")) || 0; } catch (_) { /* storage may be disabled */ }
+      if (!Number.isFinite(best) || best < 0) best = 0;
       bestReadout.textContent = String(best);
 
       function el(name, attrs = {}) {
@@ -353,6 +354,8 @@
         messageTimer = setTimeout(() => { rideMessage.textContent="Hold a steering button or use ← → / A D. Dodge the spooky stuff, grab candy, and keep the tractor on the road."; }, 1600);
       }
       function resetRide() {
+        resumeAfterVisibility = false;
+        releaseControls();
         distance=0; playerLane=0; laneVelocity=0; candy=0; scares=0; lastRoadside=0; offRoadTimer=0; particles=[];
         document.querySelector("#ride-message").textContent="Hold a steering button or use ← → / A D. Dodge the spooky stuff, grab candy, and keep the tractor on the road.";
         clearTimeout(messageTimer);
@@ -368,7 +371,7 @@
         if (lastFrame && now-lastFrame < FRAME_MS) { raf=requestAnimationFrame(frame); return; }
         const dt = lastFrame ? Math.min(.1,(now-lastFrame)/1000) : FRAME_MS/1000;
         lastFrame = now;
-        const direction = (steering.right || keyState.has("right") ? 1:0) - (steering.left || keyState.has("left") ? 1:0);
+        const direction = (steering.right || keyState.has("arrowright") || keyState.has("d") ? 1:0) - (steering.left || keyState.has("arrowleft") || keyState.has("a") ? 1:0);
         laneVelocity += direction * dt * 4.6;
         laneVelocity *= Math.pow(.055,dt);
         playerLane = Math.round(Math.max(-1.22,Math.min(1.22,playerLane + laneVelocity*dt))*25)/25;
@@ -414,10 +417,37 @@
         if (["ArrowRight","d","D"].includes(event.key)) return "right";
         return "";
       }
-      window.addEventListener("keydown",event=>{ const dir=keyDirection(event); if(dir && running){ event.preventDefault(); keyState.add(dir); } });
-      window.addEventListener("keyup",event=>{ const dir=keyDirection(event); if(dir){ event.preventDefault(); keyState.delete(dir); } });
-      window.addEventListener("blur",()=>{ steering.left=steering.right=false; keyState.clear(); document.querySelectorAll(".hayride-control").forEach(button=>button.classList.remove("held")); });
-      document.addEventListener("visibilitychange",()=>{ if(document.hidden){ resumeAfterVisibility=running; running=false; cancelAnimationFrame(raf); } else if(resumeAfterVisibility && overlay.hidden){ resumeAfterVisibility=false; running=true; lastFrame=0; raf=requestAnimationFrame(frame); } });
+      window.addEventListener("keydown", event => {
+        if (keyDirection(event) && running) {
+          event.preventDefault();
+          keyState.add(event.key.toLowerCase());
+        }
+      });
+      window.addEventListener("keyup", event => {
+        if (keyDirection(event)) {
+          event.preventDefault();
+          keyState.delete(event.key.toLowerCase());
+        }
+      });
+      function releaseControls() {
+        steering.left=steering.right=false;
+        keyState.clear();
+        document.querySelectorAll(".hayride-control").forEach(button=>button.classList.remove("held"));
+      }
+      window.addEventListener("blur",releaseControls);
+      document.addEventListener("visibilitychange", () => {
+        releaseControls();
+        if (document.hidden) {
+          resumeAfterVisibility = resumeAfterVisibility || running;
+          running = false;
+          cancelAnimationFrame(raf);
+        } else if (resumeAfterVisibility && overlay.hidden) {
+          resumeAfterVisibility = false;
+          running = true;
+          lastFrame = 0;
+          raf = requestAnimationFrame(frame);
+        }
+      });
       startButton.addEventListener("click",resetRide);
       makeRoadside(); makeEvents(); renderRoad(); renderScenery(); updateHud();
     })();

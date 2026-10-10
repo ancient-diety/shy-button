@@ -329,6 +329,7 @@
                 best = Number(localStorage.getItem("homeworkBlazeBest")) || 0;
             } catch (_) {}
 
+            if (!Number.isFinite(best) || best < 0) best = 0;
             bestLabel.textContent = String(best);
 
             let running = false;
@@ -351,18 +352,18 @@
 
                 const currentRound = roundId;
 
+                // Hidden elements have zero dimensions; measure the visible sheet.
+                sheet.hidden = false;
                 y = -sheet.offsetHeight - 8;
 
-                const maxX = Math.max(
-                    20,
-                    scene.clientWidth - sheet.offsetWidth - 20
-                );
+                const availableWidth = Math.max(0, scene.clientWidth - sheet.offsetWidth);
+                const margin = Math.min(20, availableWidth / 2);
 
                 sheet.style.left = (
-                    20 + Math.random() * maxX + sheet.offsetWidth / 2
+                    margin + Math.random() * (availableWidth - margin * 2) + sheet.offsetWidth / 2
                 ) + "px";
 
-                sheet.hidden = false;
+                sheet.style.transform = "translate(-50%," + y + "px)";
                 lastFrame = performance.now();
 
                 animationFrame = requestAnimationFrame(
@@ -385,7 +386,7 @@
                     "translate(-50%," + y + "px) rotate(" +
                     Math.sin(now / 280) * 3 + "deg)";
 
-                if (y >= scene.clientHeight - 82) {
+                if (y + sheet.offsetHeight >= scene.clientHeight - 75) {
                     sheet.hidden = true;
                     missed++;
 

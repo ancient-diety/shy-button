@@ -354,9 +354,10 @@
       const crateButtons = Array.from(document.querySelectorAll(".crate-button"));
       let running = false, animation = 0, current = null, spawnDelay = 0;
       let score = 0, served = 0, combo = 0, mistakes = 0, bestScore = 0, lastFrame = 0, lastProduct = -1;
-      let particles = [], shakeTimer = 0;
+      let particles = [], shakeTimer = 0, scannerTimer = 0;
 
       try { bestScore = Number(localStorage.getItem("moonMartBest")) || 0; } catch (_) { /* storage may be disabled */ }
+      if (!Number.isFinite(bestScore) || bestScore < 0) bestScore = 0;
 
       function svgEl(tag, attrs = {}) {
         const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -387,9 +388,10 @@
         }
       }
       function flashScanner(color) {
+        window.clearTimeout(scannerTimer);
         scannerFlash.setAttribute("fill", color);
         scannerFlash.setAttribute("opacity", "1");
-        window.setTimeout(() => scannerFlash.setAttribute("opacity", "0"), 160);
+        scannerTimer = window.setTimeout(() => scannerFlash.setAttribute("opacity", "0"), 160);
       }
       function updateBest() {
         if (score <= bestScore) return;
@@ -489,6 +491,10 @@
       }
       function startGame() {
         cancelAnimationFrame(animation);
+        window.clearTimeout(scannerTimer);
+        window.clearTimeout(shakeTimer);
+        scene.classList.remove("shake");
+        crateButtons.forEach(button => button.classList.remove("ready"));
         running = true;
         current = null;
         spawnDelay = .48;

@@ -46,9 +46,12 @@
       { message: "It bloomed! You grew a sunny pixel sunflower! 🌻", title: "A fully grown pixel sunflower in a terracotta pot" }
     ];
     let drinks = 0;
+    let growthTimer = 0;
     waterButton.addEventListener("click", () => {
+      window.clearTimeout(growthTimer);
       if (drinks === stages.length) {
         drinks = 0;
+        plant.classList.remove("growing");
         plant.dataset.stage = "0";
         plantTitle.textContent = "A tiny seedling in a pixel art pot";
         waterButton.textContent = "💧 Water the plant";
@@ -61,7 +64,7 @@
       message.textContent = stages[drinks - 1].message;
       plant.classList.add("growing");
       if (drinks === stages.length) waterButton.textContent = "🌱 Grow another?";
-      window.setTimeout(() => plant.classList.remove("growing"), 300);
+      growthTimer = window.setTimeout(() => plant.classList.remove("growing"), 300);
     });
   </script>
 </body>

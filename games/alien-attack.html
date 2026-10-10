@@ -130,8 +130,16 @@
       let enemies = [], minions = [], shots = [], enemyShots = [], bossHp = BOSS_HP;
       let bossMode = false, running = false, lastTime = 0, playerFireAt = 0, enemyFireAt = 0;
       let animation = 0, transitionTimer = 0, invulnerableUntil = 0, bossX = W / 2 - 32;
+      let hiddenAt = null;
+
+      function releaseControls() {
+        keyState.clear();
+        held.left = held.right = held.fire = false;
+        document.querySelectorAll(".space-control").forEach(button => button.classList.remove("held"));
+      }
 
       try { best = Number(localStorage.getItem("alienAttackBest")) || 0; } catch (_) { /* storage may be disabled */ }
+      if (!Number.isFinite(best) || best < 0) best = 0;
       bestReadout.textContent = String(best);
 
       function svgEl(tag, attrs = {}) {
@@ -255,9 +263,11 @@
         updateHud();
       }
       function endGame(victory) {
+        if (!running) return;
         running = false;
+        releaseControls();
         cancelAnimationFrame(animation);
-        window.clearTimeout(transitionTimer);
+        transitionTimer = 0;
         clearShots();
         clearMinions();
         overlay.hidden = false;
@@ -271,8 +281,8 @@
       }
       function startGame() {
         cancelAnimationFrame(animation);
-        window.clearTimeout(transitionTimer);
         transitionTimer = 0;
+        hiddenAt = null;
         running = true;
         x = W / 2;
         hp = MAX_HP;
@@ -283,7 +293,10 @@
         lastTime = performance.now();
         playerFireAt = 0;
         invulnerableUntil = 0;
-        held.left = held.right = held.fire = false;
+        releaseControls();
+        effectLayer.replaceChildren();
+        player.setAttribute("transform", `translate(${x - 16} 276)`);
+        player.style.opacity = "1";
         overlay.hidden = true;
         overlay.querySelector(".overlay-card").classList.remove("between-waves");
         overlay.style.background = "#241a46df";
@@ -295,7 +308,7 @@
         animation = requestAnimationFrame(frame);
       }
       function firePlayer(now) {
-        if (!running || now < playerFireAt) return;
+        if (!running || document.hidden || transitionTimer || now < playerFireAt) return;
         addShot(x, 265, false, "#9fe0dc", 5, 14);
         playerFireAt = now + 200;
       }
@@ -334,9 +347,9 @@
           animation = requestAnimationFrame(frame);
           return;
         }
-        const left = held.left || keyState.has("ArrowLeft") || keyState.has("a") || keyState.has("A");
-        const right = held.right || keyState.has("ArrowRight") || keyState.has("d") || keyState.has("D");
-        const firing = held.fire || keyState.has(" ") || keyState.has("Space");
+        const left = held.left || keyState.has("arrowleft") || keyState.has("a");
+        const right = held.right || keyState.has("arrowright") || keyState.has("d");
+        const firing = held.fire || keyState.has(" ");
         if (left) x -= 230 * dt;
         if (right) x += 230 * dt;
         x = Math.max(18, Math.min(W - 18, x));
@@ -361,18 +374,13 @@
               minion.node.remove();
               minion.dead = true;
               damagePlayer(2, now);
+              if (!running) return;
             } else if (minion.y > H) {
               minion.node.remove();
               minion.dead = true;
             }
           }
           minions = minions.filter(minion => !minion.dead);
-          if (bossHp <= 0) {
-            score += 1000;
-            updateHud();
-            endGame(true);
-            return;
-          }
         } else {
           if (enemies.length) {
             let minX = Infinity, maxX = -Infinity;
@@ -390,7 +398,11 @@
             }
           }
           enemyFire(now);
-          if (!enemies.length) { nextWave(); }
+          if (!enemies.length) {
+            nextWave();
+            animation = requestAnimationFrame(frame);
+            return;
+          }
         }
 
         for (const shot of shots) {
@@ -398,11 +410,17 @@
           shot.node.setAttribute("y", shot.y);
           if (shot.y < -20) { shot.node.remove(); shot.dead = true; continue; }
           if (bossMode) {
-            const minion = minions.find(m => shot.x >= m.x - 3 && shot.x <= m.x + 27 && shot.y <= m.y + 22 && shot.y + shot.height >= m.y);
+            const minion = minions.find(m => !m.dead && shot.x >= m.x - 3 && shot.x <= m.x + 27 && shot.y <= m.y + 22 && shot.y + shot.height >= m.y);
             if (minion) {
               shot.node.remove(); shot.dead = true; minion.node.remove(); minion.dead = true; score += 100; addBurst(minion.x + 12, minion.y + 10, "#cbff8c"); updateHud();
             } else if (shot.x >= bossX && shot.x <= bossX + 64 && shot.y < 96 && shot.y > 34) {
               shot.node.remove(); shot.dead = true; bossHp--; score += 10; addBurst(shot.x, Math.max(35, shot.y), "#ffd477"); updateHud();
+              if (bossHp <= 0) {
+                score += 1000;
+                updateHud();
+                endGame(true);
+                return;
+              }
             }
           } else {
             const target = enemies.find(e => shot.x >= e.x - 3 && shot.x <= e.x + 27 && shot.y <= e.y + 22 && shot.y + 14 >= e.y);
@@ -421,6 +439,7 @@
           if (shot.y > H || shot.x < -20 || shot.x > W + 20) { shot.node.remove(); shot.dead = true; continue; }
           if (shot.y > 268 && shot.y < 305 && Math.abs(shot.x - x) < 21) {
             shot.node.remove(); shot.dead = true; damagePlayer(1, now);
+            if (!running) return;
           }
         }
         enemyShots = enemyShots.filter(s => !s.dead);
@@ -430,6 +449,7 @@
       function bindHold(button, prop) {
         button.addEventListener("pointerdown", event => {
           event.preventDefault();
+          if (!running) return;
           held[prop] = true;
           button.classList.add("held");
           if (prop === "fire") firePlayer(performance.now());
@@ -445,12 +465,32 @@
       bindHold(document.querySelector("#move-right"), "right");
       bindHold(document.querySelector("#fire-button"), "fire");
       window.addEventListener("keydown", event => {
-        if (["ArrowLeft", "ArrowRight", " "].includes(event.key)) event.preventDefault();
-        if ((event.key === " " || event.key === "Space") && !keyState.has(event.key)) firePlayer(performance.now());
-        keyState.add(event.key);
+        if (!running) return;
+        const key = event.key.toLowerCase();
+        if (!["arrowleft", "arrowright", "a", "d", " "].includes(key)) return;
+        event.preventDefault();
+        if (key === " " && !keyState.has(key)) firePlayer(performance.now());
+        keyState.add(key);
       });
-      window.addEventListener("keyup", event => keyState.delete(event.key));
-      window.addEventListener("blur", () => { keyState.clear(); held.left = held.right = held.fire = false; });
+      window.addEventListener("keyup", event => keyState.delete(event.key.toLowerCase()));
+      window.addEventListener("blur", releaseControls);
+      document.addEventListener("visibilitychange", () => {
+        releaseControls();
+        if (document.hidden) {
+          if (running && hiddenAt === null) hiddenAt = performance.now();
+          cancelAnimationFrame(animation);
+        } else if (running && hiddenAt !== null) {
+          const now = performance.now();
+          const pausedFor = now - hiddenAt;
+          playerFireAt += pausedFor;
+          enemyFireAt += pausedFor;
+          invulnerableUntil += pausedFor;
+          if (transitionTimer) transitionTimer += pausedFor;
+          hiddenAt = null;
+          lastTime = now;
+          animation = requestAnimationFrame(frame);
+        }
+      });
       startButton.addEventListener("click", startGame);
       updateHud();
     })();
