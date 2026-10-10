@@ -14,6 +14,9 @@
     .race-hud span { display: block; margin-top: .3rem; color: #ffd477; font-size: 1.05rem; }
     .race-screen { position: relative; width: min(100%,480px); aspect-ratio: 6 / 7; margin: 0 auto; overflow: hidden; border: 4px solid #fff0c2; background: #456b4b; box-shadow: 7px 7px #332044; touch-action: none; }
     .race-svg { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    .track-map { position: absolute; z-index: 2; top: .65rem; left: .65rem; width: 108px; padding: .35rem; border: 2px solid #fff0c2; background: #332044eF; box-shadow: 3px 3px #17142d; pointer-events: none; }
+    .track-map svg { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+    .track-map-label { margin: 0 0 .25rem; color: #ffd477; text-align: center; font: bold .58rem "Courier New",monospace; letter-spacing: .06em; }
     .race-overlay { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: .8rem; background: #241a46d9; }
     .race-overlay[hidden] { display: none; }
     .race-card { width: min(100%,420px); padding: clamp(.8rem,4vw,1.35rem); border: 3px solid #ffd477; background: #482b5fee; box-shadow: 6px 6px #17142d; }
@@ -39,6 +42,7 @@
       .race-control { min-height: 52px; padding: .2rem; font-size: .78rem; }
       .race-card h2 { font-size: .75rem; }
       .race-card p { font-size: .9rem; }
+      .track-map { top: .5rem; left: .5rem; width: 88px; }
     }
     @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important}}
   </style>
@@ -57,8 +61,8 @@
       <div>SPEED<span id="speed-readout">0 km/h</span></div>
     </div>
 
-    <div class="race-screen" id="race-screen" aria-label="Top-down pixel racing circuit">
-      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Tiny pixel cars race around an oval track at sunset" shape-rendering="crispEdges">
+    <div class="race-screen" id="race-screen" aria-label="Race view from behind your car">
+      <svg class="race-svg" viewBox="0 0 480 560" role="img" aria-label="Pixel cars racing along a sunset circuit, viewed from behind the player's car" shape-rendering="crispEdges">
         <defs>
           <pattern id="grass-pixels" width="24" height="24" patternUnits="userSpaceOnUse">
             <rect width="24" height="24" fill="#52784e"/><rect x="3" y="5" width="3" height="3" fill="#668956"/><rect x="15" y="15" width="4" height="3" fill="#426747"/><rect x="20" y="3" width="2" height="2" fill="#78915a"/>
@@ -79,7 +83,8 @@
             <rect x="-7" y="-16" width="14" height="31" fill="#334279"/><rect x="-6" y="-14" width="12" height="28" fill="#4778d1"/><rect x="-4" y="-16" width="8" height="6" fill="#80d9ed"/><rect x="-5" y="-7" width="10" height="11" fill="#343a62"/><rect x="-4" y="-6" width="8" height="8" fill="#a6e3e5"/><rect x="-6" y="6" width="12" height="4" fill="#365ab0"/><rect x="-2" y="-14" width="4" height="17" fill="#ffcf73"/><rect x="-7" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="4" y="-15" width="3" height="3" fill="#fff0c2"/><rect x="-7" y="12" width="4" height="2" fill="#ffcf73"/><rect x="3" y="12" width="4" height="2" fill="#ffcf73"/>
           </g>
         </defs>
-        <rect width="480" height="560" fill="url(#grass-pixels)"/>
+        <g id="world">
+        <rect x="-1200" y="-1200" width="2400" height="2400" fill="url(#grass-pixels)"/>
         <path d="M60 280V256h8v-40h8v-36h10v-32h14v-28h18V96h24V72h38V58h120v14h38v24h24v24h18v28h14v32h10v36h8v40h8v48h-8v40h-8v36h-10v32h-14v28h-18v24h-24v24h-38v14H180v-14h-38v-24h-24v-24h-18v-28H86v-32H76v-36h-8v-40h-8z" fill="#29263e"/>
         <ellipse cx="240" cy="280" rx="184" ry="224" fill="#504b52" stroke="#f3be72" stroke-width="8"/>
         <ellipse cx="240" cy="280" rx="112" ry="152" fill="url(#grass-pixels)" stroke="#e76673" stroke-width="8"/>
@@ -95,7 +100,17 @@
         </g>
         <g id="racer-layer"></g>
         <g id="player-car"><use href="#car-red-art"/></g>
+        </g>
       </svg>
+      <div class="track-map" aria-label="Minimap showing your position on the full track">
+        <p class="track-map-label">TRACK MAP</p>
+        <svg viewBox="0 0 100 120" role="img" aria-label="Oval track with your current position marked in yellow">
+          <ellipse cx="50" cy="60" rx="35" ry="44.5" fill="none" stroke="#17142d" stroke-width="17"/>
+          <ellipse cx="50" cy="60" rx="35" ry="44.5" fill="none" stroke="#e9d6a0" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <path d="M42 15h16v3H42z" fill="#e76673"/>
+          <path id="map-player" d="M0 -5 L3.5 4 L0 2 L-3.5 4Z" transform="translate(50 7)" fill="#ffd477" stroke="#332044" stroke-width=".8"/>
+        </svg>
+      </div>
       <div class="race-overlay" id="race-overlay">
         <section class="race-card" aria-live="polite">
           <h2 id="overlay-title">CHOOSE YOUR CAR</h2>
@@ -126,7 +141,9 @@
       const CX = 240, CY = 280;
       const RX = 148, RY = 188, LAPS_TO_WIN = 3, MAX_SPEED = 225;
       const racerLayer = document.querySelector("#racer-layer");
+      const world = document.querySelector("#world");
       const playerCar = document.querySelector("#player-car");
+      const mapPlayer = document.querySelector("#map-player");
       const overlay = document.querySelector("#race-overlay");
       const title = document.querySelector("#overlay-title");
       const copy = document.querySelector("#overlay-copy");
@@ -181,6 +198,13 @@
       function setCarPosition(node, point) {
         node.setAttribute("transform", `translate(${point.x.toFixed(2)} ${point.y.toFixed(2)}) rotate(${point.angle.toFixed(1)})`);
       }
+      function updateCamera(point) {
+        const cameraY = 395;
+        world.setAttribute("transform", `translate(240 ${cameraY}) rotate(${-point.angle.toFixed(1)}) translate(${-point.x.toFixed(2)} ${-point.y.toFixed(2)})`);
+        const mapX = 50 + (point.x - CX) / RX * 35;
+        const mapY = 60 + (point.y - CY) / RY * 44.5;
+        mapPlayer.setAttribute("transform", `translate(${mapX.toFixed(1)} ${mapY.toFixed(1)}) rotate(${point.angle.toFixed(1)})`);
+      }
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const whole = Math.floor(seconds % 60);
@@ -225,6 +249,7 @@
         keyState.clear();
         playerCar.querySelector("use").setAttribute("href", `#car-${selectedCar}-art`);
         setCarPosition(playerCar, pointAt(playerDistance, laneOffset));
+        updateCamera(pointAt(playerDistance, laneOffset));
         makeNpcs();
         lapReadout.textContent = `1 / ${LAPS_TO_WIN}`;
         timeReadout.textContent = formatTime(0);
@@ -276,6 +301,7 @@
         elapsed += dt;
         const playerPoint = pointAt(playerDistance, laneOffset);
         setCarPosition(playerCar, playerPoint);
+        updateCamera(playerPoint);
         for (const npc of npcs) {
           npc.distance += npc.speed * dt;
           const point = pointAt(npc.distance, npc.lane);
@@ -326,6 +352,9 @@
       startButton.addEventListener("click", startRace);
       buildPath();
       playerCar.querySelector("use").setAttribute("href", `#car-${selectedCar}-art`);
+      const startingPoint = pointAt(0, 0);
+      setCarPosition(playerCar, startingPoint);
+      updateCamera(startingPoint);
       updateHud();
     })();
   </script>
