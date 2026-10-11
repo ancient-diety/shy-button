@@ -13,15 +13,13 @@
             'sunset-speedway': 'A / D: steer. W / up: go. S / down: brake.',
             'potion-panic': '1 / 2 / 3 or tap a bottle at the dashed line.',
             'moon-mart': '1 / 2 / 3 or tap the matching crate.',
-            'haunted-hayride': 'A / D, arrows or hold the buttons to steer.',
             'homework-blaze': 'Click or tap a sheet. Three misses end the round.'
         };
-        const hint = document.querySelector('.space-help, .race-help, .potion-help, .mart-help, .hayride-help, .game-help');
+        const hint = document.querySelector('.space-help, .race-help, .potion-help, .mart-help, .game-help');
         if (hint && help[slug]) hint.textContent = help[slug];
         const instructions = {
             'potion-panic': 'Catch ingredients in the matching bottle at the glowing line (1 / 2 / 3). Five matches brew a potion; three spills end the round.',
             'moon-mart': 'CHILL: milk / cheese. CRUNCH: nuggets / crackers. WIGGLE: pickles / eggs. Three complaints end your shift.',
-            'haunted-hayride': 'Dodge pumpkins, hay bales and logs; collect candy. Three scares end the ride!'
         };
         const intro = document.querySelector('#overlay-copy');
         if (intro && instructions[slug]) intro.textContent = instructions[slug];
@@ -31,7 +29,7 @@
                 cell.firstChild.textContent = labels[index];
             });
         }
-        const firstAction = document.querySelector('#shy-button, #water-button, #start-button, #start-game, #start-race, #start-hayride');
+        const firstAction = document.querySelector('#shy-button, #water-button, #start-button, #start-game, #start-race');
         window.focus();
         firstAction?.focus({ preventScroll: true });
     });

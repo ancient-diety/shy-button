@@ -60,14 +60,6 @@ Scanner flashes and mistake effects could interfere with newer actions or a fres
 - An earlier scanner flash could turn off a newer flash before it had finished. Starting a flash now cancels the previous countdown, giving the latest flash its full duration.
 - Restarting quickly could carry shaking, button highlights or an old flash countdown into the next shift. A new shift now clears those leftovers before groceries start arriving.
 
-## Haunted Hayride
-
-Steering could stop unexpectedly, and returning to the game could leave controls in the wrong state.
-
-- Holding both A and the left arrow, then releasing either one, stopped left steering even though the other was still held. The game now remembers each key separately. The same fix applies to right steering.
-- Switching away or starting another ride now clears held steering controls and their pressed appearance.
-- Repeated notices that the page was hidden could make the game forget it should resume. It now remembers that an active ride was paused until the player returns, and clears that reminder for a new ride.
-
 ## Saved scores and race times
 
 Invalid saved records could display strange values or become impossible to beat.
