@@ -46,6 +46,8 @@
     }
     @media(prefers-reduced-motion:reduce){.race-screen *{animation:none!important;transition:none!important}}
   </style>
+  <link rel="stylesheet" href="../game-shell.css">
+  <script src="../game-shell.js"></script>
 </head>
 <body>
   <main class="game-page race-game">
@@ -161,7 +163,14 @@
       let playerDistance = 0, laneOffset = 0, steeringAngle = 0, speed = 145, elapsed = 0, lastTime = 0, animation = 0;
       let npcs = [], potholes = [], bestTime = Infinity;
 
+      function releaseControls() {
+        keyState.clear();
+        held.left = held.right = held.accelerate = held.brake = false;
+        document.querySelectorAll(".held").forEach(button => button.classList.remove("held"));
+      }
+
       try { bestTime = Number(localStorage.getItem("sunsetSpeedwayBest")) || Infinity; } catch (_) { /* storage can be disabled */ }
+      if (!Number.isFinite(bestTime) || bestTime <= 0) bestTime = Infinity;
 
       function svgEl(tag, attrs = {}) {
         const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -302,8 +311,7 @@
         speed = 145;
         elapsed = 0;
         lastTime = performance.now();
-        held.left = held.right = held.accelerate = held.brake = false;
-        keyState.clear();
+        releaseControls();
         playerCar.querySelector("use").setAttribute("href", "#car-" + selectedCar + "-art");
         makeNpcs();
         updateScene();
@@ -321,8 +329,7 @@
         if (!running) return;
         running = false;
         cancelAnimationFrame(animation);
-        held.left = held.right = held.accelerate = held.brake = false;
-        keyState.clear();
+        releaseControls();
         overlay.hidden = false;
         pickerPanel.hidden = false;
         document.querySelector("#car-picker-copy").textContent = "Choose another car, or keep yours and race again.";
@@ -343,10 +350,10 @@
         if (!running) return;
         const dt = Math.min(.05, Math.max(0, (now - lastTime) / 1000));
         lastTime = now;
-        const left = held.left || keyState.has("ArrowLeft") || keyState.has("a") || keyState.has("A");
-        const right = held.right || keyState.has("ArrowRight") || keyState.has("d") || keyState.has("D");
-        const accelerating = held.accelerate || keyState.has("ArrowUp") || keyState.has("w") || keyState.has("W");
-        const braking = held.brake || keyState.has("ArrowDown") || keyState.has("s") || keyState.has("S");
+        const left = held.left || keyState.has("arrowleft") || keyState.has("a");
+        const right = held.right || keyState.has("arrowright") || keyState.has("d");
+        const accelerating = held.accelerate || keyState.has("arrowup") || keyState.has("w");
+        const braking = held.brake || keyState.has("arrowdown") || keyState.has("s");
         const steerInput = (right ? 1 : 0) - (left ? 1 : 0);
         steeringAngle += (steerInput * 8 - steeringAngle) * Math.min(1, dt * 12);
         laneOffset += steerInput * 62 * dt;
@@ -394,6 +401,7 @@
         const button = document.querySelector(id);
         button.addEventListener("pointerdown", event => {
           event.preventDefault();
+          if (!running) return;
           held[property] = true;
           button.classList.add("held");
           button.setPointerCapture?.(event.pointerId);
@@ -415,11 +423,22 @@
       bindHold("#accelerate", "accelerate");
       bindHold("#brake", "brake");
       window.addEventListener("keydown", event => {
-        if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(event.key)) event.preventDefault();
-        keyState.add(event.key);
+        if (!running) return;
+        const key = event.key.toLowerCase();
+        if (!["arrowleft", "arrowright", "arrowup", "arrowdown", "a", "d", "w", "s"].includes(key)) return;
+        event.preventDefault();
+        keyState.add(key);
       });
-      window.addEventListener("keyup", event => keyState.delete(event.key));
-      window.addEventListener("blur", () => { keyState.clear(); held.left = held.right = held.accelerate = held.brake = false; });
+      window.addEventListener("keyup", event => keyState.delete(event.key.toLowerCase()));
+      window.addEventListener("blur", releaseControls);
+      document.addEventListener("visibilitychange", () => {
+        releaseControls();
+        cancelAnimationFrame(animation);
+        if (!document.hidden && running) {
+          lastTime = performance.now();
+          animation = requestAnimationFrame(frame);
+        }
+      });
       startButton.addEventListener("click", startRace);
       buildRoad();
       updateScene();

@@ -15,7 +15,24 @@ Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
 
 ## Play locally
 
-Open the index.html file in a browser. The pages work without a build step or JavaScript packages. The pixel font loads from Google Fonts when online; Courier New is used as a fallback.
+Open `index.html` in a browser, or serve this folder with any static file server. No build step or JavaScript packages are required. The pixel font loads from Google Fonts when online; Courier New is used as a fallback.
+
+All eight games play inside the home page's arcade screen. Pick a game with the arrows, dots, or a swipe, then choose **Start Game**. The carousel also supports left/right arrow keys when focused. Each game keeps its own keyboard and touch controls.
+
+- **Games** or **Escape** returns to that game's preview and restores keyboard focus.
+- **Restart** reloads the current game from its ready screen. Saved records stay on the device.
+- Browser Back/Forward works between selection and play. A URL such as `index.html#play/moon-mart` opens a game directly, and existing `games/*.html` links redirect to the same cabinet.
+- On short viewports the cabinet scrolls vertically to keep the screen and controls usable.
+
+## Page structure
+
+`index.html` contains the cabinet and previews. `arcade-shell.js` manages selection, game URLs, and a single game iframe; `arcade-shell.css` styles its toolbar and responsive shell. Returning to the menu, switching games, or restarting removes the old iframe, destroying that game's timers and event handlers.
+
+The files in `games/` still own their artwork and gameplay. Shared `game-shell.js` and `game-shell.css` adapt them to the small screen, focus the first action, and handle Escape. The SVG viewBoxes, game coordinates, rules, and saved-record keys are unchanged.
+
+## Checking changes
+
+There is no package-based build or test suite. Check JavaScript syntax, then use a local browser to exercise all eight previews and games, direct links, Back/Forward, Restart, Escape, keyboard and pointer controls, and repeated game switching. Check both desktop and narrow/short viewports, including that the current game is the only iframe and removed games stop executing. Let live-reload servers finish reloading after edits before testing a round.
 
 ## Favicon
 

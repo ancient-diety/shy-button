@@ -1,0 +1,47 @@
+/* Compact, shared layout inside the cabinet. SVG viewBoxes and game logic
+   remain unchanged so artwork and collision coordinates stay in sync. */
+html.in-cabinet { height: 100%; }
+.in-cabinet body { display: block; height: 100%; min-height: 0; margin: 0; padding: 0; background: #171329; font-size: 13px; }
+.in-cabinet body::before { display: none; }
+.in-cabinet .game-page { display: flex; flex-direction: column; gap: 6px; width: 100%; height: 100%; min-height: 300px; margin: 0; padding: 8px; border: 0; box-shadow: none; background: #211834; }
+.in-cabinet .game-page > * { flex-shrink: 0; }
+.in-cabinet :is(.back-link, .pixel-sun, .eyebrow, h1, .game-description) { display: none; }
+.in-cabinet :is(.game-hud, .space-hud, .race-hud, .potion-hud, .mart-hud, .hayride-hud) { width: 100%; margin: 0; gap: 5px; font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; }
+.in-cabinet :is(.race-hud, .potion-hud, .mart-hud, .hayride-hud) > div,
+.in-cabinet .game-hud > span { min-width: 0; padding: 4px !important; box-shadow: 2px 2px #100d22; }
+.in-cabinet :is(.race-hud, .potion-hud, .mart-hud, .hayride-hud) span { margin-top: 2px; font-size: 12px; }
+.in-cabinet .space-hud { grid-template-columns: 1.3fr 1fr auto; align-items: center; }
+.in-cabinet .hud-score, .in-cabinet .hud-wave { grid-column: auto; grid-row: auto; text-align: right; }
+.in-cabinet :is(.health-track, .boss-track) { height: 10px; margin-top: 3px; box-shadow: none; }
+.in-cabinet .boss-hud { width: 100%; margin: 0; font-size: 10px; }
+.in-cabinet :is(.potion-best, .mart-best, .hayride-best) { margin: 0; font-size: 10px; line-height: 1.2; }
+.in-cabinet .hayride-progress { width: 100%; height: 9px; margin: 0; border-width: 2px; box-shadow: none; }
+.in-cabinet :is(#play-area, .garden-scene, .desk-scene, .space-screen, .race-screen, .potion-scene, .mart-scene, .hayride-screen) { flex: 1 1 0; width: 100%; min-height: 140px; height: auto; aspect-ratio: auto; margin: 0; border-width: 2px; box-shadow: none; }
+.in-cabinet :is(.space-controls, .race-controls, .potion-buttons, .crate-buttons, .hayride-controls, .game-actions) { width: 100%; margin: 0; gap: 5px; }
+.in-cabinet :is(.space-control, .race-control, .potion-button, .crate-button, .hayride-control, .water-button, .game-button) { min-height: 44px; padding: 5px; border-width: 2px; font-size: 12px; box-shadow: 2px 2px #100d22; }
+.in-cabinet :is(.button-gem, .crate-chip) { width: 10px; height: 10px; }
+.in-cabinet :is(.potion-button, .crate-button) small { font-size: 9px; }
+.in-cabinet :is(#message, #garden-message, .game-message, .potion-message, .mart-message) { min-height: 2.5em; margin: 0; font-size: 12px; line-height: 1.25; }
+.in-cabinet :is(.space-help, .race-help, .potion-help, .mart-help, .hayride-help, .game-help) { margin: 0; font-size: 10px; line-height: 1.3; }
+.in-cabinet :is(.space-overlay, .race-overlay, .potion-overlay, .mart-overlay, .hayride-overlay) { padding: 6px; overflow: auto; }
+.in-cabinet :is(.overlay-card, .race-card, .potion-card, .mart-card, .hayride-card) { display: flex; flex-direction: column; max-height: 100%; overflow: auto; padding: 8px; border-width: 2px; box-shadow: 3px 3px #100d22; }
+.in-cabinet :is(.overlay-card, .race-card, .potion-card, .mart-card, .hayride-card) h2 { margin: 0 0 6px; font-size: 11px; line-height: 1.5; }
+.in-cabinet :is(.overlay-card, .race-card, .potion-card, .mart-card, .hayride-card) p { min-height: 0; overflow-y: auto; margin: 4px 0 8px; font-size: 12px; line-height: 1.35; }
+.in-cabinet :is(.space-start, .race-start, .potion-start, .mart-start, .hayride-start) { flex-shrink: 0; align-self: center; min-height: 44px; padding: 6px 8px; border-width: 2px; font-size: 12px; }
+.in-cabinet .car-picker { gap: 4px; margin: 6px 0; }
+.in-cabinet .car-option { min-height: 58px; font-size: 9px; }
+.in-cabinet .car-option svg { width: 20px; height: 28px; }
+.in-cabinet .track-map { top: 6px; left: 6px; width: 60px; padding: 3px; }
+.in-cabinet .track-map-label { font-size: 8px; }
+.in-cabinet .plant-sprite { width: auto; height: min(80%, 210px); bottom: 30px; }
+.in-cabinet .garden-ground { height: 42px; }
+.in-cabinet #shy-button { padding: 8px; font-size: 13px; }
+.in-cabinet :is(.falling-sheet, .paper-art) { width: 60px; height: 75px; }
+.in-cabinet[data-game="shy-button"] .game-description,
+.in-cabinet[data-game="tiny-garden"] .game-description { display: block; margin: 0; font-size: 12px; line-height: 1.4; }
+.in-cabinet :is(button, a):focus-visible { outline-offset: 1px; }
+@media (max-width: 300px) {
+    .in-cabinet .game-page { gap: 5px; padding: 6px; }
+    .in-cabinet :is(.potion-hud, .mart-hud) { gap: 3px; font-size: 10px; }
+    .in-cabinet :is(.race-control, .potion-button, .crate-button) { font-size: 10px; }
+}

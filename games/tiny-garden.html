@@ -6,6 +6,8 @@
   <title>A Tiny Garden · Sunset Arcade</title>
   <link rel="icon" href="../Pixel%20Star%20Gamer%20Icon.png" type="image/png">
   <link rel="stylesheet" href="../arcade.css">
+  <link rel="stylesheet" href="../game-shell.css">
+  <script src="../game-shell.js"></script>
 </head>
 <body>
   <main class="game-page">
@@ -46,9 +48,12 @@
       { message: "It bloomed! You grew a sunny pixel sunflower! 🌻", title: "A fully grown pixel sunflower in a terracotta pot" }
     ];
     let drinks = 0;
+    let growthTimer = 0;
     waterButton.addEventListener("click", () => {
+      window.clearTimeout(growthTimer);
       if (drinks === stages.length) {
         drinks = 0;
+        plant.classList.remove("growing");
         plant.dataset.stage = "0";
         plantTitle.textContent = "A tiny seedling in a pixel art pot";
         waterButton.textContent = "💧 Water the plant";
@@ -61,7 +66,7 @@
       message.textContent = stages[drinks - 1].message;
       plant.classList.add("growing");
       if (drinks === stages.length) waterButton.textContent = "🌱 Grow another?";
-      window.setTimeout(() => plant.classList.remove("growing"), 300);
+      growthTimer = window.setTimeout(() => plant.classList.remove("growing"), 300);
     });
   </script>
 </body>

@@ -15,6 +15,8 @@
     >
 
     <link rel="stylesheet" href="../arcade.css">
+  <link rel="stylesheet" href="../game-shell.css">
+  <script src="../game-shell.js"></script>
 </head>
 
 <body>
@@ -51,12 +53,20 @@
         const message = document.querySelector("#message");
 
         let escapes = 0;
+        let escapedOnPointerDown = false;
+
+        function keepInBounds() {
+            const halfWidth = button.offsetWidth / 2;
+            const halfHeight = button.offsetHeight / 2;
+            button.style.left = Math.max(halfWidth, Math.min(area.clientWidth - halfWidth, button.offsetLeft)) + "px";
+            button.style.top = Math.max(halfHeight, Math.min(area.clientHeight - halfHeight, button.offsetTop)) + "px";
+        }
 
         function scootAway() {
             if (escapes >= 5) return;
 
-            const maxX = area.clientWidth - button.offsetWidth;
-            const maxY = area.clientHeight - button.offsetHeight;
+            const maxX = Math.max(0, area.clientWidth - button.offsetWidth);
+            const maxY = Math.max(0, area.clientHeight - button.offsetHeight);
 
             button.style.left =
                 (Math.random() * maxX + button.offsetWidth / 2) + "px";
@@ -78,16 +88,25 @@
         });
 
         button.addEventListener("pointerdown", event => {
-            if (event.pointerType !== "mouse" && escapes < 5) {
+            escapedOnPointerDown = event.pointerType !== "mouse" && escapes < 5;
+            if (escapedOnPointerDown) {
                 event.preventDefault();
                 scootAway();
             }
         });
 
-        button.addEventListener("click", () => {
+        button.addEventListener("click", event => {
+            // Keyboard activation has no pointerdown; give it the same five hops.
+            if (event.detail === 0 && escapes < 5) {
+                scootAway();
+                return;
+            }
+            if (escapes < 5 || (event.detail !== 0 && escapedOnPointerDown)) return;
             message.textContent = "Hi, friend! Thanks for finding me ✨";
             button.textContent = "Hi, friend!";
+            keepInBounds();
         });
+        window.addEventListener("resize", keepInBounds);
     </script>
 
 </body>
