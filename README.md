@@ -16,6 +16,12 @@ Open [the arcade](https://ancient-diety.github.io/shy-button/) to play.
 
 Open `index.html` in a browser, or serve this folder with any static file server. No build step or JavaScript packages are required. The pixel font loads from Google Fonts when online; Courier New is used as a fallback.
 
+## Install as an app
+
+Sunset Arcade is a Progressive Web App. On the hosted HTTPS site, use **INSTALL** in the marquee when the browser offers installation. On iPhone or iPad, use Share → **Add to Home Screen**; on Android, use the browser menu → **Install app** or **Add to Home screen**. Desktop browsers usually show an install option in the address bar or menu.
+
+The service worker caches the arcade, its seven games, and local artwork so the site can open offline after its first successful visit. Game scores remain saved on that device. The pixel font uses a system fallback when offline. The PWA uses only static files; it does not need Supabase or another backend.
+
 All seven games play inside the home page's arcade screen. Pick a game with the arrows, dots, or a swipe, then choose **Start Game**. The carousel also supports left/right arrow keys when focused. Each game keeps its own keyboard and touch controls.
 
 - **Games** or **Escape** returns to that game's preview and restores keyboard focus.
@@ -31,7 +37,7 @@ The files in `games/` still own their artwork and gameplay. Shared `game-shell.j
 
 ## Checking changes
 
-There is no package-based build or test suite. Check JavaScript syntax, then use a local browser to exercise all eight previews and games, direct links, Back/Forward, Restart, Escape, keyboard and pointer controls, and repeated game switching. Check both desktop and narrow/short viewports, including that the current game is the only iframe and removed games stop executing. Let live-reload servers finish reloading after edits before testing a round.
+There is no package-based build or test suite. Check JavaScript syntax, then use a local browser to exercise all seven previews and games, direct links, Back/Forward, Restart, Escape, keyboard and pointer controls, and repeated game switching. Check both desktop and narrow/short viewports, including that the current game is the only iframe and removed games stop executing. For PWA changes, confirm the manifest and icons load, the install flow works on supported browsers, and a previously visited game opens after disconnecting the network. Let live-reload servers finish reloading after edits before testing a round.
 
 ## Favicon
 

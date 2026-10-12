@@ -5,10 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#442451">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sunset Arcade">
 
     <title>Sunset Arcade</title>
 
     <link rel="icon" href="Pixel%20Star%20Gamer%20Icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="manifest" href="manifest.webmanifest">
     <link rel="stylesheet" href="arcade.css">
 
 <style>
@@ -86,6 +91,14 @@
     .marquee-side { min-width:0; display:flex; align-items:center; justify-content:center; gap:7px; color:#ffe7a0; font-size:clamp(.42rem,.75vw,.62rem); font-weight:900; letter-spacing:.08em; line-height:1.55; }
     .marquee-side:last-child { text-align:right; }
     .marquee-side:last-child span:first-child { text-align:right; }
+    .install-app { min-height:36px; padding:5px 7px; border:2px solid #ffd85b; color:#fff0bf; background:#42254b; box-shadow:3px 3px #100d22; font:900 clamp(.55rem,1vw,.68rem)/1.2 "Courier New",monospace; letter-spacing:.04em; cursor:pointer; touch-action:manipulation; }
+    .install-app:hover, .install-app:focus-visible { color:#211834; background:#ffd85b; outline:2px solid #fff0bf; outline-offset:2px; }
+    .install-help { width:min(90vw,440px); padding:18px; border:4px solid #ffd85b; color:#fff0bf; background:#302044; box-shadow:8px 8px #100d22; font:700 15px/1.5 "Courier New",monospace; }
+    .install-help::backdrop { background:#100d22cc; }
+    .install-help h2 { margin:0 0 12px; color:#ffd85b; font:900 14px/1.5 "Courier New",monospace; }
+    .install-help ul { padding-left:20px; }
+    .install-help li { margin:8px 0; }
+    .install-help button { min-height:40px; padding:7px 12px; border:3px solid #fff0bf; color:#211834; background:#ffd85b; box-shadow:3px 3px #100d22; font:900 13px "Courier New",monospace; cursor:pointer; }
     .marquee-glyph { width:clamp(24px,3.5vw,42px); height:auto; flex:0 0 auto; image-rendering:pixelated; shape-rendering:crispEdges; filter:drop-shadow(3px 3px 0 #27142e); }
     .marquee-star { font-size:1.3rem; color:var(--gold); text-shadow:3px 3px 0 #442046; }
     .marquee-title { min-width:0; margin:0; color:var(--cream); text-align:center; font-family:"Press Start 2P","Courier New",monospace; font-size:clamp(.85rem,2.1vw,1.55rem); font-weight:1000; line-height:1.6; letter-spacing:-.035em; overflow-wrap:anywhere; text-shadow:4px 4px 0 #2d173c, 7px 7px 0 #b74f71; }
@@ -283,8 +296,7 @@
             </div>
             <h1 class="marquee-title">SUNSET <span>ARCADE</span></h1>
             <div class="marquee-side">
-                <span>FREE PLAY<br>1 PLAYER</span>
-                <span class="marquee-star" aria-hidden="true">✦</span>
+                <button class="install-app" id="install-app" type="button" aria-label="Install Sunset Arcade">⬇ INSTALL</button>
             </div>
         </header>
 
@@ -495,9 +507,21 @@
             <span>PLAYER ONE</span>
         </div>
 
+        <dialog class="install-help" id="install-help" aria-labelledby="install-help-title">
+            <h2 id="install-help-title">TAKE THE ARCADE WITH YOU</h2>
+            <p>Install Sunset Arcade from your browser:</p>
+            <ul>
+                <li><strong>iPhone or iPad:</strong> tap Share, then Add to Home Screen.</li>
+                <li><strong>Android:</strong> open the browser menu and choose Install app or Add to Home screen.</li>
+                <li><strong>Computer:</strong> choose Install from the browser's address bar or menu.</li>
+            </ul>
+            <button id="close-install-help" type="button">GOT IT</button>
+        </dialog>
+
     </main>
 
     <script src="arcade-shell.js"></script>
+    <script src="pwa.js"></script>
 
 </body>
 </html>
